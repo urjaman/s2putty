@@ -633,6 +633,11 @@ struct config_tag {
     FontSpec widefont;
     FontSpec wideboldfont;
     int shadowboldoffset;
+    /* Added for S60 accesspoint setting - Risto Avila*/
+    int accesspoint;
+    /* [Petteri] UI orientation: 0=auto, 1=portrait, 2=landscape */
+    /* FIXME: Consider moving all UI settings out of the profile */
+    int orientation;
 };
 
 /*

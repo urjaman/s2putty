@@ -23,6 +23,12 @@
 #include "profileeditgeneralsettinglist.h"
 #include "profileeditsshsettinglist.h"
 #include "profileeditdisplaysettinglist.h"
+#ifdef PUTTY_S60TOUCH
+#include "../ui/s60v5/profileedittouchsettinglist.h"
+#include "../ui/s60v5/profileedittoolbarsettinglist.h"
+#include "../ui/s60v5/profileeditgeneraltoolbarsettinglist.h"
+#include "touchuisettings.h"
+#endif
 #include "profileeditloggingsettinglist.h"
 #include "puttyengine.h"
 #include "puttyuids.hrh"
@@ -142,7 +148,8 @@ void CProfileEditView::DoActivateL(const TVwsViewId & /*aPrevViewId*/,
                                    const TDesC8 & /*aCustomMessage*/) {
 
     // Get profile edit data from the app ui
-    ((CPuttyAppUi*)AppUi())->GetProfileEditDataL(iPutty, iProfileName);
+    ((CPuttyAppUi*)AppUi())->GetProfileEditDataL(iPutty, iProfileName,
+                                                 iSettings);
 
     // Create the settings page selection listbox as the first control
     SetViewL(EViewPageList);
@@ -181,8 +188,14 @@ void CProfileEditView::HandleStatusPaneSizeChange() {
 // MEikListBoxObserver::HandleListBoxEventL()
 void CProfileEditView::HandleListBoxEventL(CEikListBox *aListBox,
                                            TListBoxEvent aEventType) {
+#ifdef PUTTY_SYM3    
     if ( (aEventType == EEventEnterKeyPressed) ||
-         (aEventType == EEventItemDoubleClicked) ) {
+         (aEventType == EEventItemDoubleClicked) ||
+         (aEventType == EEventItemSingleClicked) ) {    
+#else    
+    if ( (aEventType == EEventEnterKeyPressed) ||
+         (aEventType == EEventItemDoubleClicked) ) {    
+#endif    
         iSwitcher->SwitchView((TView)(EViewGeneral +
                                       aListBox->CurrentItemIndex()));
     }
@@ -308,7 +321,51 @@ void CProfileEditView::SetViewL(CProfileEditView::TView aView) {
             iView = EViewDisplay;
             break;
         }
+        
+#ifdef PUTTY_S60TOUCH
+        case EViewTouch: {
+            CProfileEditTouchSettingList *list =
+                CProfileEditTouchSettingList::NewL(
+                    *iPutty, *this, *iSettings);
+            CleanupStack::PushL(list);
+            list->SetMopParent(this);
+            list->SetRect(ClientRect());
+            AppUi()->AddToViewStackL(*this, list);
+            CleanupStack::Pop(); // list
+            iControl = list;
+            iView = EViewTouch;
+            break;
+        }
+        
+        case EViewGeneralToolbar: {
+            CProfileEditGeneralToolbarSettingList *list =
+                CProfileEditGeneralToolbarSettingList::NewL(
+                    *iPutty, *this, *iSettings);
+            CleanupStack::PushL(list);
+            list->SetMopParent(this);
+            list->SetRect(ClientRect());
+            AppUi()->AddToViewStackL(*this, list);
+            CleanupStack::Pop(); // list
+            iControl = list;
+            iView = EViewGeneralToolbar;
+            break;
+        }        
 
+        case EViewToolbar: {
+            CProfileEditToolbarSettingList *list =
+                CProfileEditToolbarSettingList::NewL(
+                    *iPutty, *this, *iSettings);
+            CleanupStack::PushL(list);
+            list->SetMopParent(this);
+            list->SetRect(ClientRect());
+            AppUi()->AddToViewStackL(*this, list);
+            CleanupStack::Pop(); // list
+            iControl = list;
+            iView = EViewToolbar;
+            break;
+        }        
+#endif
+        
         case EViewLogging: {
             CProfileEditLoggingSettingList *list =
                 CProfileEditLoggingSettingList::NewL(*iPutty, *this);

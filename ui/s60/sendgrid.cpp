@@ -14,7 +14,11 @@
 #include <eikbtgpc.h>
 #include <avkon.rsg>
 #include <aknsutils.h>
+#ifndef PUTTY_S60TOUCH
+// hal.h is not available on Symbian^3 SDKs, but the whole test it's used for
+// is only relevant on S60 3rd edition phones anyway...
 #include <hal.h>
+#endif
 #include "sendgrid.h"
 
 _LIT(KPanic, "SENDGRID");
@@ -85,8 +89,12 @@ void CSendGrid::ConstructL(const TRect &aRect, TInt aResourceId) {
     iGrid = new (ELeave) CAknGrid;
             
     CAknGridM *gridM = new (ELeave) CAknGridM;
-    iGrid->SetModel(gridM);    
+    iGrid->SetModel(gridM);
+#ifdef PUTTY_S60TOUCH
+    iGrid->ConstructL(this, EAknListBoxSelectionGrid | EAknListBoxStylusMarkableList);
+#else
     iGrid->ConstructL(this, EAknListBoxSelectionGrid);
+#endif
 
     // Item size and grid layout
     TSize itemSize((aRect.Width()-2)/3, (aRect.Height()-2)/4);
@@ -175,7 +183,7 @@ TInt CSendGrid::CountComponentControls() const {
 
 
 // CCoeControl::ComponentControl()
-CCoeControl *CSendGrid::ComponentControl(TInt aIndex) const {
+CCoeControl *CSendGrid::ComponentControl(TInt /*aIndex*/) const {
     return iGrid;
 }
 
@@ -272,6 +280,9 @@ TKeyResponse CSendGrid::OfferKeyEventL(const TKeyEvent &aKeyEvent,
         }
 
         // Handle the keys that conflict on different devices by detecting the phone.
+#ifndef PUTTY_S60TOUCH
+        // hal.h is not available on Symbian^3 SDKs, but this issue is only
+        // valid on S60 3rd edition anyway - disabled for touch builds
         TInt mUid = 0;
         HAL::Get(HALData::EMachineUid, mUid);
 
@@ -282,17 +293,32 @@ TKeyResponse CSendGrid::OfferKeyEventL(const TKeyEvent &aKeyEvent,
                 MAPKEY1('M', 8);
             }
         } else {                  // E71 and the like with full qwerty
+#endif
             switch ( aKeyEvent.iScanCode ) {
                 MAPKEY1('U', 9);
                 MAPKEY1('J', 11);
                 MAPKEY1('M', 10);
             }
+#ifndef PUTTY_S60TOUCH
         }
+#endif
     }
 
     return iGrid->OfferKeyEventL(aKeyEvent, aType);
 }
 
+#ifdef PUTTY_S60TOUCH
+void CSendGrid::HandlePointerEventL( const TPointerEvent& aEvent ) {
+    CCoeControl::HandlePointerEventL( aEvent ); // forward messages to avkon grid
+    
+    //make selection
+    switch ( aEvent.iType ) {
+        case TPointerEvent::EButton1Up:
+            HandleSelectionL(iGrid->CurrentDataIndex());
+            break;
+    }
+}
+#endif
 
 // MEikCommandObserver::ProcessCommandL()
 void CSendGrid::ProcessCommandL(TInt aCommand) {
@@ -318,7 +344,7 @@ void CSendGrid::ProcessCommandL(TInt aCommand) {
 
 
 // CCoeControl::Draw()
-void CSendGrid::Draw(const TRect &aRect) const {
+void CSendGrid::Draw(const TRect & /*aRect*/) const {
     // Draw a one-pixel rectangle around the grid
     CWindowGc& gc = SystemGc();
     gc.Reset();

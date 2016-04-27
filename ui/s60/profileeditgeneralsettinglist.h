@@ -13,6 +13,9 @@
 #include <coecntrl.h>
 #include <aknsettingitemlist.h>
 #include "profileeditsettinglistbase.h"
+#include <commdb.h>
+#include <commdbconnpref.h>
+#include "dynamicenumtextsettingitem.h"
 extern "C" {
 #include "putty.h" // struct Config
 }
@@ -62,6 +65,9 @@ private:
     TDes &iProfileName;
     TBuf<511> iHost;
     TBuf<99> iUsername;
+    TInt iPromptAP;
+    CDesCArray *iIAPList;
+    CArrayFixFlat<TUint32> *iIAPidList;
     Config *iConfig;
 };
 

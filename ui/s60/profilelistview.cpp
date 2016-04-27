@@ -2,7 +2,7 @@
  *
  * Putty profile list view
  *
- * Copyright 2007 Petteri Kangaslampi
+ * Copyright 2007,2010 Petteri Kangaslampi
  *
  * See license.txt for full copyright and license information.
 */
@@ -17,6 +17,12 @@
 #include <aknnotedialog.h>
 #include <akncommondialogs.h>
 #include "profilelistview.h"
+#ifdef PROFILELISTVIEW_TOOLBAR
+#include <akntoolbar.h>
+#endif
+#ifdef PUTTY_S60TOUCH
+#include "touchuisettings.h"
+#endif
 #include "puttyappui.h"
 #include "puttyengine.h"
 #include "stringutils.h"
@@ -56,11 +62,17 @@ CProfileListView::CProfileListView() {
 // Second-phase constructor
 void CProfileListView::ConstructL() {
     BaseConstructL(R_PUTTY_PROFILELIST_VIEW);
+#ifdef PUTTY_S60TOUCH
+    iSettings = new (ELeave) TTouchSettings;
+#endif
 }
 
 
 // Destructor
 CProfileListView::~CProfileListView() {
+    if ( iListBox ) {
+        AppUi()->RemoveFromStack(iListBox);
+    }
     delete iListBox;
     iListBox = NULL;
     delete iProfileFileArray;
@@ -69,6 +81,9 @@ CProfileListView::~CProfileListView() {
     iProfileListArray = NULL;
     delete iPutty;
     iPutty = NULL;
+#ifdef PUTTY_S60TOUCH
+    delete iSettings;
+#endif
 }
 
 
@@ -90,9 +105,24 @@ void CProfileListView::HandleCommandL(TInt aCommand) {
                 delete iPutty;
                 iPutty = NULL;
                 iSelectedItem = iListBox->CurrentItemIndex();
-                TFileName prof = iProfileDirectory;
-                prof.Append((*iProfileFileArray)[iSelectedItem]);
-                ((CPuttyAppUi*)AppUi())->ActivateTerminalViewL(prof);
+                HBufC *proffile = AbsoluteFileNameLC(
+                    (*iProfileFileArray)[iSelectedItem]);
+                HBufC *setfile = SettingsFileNameLC(
+                    (*iProfileFileArray)[iSelectedItem]);
+#ifdef PUTTY_S60TOUCH
+                if ( !BaflUtils::FileExists(CEikonEnv::Static()->FsSession(),
+                                            *setfile) ) {
+                    // If there is settings file corresponding to this profile,
+                    // create one with defaults. This happens when migrating
+                    // from old-style global UI settings file to
+                    // profile-specific ones
+                    iSettings->SetDefault();
+                    iSettings->WriteSettingFileL(*setfile);
+                }
+#endif
+                ((CPuttyAppUi*)AppUi())->ActivateTerminalViewL(*proffile,
+                                                               *setfile);
+                CleanupStack::PopAndDestroy(2);
             }
             break;
 
@@ -103,8 +133,23 @@ void CProfileListView::HandleCommandL(TInt aCommand) {
                 iProfileOldName = iProfileEditName;
                 iPutty->ReadConfigFileL(*AbsoluteFileNameLC(iProfileEditName));
                 CleanupStack::PopAndDestroy();
+#ifdef PUTTY_S60TOUCH
+                HBufC *sfile = SettingsFileNameLC(iProfileEditName);
+                if ( BaflUtils::FileExists(CEikonEnv::Static()->FsSession(),
+                                           *sfile) ) {
+                    iSettings->ReadSettingFileL(*sfile);
+                } else {
+                    // If there is settings file corresponding to this profile,
+                    // create one with defaults. This happens when migrating
+                    // from old-style global UI settings file to
+                    // profile-specific ones
+                    iSettings->SetDefault();
+                    iSettings->WriteSettingFileL(*sfile);
+                }
+                CleanupStack::PopAndDestroy();
+#endif
                 ((CPuttyAppUi*)AppUi())->ActivateProfileEditViewL(
-                    *iPutty, iProfileEditName);
+                    *iPutty, iProfileEditName, *iSettings);
             }
             break;
         
@@ -122,15 +167,23 @@ void CProfileListView::HandleCommandL(TInt aCommand) {
                 iPutty->WriteConfigFileL(
                     *AbsoluteFileNameLC(iProfileEditName));
                 CleanupStack::PopAndDestroy();
+#ifdef PUTTY_S60TOUCH
+                iSettings->SetDefault();
+                iSettings->WriteSettingFileL(
+                    *SettingsFileNameLC(iProfileEditName));
+                CleanupStack::PopAndDestroy();
+#endif    
                 AppendProfileL(iProfileEditName);
                 iListBox->HandleItemAdditionL();
                 iSelectedItem = iProfileFileArray->Count()-1;
                 iListBox->SetCurrentItemIndex(iSelectedItem);
+                iListBox->ScrollToMakeItemVisible(iSelectedItem);
+                iListBox->DrawDeferred();
 
                 // Edit the new profile
                 iProfileOldName = iProfileEditName;
                 ((CPuttyAppUi*)AppUi())->ActivateProfileEditViewL(
-                    *iPutty, iProfileEditName);
+                    *iPutty, iProfileEditName, *iSettings);
             }
             break;
         
@@ -142,6 +195,12 @@ void CProfileListView::HandleCommandL(TInt aCommand) {
                     CEikonEnv::Static()->FsSession().Delete(
                         *AbsoluteFileNameLC((*iProfileFileArray)[sel])));
                 CleanupStack::PopAndDestroy();
+#ifdef PUTTY_S60TOUCH
+                User::LeaveIfError(
+                    CEikonEnv::Static()->FsSession().Delete(
+                        *SettingsFileNameLC((*iProfileFileArray)[sel])));
+                CleanupStack::PopAndDestroy();
+#endif                
                 
                 // Remove the profile from the list and update listbox
                 iProfileFileArray->Delete(sel);
@@ -153,7 +212,8 @@ void CProfileListView::HandleCommandL(TInt aCommand) {
                 if ( sel < 0 ) {
                     sel = 0;
                 }
-                iListBox->SetCurrentItemIndexAndDraw(sel);
+                iListBox->SetCurrentItemIndex(sel);
+                iListBox->DrawDeferred();
             }
             break;
 
@@ -204,12 +264,21 @@ void CProfileListView::HandleCommandL(TInt aCommand) {
                         fman->Copy(name, 
                                    *AbsoluteFileNameLC(iProfileEditName)));
                     CleanupStack::PopAndDestroy(2); // name, fman
+                    
+#ifdef PUTTY_S60TOUCH
+                    // Create blank UI settings for the imported profile
+                    iSettings->SetDefault();
+                    iSettings->WriteSettingFileL(
+                        *SettingsFileNameLC(iProfileEditName));
+                    CleanupStack::PopAndDestroy();
+#endif
 
                     // Add to the list
                     AppendProfileL(iProfileEditName);
                     iListBox->HandleItemAdditionL();
                     iSelectedItem = iProfileFileArray->Count()-1;
                     iListBox->SetCurrentItemIndex(iSelectedItem);
+                    iListBox->ScrollToMakeItemVisible(iSelectedItem);
                     iListBox->DrawDeferred();
                 };
             };
@@ -246,6 +315,11 @@ void CProfileListView::DoActivateL(const TVwsViewId &aPrevViewId,
                 User::LeaveIfError(CEikonEnv::Static()->FsSession().Delete(
                                        *AbsoluteFileNameLC(iProfileOldName)));
                 CleanupStack::PopAndDestroy();
+#ifdef PUTTY_S60TOUCH
+                User::LeaveIfError(CEikonEnv::Static()->FsSession().Delete(
+                                       *SettingsFileNameLC(iProfileOldName)));
+                CleanupStack::PopAndDestroy();
+#endif
 
                 // Fix the name if necessary
                 MakeNameLegal(iProfileEditName);
@@ -254,15 +328,21 @@ void CProfileListView::DoActivateL(const TVwsViewId &aPrevViewId,
                 // Update profile list and listbox
                 iProfileFileArray->Delete(iSelectedItem);
                 iProfileListArray->Delete(iSelectedItem);
+                iListBox->HandleItemRemovalL();
                 iProfileFileArray->InsertL(iSelectedItem, iProfileEditName);
                 iProfileListArray->InsertL(iSelectedItem,
                                            *FormatForListboxLC(iProfileEditName));
+                iListBox->HandleItemAdditionL();
                 CleanupStack::PopAndDestroy();
             }
 
             // Save the settings, using updated name if necessary
             iPutty->WriteConfigFileL(*AbsoluteFileNameLC(iProfileEditName));
             CleanupStack::PopAndDestroy();
+#ifdef PUTTY_S60TOUCH
+            iSettings->WriteSettingFileL(*SettingsFileNameLC(iProfileEditName));
+            CleanupStack::PopAndDestroy();
+#endif
             
         } else {
             // Coming from the terminal view, probably better off with a fresh
@@ -273,30 +353,6 @@ void CProfileListView::DoActivateL(const TVwsViewId &aPrevViewId,
         }
     }
 
-    // Create the listbox -- this is the only control this view uses, so no
-    // separate container needed
-    iListBox = new (ELeave) CAknSingleStyleListBox();
-    iListBox->ConstructL(NULL); // Creates a window since there is no parent
-    iListBox->CreateScrollBarFrameL(ETrue);
-    iListBox->ScrollBarFrame()->SetScrollBarVisibilityL(
-        CEikScrollBarFrame::EOn, CEikScrollBarFrame::EAuto);
-    iListBox->SetRect(ClientRect());
-    iListBox->SetListBoxObserver(this);
-    iListBox->ActivateL();
-    
-    // Add profiles to the listbox
-    CTextListBoxModel *lbm = iListBox->Model();
-    lbm->SetItemTextArray(iProfileListArray);
-    lbm->SetOwnershipType(ELbmDoesNotOwnItemArray);
-    iListBox->HandleItemAdditionL();
-
-    // Restore old selection, if any
-    iListBox->ScrollToMakeItemVisible(iSelectedItem);
-    iListBox->SetCurrentItemIndex(iSelectedItem);
-
-    // Activate the UI control
-    AppUi()->AddToStackL(iListBox);
-    
     // Set title
     HBufC *title = CEikonEnv::Static()->AllocReadResourceL(
         R_PUTTY_STR_PROFILELIST_TITLE);
@@ -309,11 +365,6 @@ void CProfileListView::DoActivateL(const TVwsViewId &aPrevViewId,
 // CAknView::DoDeactivate()
 void CProfileListView::DoDeactivate() {
     
-    if ( iListBox) {
-        AppUi()->RemoveFromStack(iListBox);
-        delete iListBox;
-        iListBox = NULL;
-    }
 }
 
 
@@ -346,6 +397,17 @@ HBufC *CProfileListView::AbsoluteFileNameLC(const TDesC &aProfileFileName) {
 }
 
 
+// Build an absolute file name for a UI settings file
+HBufC *CProfileListView::SettingsFileNameLC(const TDesC &aProfileFileName) {
+    HBufC *buf = HBufC::NewLC(aProfileFileName.Length() +
+                              iSettingsDirectory.Length());
+    TPtr p = buf->Des();
+    p = iSettingsDirectory;
+    p.Append(aProfileFileName);
+    return buf;
+}
+
+
 // Append a profile to both lists
 void CProfileListView::AppendProfileL(const TDesC &aProfileFileName) {
     // Add to file name array
@@ -357,6 +419,12 @@ void CProfileListView::AppendProfileL(const TDesC &aProfileFileName) {
 
 // Initialize for the first time
 void CProfileListView::InitViewL() {
+
+#ifdef PROFILELISTVIEW_TOOLBAR
+    iToolbar = Toolbar();
+    iToolbar->SetToolbarVisibility(ETrue, EFalse);
+    iToolbar->SetToolbarObserver(this);
+#endif
     
     iProfileFileArray = new (ELeave) CDesCArrayFlat(8);
     iProfileListArray = new (ELeave) CDesCArrayFlat(8);
@@ -366,6 +434,7 @@ void CProfileListView::InitViewL() {
     // Get directories from the app UI
     iDataDirectory = ((CPuttyAppUi*)AppUi())->DataDirectory();
     iProfileDirectory = ((CPuttyAppUi*)AppUi())->ProfileDirectory();
+    iSettingsDirectory =  ((CPuttyAppUi*)AppUi())->SettingsDirectory();
 
     // Create an engine instance
     iPutty = CPuttyEngine::NewL(this, iDataDirectory);
@@ -387,7 +456,33 @@ void CProfileListView::InitViewL() {
         iPutty->WriteConfigFileL(*AbsoluteFileNameLC(KDefaultProfileName));
         CleanupStack::PopAndDestroy();
         AppendProfileL(KDefaultProfileName);
+#ifdef PUTTY_S60TOUCH
+        // Create default UI settings file too
+        TTouchSettings settings;
+        settings.WriteSettingFileL(*SettingsFileNameLC(KDefaultProfileName));
+        CleanupStack::PopAndDestroy();
+#endif
     }
+
+    // Create the listbox -- this is the only control this view uses, so no
+    // separate container needed
+    iListBox = new (ELeave) CAknSingleStyleListBox();
+    iListBox->ConstructL(NULL); // Creates a window since there is no parent
+    iListBox->CreateScrollBarFrameL(ETrue);
+    iListBox->ScrollBarFrame()->SetScrollBarVisibilityL(
+        CEikScrollBarFrame::EOn, CEikScrollBarFrame::EAuto);
+    iListBox->SetRect(ClientRect());
+    iListBox->SetListBoxObserver(this);
+    iListBox->ActivateL();
+    
+    // Add profiles to the listbox
+    CTextListBoxModel *lbm = iListBox->Model();
+    lbm->SetItemTextArray(iProfileListArray);
+    lbm->SetOwnershipType(ELbmDoesNotOwnItemArray);
+    iListBox->HandleItemAdditionL();
+    
+    // Activate the UI control
+    AppUi()->AddToStackL(iListBox);    
 }
 
 
@@ -446,13 +541,27 @@ void CProfileListView::MakeNameUniqueL(TDes &aName) {
 // MEikListBoxObserver::HandleListBoxEventL()
 void CProfileListView::HandleListBoxEventL(CEikListBox * /*aListBox*/,
                                            TListBoxEvent aEventType) {
+#ifdef PUTTY_SYM3    
+    if ( (aEventType == EEventEnterKeyPressed) ||
+         (aEventType == EEventItemDoubleClicked) ||
+         (aEventType == EEventItemSingleClicked) ) {    
+#else
     if ( (aEventType == EEventEnterKeyPressed) ||
          (aEventType == EEventItemDoubleClicked) ) {
+#endif    
         HandleCommandL(EPuttyCmdProfileListConnect);
     }
 }
 
+    
+#ifdef PROFILELISTVIEW_TOOLBAR
+// MAknToolbarObserver::OfferToolbarEventL()
+void CProfileListView::OfferToolbarEventL(TInt aCommand) {
+    HandleCommandL(aCommand);
+}
+#endif
 
+    
 // MPuttyClient::FatalError
 void CProfileListView::FatalError(const TDesC &aMessage) {
     CAknNoteDialog* dlg = new(ELeave) CAknNoteDialog();
@@ -483,7 +592,7 @@ MPuttyClient::THostKeyResponse CProfileListView::UnknownHostKey(
 }
 
 MPuttyClient::THostKeyResponse CProfileListView::DifferentHostKey(
-    const TDesC &aFingerprint) {
+    const TDesC &/*aFingerprint*/) {
     User::Invariant();
     return EAbadonConnection;    
 }
@@ -497,3 +606,9 @@ TBool CProfileListView::AuthenticationPrompt(const TDesC &, TDes &, TBool) {
     User::Invariant();
     return EFalse;
 }
+
+void CProfileListView::PlayBeep(const TInt /*iMode*/) {
+    User::Invariant();
+    return;
+}
+

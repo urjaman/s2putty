@@ -3,7 +3,7 @@
  * Putty UI Application UI class
  *
  * Copyright 2003-2004 Sergei Khloupnov
- * Copyright 2002-2004,2007 Petteri Kangaslampi
+ * Copyright 2002-2004,2007,2010 Petteri Kangaslampi
  *
  * See license.txt for full copyright and license information.
 */
@@ -19,12 +19,12 @@
 
 
 _LIT(KProfileDirFormat, "%c:\\private\\%08x\\profiles\\");
+_LIT(KSettingsDirFormat, "%c:\\private\\%08x\\settings\\");
 _LIT(KDataDirFormat,  "%c:\\private\\%08x\\data\\");
 _LIT(KFontDirFormat, "%c:\\resource\\puttyfonts\\");
 
 // Previous PuTTY versions kept setting and host key files at
 // "c:\system\apps\putty". We'll try to migrate them to the new locations.
-_LIT(KOldSettingsFile, "c:\\system\\apps\\putty\\defaults");
 _LIT(KOldHostKeysFile, "c:\\system\\apps\\putty\\hostkeys.dat");
 _LIT(KNewDefaultProfileFile, "Default");
 _LIT(KNewHostKeysFile, "hostkeys.dat");
@@ -33,7 +33,11 @@ _LIT(KNewHostKeysFile, "hostkeys.dat");
 // Second-phase constructor
 void CPuttyAppUi::ConstructL() {
 #ifdef PUTTY_S60V3
-    BaseConstructL(CAknAppUi::EAknEnableSkin);
+    #ifdef PUTTY_SYM3
+        BaseConstructL(CAknAppUi::EAknEnableSkin | EAknTouchCompatible | EAknSingleClickCompatible);
+    #else
+        BaseConstructL(CAknAppUi::EAknEnableSkin);
+    #endif
 #else
     BaseConstructL();
 #endif
@@ -71,18 +75,17 @@ void CPuttyAppUi::ConstructL() {
     }
 
     // Profile directory -- "<drv>:\private\<SID>\profiles\"
-    // If the profile directory doesn't exist, create it and attempt to migrate
-    // default settings from a previous installation
+    // If the profile directory doesn't exist, create it.
     iProfileDirectory.Format(KProfileDirFormat, drive,
                              RProcess().SecureId().iId);
-    if ( !BaflUtils::FolderExists(fs, iProfileDirectory) ) {
-        BaflUtils::EnsurePathExistsL(fs, iProfileDirectory);
-        if ( BaflUtils::FileExists(fs, KOldSettingsFile) ) {
-            name = iProfileDirectory;
-            name.Append(KNewDefaultProfileFile);
-            BaflUtils::CopyFile(fs, KOldSettingsFile, name);
-        }
-    }
+    BaflUtils::EnsurePathExistsL(fs, iProfileDirectory);
+
+    // Settings directory -- "<drv>:\private\<SID>\settings\"
+    // If the profile directory doesn't exist, create it and attempt to migrate
+    // default settings from a previous installation
+    iSettingsDirectory.Format(KSettingsDirFormat, drive,
+                              RProcess().SecureId().iId);
+    BaflUtils::EnsurePathExistsL(fs, iSettingsDirectory);
 
     // Create navi pane
     iNaviPane = (CAknNavigationControlContainer*)
@@ -147,24 +150,30 @@ void CPuttyAppUi::ActivateProfileListViewL() {
 
 // Activate profile edit view
 void CPuttyAppUi::ActivateProfileEditViewL(CPuttyEngine &aPutty,
-                                           TDes &aProfileName) {
+                                           TDes &aProfileName,
+                                           TTouchSettings &aSettings) {
     iProfileEditPutty = &aPutty;
     iProfileEditName = &aProfileName;
+    iProfileEditSettings = &aSettings;
     ActivateLocalViewL(TUid::Uid(KUidPuttyProfileEditViewDefine));    
 }
 
 
 // Get profile edit view data
 void CPuttyAppUi::GetProfileEditDataL(CPuttyEngine *&aPutty,
-                                      TDes *&aProfileName) {
+                                      TDes *&aProfileName,
+                                      TTouchSettings *&aSettings) {
     aPutty = iProfileEditPutty;
     aProfileName = iProfileEditName;
+    aSettings = iProfileEditSettings;
 }
 
 
 // Activate terminal view
-void CPuttyAppUi::ActivateTerminalViewL(TDesC &aProfileFile) {
+void CPuttyAppUi::ActivateTerminalViewL(const TDesC &aProfileFile,
+                                        const TDesC &aSettingsFile) {
     iTerminalProfileFile = aProfileFile;
+    iTerminalSettingsFile = aSettingsFile;
     ActivateLocalViewL(TUid::Uid(KUidPuttyTerminalViewDefine));
 }
 
@@ -174,10 +183,20 @@ const TDesC &CPuttyAppUi::TerminalProfileFile() {
     return iTerminalProfileFile;
 }
 
+// Get connection settings file
+const TDesC &CPuttyAppUi::TerminalSettingsFile() {
+    return iTerminalSettingsFile;
+}
+
 
 // Get profile directory
 const TDesC &CPuttyAppUi::ProfileDirectory() {
     return iProfileDirectory;
+}
+
+// Get settings directory
+const TDesC &CPuttyAppUi::SettingsDirectory() {
+    return iSettingsDirectory;
 }
 
 // Get data directory
@@ -202,3 +221,30 @@ const CDesCArray &CPuttyAppUi::Fonts() {
     return *iFonts;
 }
 
+#ifdef PUTTY_SYM3 //partial screen vkb
+//Handle for splitview vkb
+void CPuttyAppUi::HandleResourceChangeL( TInt aType ) {
+    CAknViewAppUi::HandleResourceChangeL( aType );
+    
+    switch (aType) {
+        case KAknSplitInputEnabled:
+            if ( iTerminalView ) {
+                iTerminalView->SetHalfKB(ETrue, ClientRect());
+            }
+            break;
+        case KAknSplitInputDisabled:
+            if ( iTerminalView ) {
+                iTerminalView->SetHalfKB(EFalse, ClientRect());
+            }
+            if ( iProfileListView ) {
+                iProfileListView->HandleStatusPaneSizeChange(); // Make redraw to get correct rect.
+            }
+            if ( iProfileEditView ) {
+                iProfileEditView->HandleStatusPaneSizeChange(); // Make redraw to get correct rect.
+            }
+            break;
+        default:
+            return;
+    }    
+}
+#endif

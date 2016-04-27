@@ -90,6 +90,10 @@ public:
     // From MEikCommandObserver
     void ProcessCommandL(TInt aCommandId);
     
+#ifdef PUTTY_S60TOUCH
+    void HandlePointerEventL( const TPointerEvent& aEvent );
+#endif
+    
 private:
     CSendGrid(MSendGridObserver &aObserver);
     void ConstructL(const TRect &aRect, TInt aResourceId);

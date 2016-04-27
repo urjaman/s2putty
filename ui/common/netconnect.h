@@ -58,6 +58,10 @@ public:
      */
     void Connect();
 
+    //if aValue is set to 1 Prompt is valid else uses the default internet ap
+    void SetPromptAP(TInt aValue ) { iPromptAP = aValue; };
+    TUint32 ConvertPromptApToAPIdL(TInt aValue);
+    
     /** 
      * Cancels a connection request.
      */
@@ -78,6 +82,8 @@ protected:
     void DoCancel();
 
     // Data
+    TInt iPromptAP;
+    
     MNetConnectObserver &iObserver;
     RSocketServ iSocketServ;
     TBool iSocketServOpen;

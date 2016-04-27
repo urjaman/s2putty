@@ -129,6 +129,15 @@ public:
      */
     virtual TBool AuthenticationPrompt(const TDesC &aPrompt, TDes &aTarget,
                                        TBool aSecret) = 0;
+       
+    /** 
+     * Plays beep sounds
+     *
+     * @param aMode PuTTY bell setting, see putty.h for values (BELL_*).
+     *              PuTTY for Symbian generally only uses BELL_DISABLED (0)
+     *              and BELL_DEFAULT (1).
+     */
+    virtual void PlayBeep(const TInt aMode) = 0;
 };
 
 

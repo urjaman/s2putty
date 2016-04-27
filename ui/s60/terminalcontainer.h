@@ -18,6 +18,7 @@
 // Forward declarations
 class CTerminalView;
 class CS2Font;
+class CSendGrid;
 
 
 /**
@@ -71,6 +72,16 @@ public:
      * @param aBackground Default background color
      */
     void SetDefaultColors(TRgb aForeground, TRgb aBackground);
+
+    
+    /** 
+     * Notifies the container that the send grid control is active, or removes
+     * when it's not. Ignored in non-touch builds!
+     * 
+     * @param aSendGrid Send grid object when active, NULL when not.
+     *                  Does NOT transfer ownership.
+     */
+    inline void SetSendGrid(CSendGrid * /*aSendGrid*/) {};
 
 
 public: // From CCoeControl

@@ -13,3 +13,12 @@ PRJ_MMPFILES
 gnumakefile puttyicons.mk
 puttyengine.mmp
 puttyui.mmp
+
+PRJ_EXPORTS
+..\..\ui\s2font\fixed4x6.s2f z:\resource\puttyfonts\fixed4x6.s2f
+..\..\ui\s2font\fixed5x7.s2f z:\resource\puttyfonts\fixed5x7.s2f
+..\..\ui\s2font\fixed6x10.s2f z:\resource\puttyfonts\fixed6x10.s2f
+..\..\ui\s2font\fixed6x12.s2f z:\resource\puttyfonts\fixed6x12.s2f
+..\..\ui\s2font\fixed6x13.s2f z:\resource\puttyfonts\fixed6x13.s2f
+..\..\ui\s2font\fixed8x13b.s2f z:\resource\puttyfonts\fixed8x13b.s2f
+..\..\ui\s2font\fixed9x15b.s2f z:\resource\puttyfonts\fixed9x15b.s2f

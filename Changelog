@@ -1,145 +1,730 @@
-2010-03-21  pekangas  <pekangas>
+changeset:   82:40dfc5f3b0a7
+tag:         tip
+user:        pekangas
+date:        Sun Jan 16 20:23:42 2011 -0500
+files:       build/s60v3/puttyui.mmp build/s60v5/puttyui.mmp build/symbian3/puttyui.mmp ui/s60/putty.rss ui/s60/terminalview.cpp ui/s60/terminalview.h
+description:
+Added vibrating bell support, partially based on SourceForge patch #2379536 originally from "Jesse" with updates from Sumedha Widyadharma
 
-	* README.txt, build/s80v2/putty.pkg, putty_users_guide.odt,
-	putty_users_guide.pdf:
-	Updated the S80v2 package to use new keys which are valid until
-	2035.
-	[90dd035442f0] [tip]
 
-	* README.txt, README_source.txt, build/s60v3/installnote.txt,
-	build/s60v3/putty.pkg, build/s80v2/installnote.txt,
-	build/s80v2/putty.pkg, license.txt, ui/s80/putty.rss:
-	Updated README files, version numbers, etc for a final 1.5.1
-	release.
-	[eafab1ed98cd]
+changeset:   81:f15a5c3f6335
+user:        pekangas
+date:        Sun Jan 16 19:47:11 2011 -0500
+files:       build/symbian3/installnote.txt
+description:
+Updated Symbian^3 install note copyright date
 
-2010-02-15  pekangas  <pekangas>
 
-	* README.txt, README_source.txt, build/s60v3/installnote.txt,
-	build/s60v3/putty.pkg:
-	Updated README and package files for a new 1.5 snapshot release
-	[3bf5b35a475f]
+changeset:   80:6731cb66ecc5
+user:        pekangas
+date:        Sun Jan 16 19:46:55 2011 -0500
+files:       ui/s60/profilelistview.cpp ui/s60/profilelistview.h ui/s60/putty.rss
+description:
+Profile list view cleanup for Symbian^3:
+Removed toolbar and enabled Advanced menu only when there is an active selection.
 
-	* build/s60v3/puttyui.mmp, ui/s60/sendgrid.cpp:
-	Added Juha Sahakangas's Send Grid fix for Nokia E55 keyboards. This
-	should fix #2881316.
-	[07e4d93ac7e9]
 
-	* ui/s60/terminalview.cpp:
-	Don't show an error message when the user selects "Cancel" in the
-	access point list. This fixes #2539620.
-	[52fce708ae4e]
+changeset:   79:e1f52d60aa68
+user:        pekangas
+date:        Sun Jan 16 19:24:03 2011 -0500
+files:       README.txt README_source.txt build/s60v3/installnote.txt build/s60v5/installnote.txt license.txt ui/s60/terminalview.cpp ui/s60v5/terminalcontainer.cpp ui/s60v5/terminalcontainer.h
+description:
+Updated copyright dates for 2011
 
-	* build/s60v3/puttyui.mmp, ui/common/netconnect.cpp:
-	Added Risto Avila's access point fix to the 1.5 branch. This should
-	fix #2853147 on S60 3rd edition.
-	[7b0d9584adbf]
 
-2009-07-19  pekangas  <pekangas>
+changeset:   78:18af4a7367c0
+user:        pekangas
+date:        Sun Jan 16 19:20:10 2011 -0500
+files:       ui/common/terminalcontrol.cpp ui/s60/sendgrid.cpp ui/s60/terminalcontainer.h
+description:
+Fixed a few compiler warnings
 
-	* README.txt, README_source.txt, build/s60v3/installnote.txt,
-	build/s60v3/putty.pkg, build/s80v2/installnote.txt,
-	build/s80v2/putty.pkg, ui/s80/putty.rss:
-	Updated README files, version numbers, etc for a final 1.5.1
-	release.
-	[1aa600839f2e] [release-1.5.1]
 
-	* putty_users_guide.odt, putty_users_guide.pdf:
-	Updated the User's Guide for 1.5.1.
-	[9bc45fb711e0]
+changeset:   77:95c19cca953e
+user:        pekangas
+date:        Sun Jan 16 19:12:58 2011 -0500
+files:       ui/s60/terminalcontainer.h ui/s60/terminalview.cpp ui/s60v5/terminalcontainer.cpp ui/s60v5/terminalcontainer.h
+description:
+Send Grid improvements on touch builds: Tapping outside of the grid now acts as back/cancel.
 
-	* README_source.txt, license.txt:
-	Fixed README_source.txt and license.txt to use CRLF linefeeds.
-	[bee74b97d132]
 
-2009-07-16  pekangas  <pekangas>
+changeset:   76:3220c762ff50
+user:        pekangas
+date:        Sun Jan 02 19:54:39 2011 -0500
+files:       ui/s60v5/touchuisettings.cpp
+description:
+Fixed to silently ignore empty UI setting files.
+This fixes failures caused by bug #3149942.
 
-	* ui/s60/putty.rss:
-	Increased the password prompt length limit to 64 characters, the
-	previous 32 caused problems with some one-time password generators.
-	[5bcd64e9c4fc]
 
-2009-07-11  pekangas  <pekangas>
+changeset:   75:e583c0543cd9
+user:        pekangas
+date:        Sun Jan 02 19:28:15 2011 -0500
+files:       ui/s60/terminalview.cpp ui/s60/terminalview.h ui/s60v5/terminalcontainer.cpp ui/s60v5/terminalcontainer.h
+description:
+Fixed terminal view shutdown logic and removed settings file accesses from its destructor.
+This fixes the root cause behind bug #3149942.
 
-	* README.txt, README_source.txt, build/s60v3/installnote.txt,
-	build/s60v3/putty.pkg, build/s80v2/installnote.txt,
-	build/s80v2/putty.pkg, ui/s80/putty.rss:
-	Updated files for 1.5.1 RC 1 release
-	[3e00a88cf5fe]
 
-	* ui/s60/profilelistview.cpp, ui/s60/terminalview.cpp:
-	Merged in general bug fixes from Risto Avila's touch UI
-	[8ffad638e208]
+changeset:   74:9a9acc69852f
+user:        pekangas
+date:        Sun Jan 02 18:38:39 2011 -0500
+files:       build/s60v5/bld.inf build/s60v5/putty.pkg build/s60v5/puttytoolbaricons.miflist build/s60v5/puttytoolbaricons.mk build/symbian3/bld.inf build/symbian3/putty.pkg build/symbian3/puttytoolbaricons.miflist build/symbian3/puttytoolbaricons.mk ui/s60v5/customtoolbar.cpp ui/s60v5/customtoolbar.h
+description:
+Removed toolbar icon SVG files from the build.
+They weren't used in the code and were causing unnecessary rebuilds.
 
-	* ui/s80/putty.rss, ui/s80/puttyui.hrh, ui/s80/settingsdialog.cpp:
-	Added the backspace setting to the S80 UI
-	[eeb115af6ae6]
 
-	* README.txt:
-	Updated the list of changes in the README file
-	[2507873daa7f]
+changeset:   73:8a5fbfb578e2
+user:        ristoavila
+date:        Mon Dec 27 18:57:13 2010 +0200
+files:       ui/common/terminalcontrol.cpp
+description:
+Fixed compile bug for s60 5.0. It seems we cant close the vkb in s60 5.0.
 
-	* ui/s60/sendgrid.cpp:
-	Changed the Send Grid to "loop" instead of "snake" when navigating
-	using cursor keys. This should make it easier to send an Esc on
-	phones where the asterisk key doesn't produce the expected keycodes.
-	[fda6975cdb2f]
 
-	* engine/puttysymbian/epocnet.cpp:
-	Don't bind the socket before connecting. This seems to fix at least
-	some variants of the infamous KErrBadName error, and does not appear
-	to have any side effects.
-	[9b0db99b7de9]
+changeset:   72:eb78f13c8dc7
+user:        ristoavila
+date:        Mon Dec 27 18:51:54 2010 +0200
+files:       ui/common/terminalcontrol.cpp ui/common/terminalcontrol.h ui/s60/puttyappui.cpp ui/s60/puttyappui.h ui/s60/terminalview.cpp ui/s60/terminalview.h ui/s60v5/customtoolbar.cpp ui/s60v5/customtoolbar.h ui/s60v5/terminalcontainer.cpp ui/s60v5/terminalcontainer.h ui/s60v5/touchuisettings.cpp ui/s60v5/touchuisettings.h
+description:
+Added first version of partial screen support. Fixed logic error in
+toolbar coordinate saving.
 
-	* engine/putty/ssh.c, engine/puttyengineimp.cpp,
-	engine/puttysymbian/epocnet.cpp:
-	Fixed memory leaks when the socket connection fails
-	[973ca6f760a4]
 
-2009-04-26  pekangas  <pekangas>
+changeset:   71:530ac69513b3
+user:        ristoavila
+date:        Fri Dec 10 12:15:15 2010 +0200
+files:       ui/common/terminalcontrol.cpp ui/common/terminalcontrol.h
+description:
+Added closing of virtual keyboard when pressing enter.
 
-	* engine/putty/ssh.c, engine/puttysymbian/epocnet.cpp:
-	Fixed port forwarding at least for local ports. Thanks to Shai Ayal
-	for the original fix. This fixes long-standing bug 918200.
-	[164d79059240]
 
-	* ui/s60/profilelistview.cpp, ui/s60/putty.rss, ui/s60/puttyui.hrh:
-	Added profile import and export to the profile list view
-	[1c84daef8ebc]
+changeset:   70:1f484f25544a
+user:        ristoavila
+date:        Tue Dec 07 14:32:37 2010 +0200
+files:       ui/s60v5/customtoolbar.cpp
+description:
+Fixed two layout bugs in toolbar.
 
-2009-03-02  pekangas  <pekangas>
 
-	* README.txt, README_source.txt, build/s60v3/installnote.txt,
-	build/s60v3/putty.pkg:
-	Updated documents and package files for use with 1.5 development
-	snapshots.
-	[2b0016b05ce0]
+changeset:   69:b34121b6c48e
+user:        pekangas
+date:        Sun Dec 05 21:12:50 2010 -0500
+files:       ui/s60/profileeditview.cpp ui/s60/profileeditview.h ui/s60/profilelistview.cpp ui/s60/profilelistview.h ui/s60/puttyappui.cpp ui/s60/puttyappui.h ui/s60/terminalview.cpp ui/s60/terminalview.h ui/s60v5/customtoolbar.cpp ui/s60v5/profileeditgeneraltoolbarsettinglist.cpp ui/s60v5/profileeditgeneraltoolbarsettinglist.h ui/s60v5/profileedittoolbarsettinglist.cpp ui/s60v5/profileedittoolbarsettinglist.h ui/s60v5/profileedittouchsettinglist.cpp ui/s60v5/profileedittouchsettinglist.h ui/s60v5/terminalcontainer.cpp ui/s60v5/terminalcontainer.h ui/s60v5/touchuisettings.cpp ui/s60v5/touchuisettings.h
+description:
+Moved touch UI settings to a profile-specific settings file instead of a global one.
+This makes all settings profile-specific, which is more consistent from a user
+point of view. Touch UI settings are stored in the PuTTY private directory
+under settings\profilename.
 
-	* ui/s60/terminalview.cpp:
-	Implemented very rudimentary support for the LockSize setting. The
-	current implementation simply ignores all resize events, which makes
-	the UI look corrupted, and therefore it is not accessible through
-	the settings UI.
-	[f6fc377a8878]
 
-	* ui/s60/terminalcontainer.cpp:
-	Integrated another patch from Damion Yates to force a 80x24 terminal
-	on E90 when using a 10x14 font.
-	[eca69a402915]
+changeset:   68:d8cce7a9bc92
+user:        pekangas
+date:        Sun Dec 05 15:00:22 2010 -0500
+files:       ui/s60/sendgrid.cpp ui/s60v5/touchuisettings.h
+description:
+Fixed to build with the public Symbian^3 0.9 SDK - hal.h is not available
 
-	* README.txt, README_source.txt, build/s60v3/installnote.txt,
-	license.txt:
-	Updated copyright messages to account for Damion's and James'
-	contributions.
-	[28bcdb63b25e]
 
-	* ui/s60/profileeditdisplaysettinglist.cpp,
-	ui/s60/profileeditdisplaysettinglist.h, ui/s60/putty.rss,
-	ui/s60/puttyui.hrh, ui/s60/terminalcontainer.h:
-	Integrated backspace setting (Ctrl-H vs Delete) patch from Damion
-	Yates. Thanks Damion!
-	[c912274918d7]
+changeset:   67:7113628fcd26
+user:        pekangas
+date:        Sun Dec 05 14:38:29 2010 -0500
+files:       include/puttyclient.h ui/s60/terminalview.cpp ui/s60/terminalview.h
+description:
+Enabled audible bell on S60 3rd edition builds too
 
-	* Branching off 1.5
-	[cc7f7a93fe0b]
+
+changeset:   66:68b4d3f613aa
+user:        pekangas
+date:        Sun Dec 05 14:12:39 2010 -0500
+files:       ui/s60/putty.rss
+description:
+Compiler warning fix
+
+
+changeset:   65:3fb83b00286e
+user:        ristoavila
+date:        Thu Nov 25 18:06:47 2010 +0200
+files:       ui/s60/profileeditgeneralsettinglist.cpp
+description:
+Fixed compile bug for 5.0 GCCE
+
+
+changeset:   64:50832bddecde
+user:        ristoavila
+date:        Thu Nov 25 13:38:06 2010 +0200
+files:       ui/s60/profileeditgeneralsettinglist.cpp ui/s60/putty.rss ui/s60/puttyui.hrh ui/s60/terminalview.cpp
+description:
+Added bell setting to general settings.
+
+
+changeset:   63:798f2c75fb64
+user:        ristoavila
+date:        Wed Nov 24 15:27:23 2010 +0200
+files:       ui/s60/terminalview.cpp ui/s60/terminalview.h
+description:
+Added actual play implementation for Sym^3 & S60 5.0. I dont have 3.0 sdk so I cant test if this works also with 3.0.
+
+
+changeset:   62:ae98d5d73e59
+user:        ristoavila
+date:        Wed Nov 24 10:41:15 2010 +0200
+files:       engine/puttyengineimp.cpp engine/puttyengineimp.h include/puttyclient.h ui/s60/profilelistview.cpp ui/s60/profilelistview.h ui/s60/terminalview.cpp ui/s60/terminalview.h
+description:
+Enabled do_beep passthrough from engine to client.
+
+
+changeset:   61:2d1478e960c6
+user:        ristoavila
+date:        Tue Nov 23 15:09:46 2010 +0200
+files:       ui/s60v5/customtoolbar.cpp ui/s60v5/customtoolbar.h ui/s60v5/terminalcontainer.cpp ui/s60v5/touchuisettings.cpp ui/s60v5/touchuisettings.h
+description:
+Added save last position of toolbar in portrait and in landscape mode.
+
+
+changeset:   60:2d2a345fa0f4
+user:        ristoavila
+date:        Mon Nov 22 13:05:39 2010 +0200
+files:       ui/s60/putty.rss ui/s60/puttyui.hrh ui/s60/terminalview.cpp ui/s60/terminalview.h ui/s60v5/customtoolbar.cpp ui/s60v5/customtoolbar.h ui/s60v5/terminalcontainer.cpp ui/s60v5/terminalcontainer.h ui/s60v5/toolbarbutton.h
+description:
+Streamlined stulys popup menu and added lock/unlock toolbar functionality to it.
+
+
+changeset:   59:b0e9bf6b2113
+user:        pekangas
+date:        Tue Nov 02 22:13:51 2010 -0400
+files:       ui/s60/profilelistview.cpp
+description:
+Profile list redraw and scroll fixes when adding or deleting profiles
+
+
+changeset:   58:b76150777af0
+user:        pekangas
+date:        Sun Oct 31 22:31:46 2010 -0400
+files:       engine/putty/putty.h engine/putty/settings.c ui/s60/profileeditdisplaysettinglist.cpp ui/s60/putty.rss ui/s60/puttyui.hrh ui/s60/terminalview.cpp
+description:
+Added a UI option to force terminal orientation to portrait or landscape
+
+
+changeset:   57:05b2ddc58d9f
+user:        pekangas
+date:        Sun Oct 31 21:54:01 2010 -0400
+files:       ui/s60/profilelistview.cpp ui/s60/profilelistview.h ui/s60/putty.rss
+description:
+Added a New/Edit/Delete toolbar to the profile list view for touch targets
+
+
+changeset:   56:c85c02e50d6c
+parent:      54:f2f67cb46305
+parent:      55:0dc057eef664
+user:        pekangas
+date:        Wed Oct 20 22:40:40 2010 -0400
+description:
+Merged in Risto's S3 networking fixes
+
+
+changeset:   55:0dc057eef664
+parent:      50:2ccb68edf119
+user:        ristoavila
+date:        Tue Oct 19 12:34:15 2010 +0300
+files:       build/symbian3/puttyui.mmp ui/common/netconnect.cpp
+description:
+Disabled Application level roaming and changed connection settings API's used to match Symbian^3 API's
+
+
+changeset:   54:f2f67cb46305
+user:        pekangas
+date:        Wed Oct 20 22:11:30 2010 -0400
+files:       build/s60v5/bld.inf build/symbian3/bld.inf
+description:
+Updated the S60 5.0 and Symbian^3 bld.inf files to also export fonts for the emulator.
+This removes an annoying KErrNotFound failure that tends to happen every time you
+bring up PuTTY in a new environment. Should have done this years ago...
+
+
+changeset:   53:fe7fe58406b5
+user:        pekangas
+date:        Wed Oct 20 21:59:48 2010 -0400
+files:       build/s60v3/bld.inf
+description:
+Updated the S60 3rd ed bld.inf file to export fonts to the emulator resource directory
+
+
+changeset:   52:93ec00fa804a
+user:        pekangas
+date:        Wed Oct 20 21:20:42 2010 -0400
+files:       ui/s60/profilelistview.cpp
+description:
+Keep the profile list listbox in the view stack even when the view gets deactivated.
+This ensures there is always a valid PuTTY view to show. Previously a different
+application would be visible in the background when connecting on S60 5.0, and there
+was flicker when switching between profile list and profile edit views.
+
+
+changeset:   51:f205c6c7b549
+user:        pekangas
+date:        Mon Oct 18 22:04:25 2010 -0400
+files:       ui/s60/sendgrid.cpp ui/s60/sendgrid.h
+description:
+Enabled Risto's Send Grid fix on S60 5.0 too
+The Send Grid is still a silly control on touch phones, but at least it works now...
+
+
+changeset:   50:2ccb68edf119
+user:        ristoavila
+date:        Sun Oct 17 16:03:32 2010 +0300
+files:       build/s60v5/puttyui.mmp ui/common/terminalcontrol.cpp ui/common/terminalcontrol.h ui/s60/putty.rss ui/s60/puttyui.hrh ui/s60/terminalview.cpp ui/s60/terminalview.h ui/s60v5/terminalcontainer.cpp ui/s60v5/toolbarbutton.h ui/s60v5/touchuisettings.cpp
+description:
+Added list web addr. related changes also for 5.0
+
+
+changeset:   49:4d35cf15d726
+user:        ristoavila
+date:        Mon Oct 04 16:14:37 2010 +0300
+files:       ui/s60/putty.rss ui/s60/puttyui.hrh ui/s60v5/terminalcontainer.cpp ui/s60v5/toolbarbutton.h ui/s60v5/touchuisettings.cpp
+description:
+Added two new toolbar buttons. Send grid and List web addresses.
+
+
+changeset:   48:bc17c39d9736
+user:        ristoavila
+date:        Mon Oct 04 16:12:58 2010 +0300
+files:       build/symbian3/puttyui.mmp ui/common/terminalcontrol.cpp ui/common/terminalcontrol.h ui/s60/putty.rss ui/s60/puttyui.hrh ui/s60/terminalview.cpp ui/s60/terminalview.h ui/s60v5/touchuisettings.cpp
+description:
+Added List web addresses feature to popup menu.
+
+
+changeset:   47:f8d0641441b0
+user:        ristoavila
+date:        Tue Sep 28 11:08:12 2010 +0300
+files:       ui/s60/sendgrid.cpp ui/s60/sendgrid.h
+description:
+Fixed sendgird for Symbian^3
+
+
+changeset:   46:8cebe47e6d3a
+user:        ristoavila
+date:        Thu Jul 15 13:23:50 2010 +0300
+files:       README.txt README_source.txt build/s60v5/installnote.txt build/s60v5/puttyengine.mmp build/symbian3/backup_registration.xml build/symbian3/bld.inf build/symbian3/installnote.txt build/symbian3/putty.pkg build/symbian3/puttyengine.mmp build/symbian3/puttyicons.mk build/symbian3/puttytoolbaricons.miflist build/symbian3/puttytoolbaricons.mk build/symbian3/puttyui.mmp engine/puttyengineimp.cpp engine/puttyengineimp.h engine/puttysymbian/epocnoise.cpp engine/puttysymbian/epocpageantc.cpp include/puttyengine.h ui/common/netconnect.cpp ui/common/terminalcontrol.cpp ui/common/terminalcontrols2font.cpp ui/s60/profileeditgeneralsettinglist.h ui/s60/profileeditview.cpp ui/s60/profilelistview.cpp ui/s60/putty.rss ui/s60/puttyappui.cpp ui/s60/puttyui.hrh ui/s60/terminalview.cpp ui/s60/terminalview.h ui/s60v5/profileedittouchsettinglist.cpp ui/s60v5/profileedittouchsettinglist.h ui/s60v5/terminalcontainer.cpp ui/s60v5/touchuisettings.cpp ui/s60v5/touchuisettings.h
+description:
+Support for Symbian^3 and included patches by David Woodhouse.
+
+
+changeset:   45:df8dd33856a2
+user:        pekangas
+date:        Mon Jun 07 22:09:00 2010 -0400
+files:       README.txt README_source.txt build/s60v3/installnote.txt build/s60v3/putty.pkg build/s60v5/installnote.txt build/s60v5/putty.pkg
+description:
+Updated README files and package descriptions for 1.6 development snapshots
+
+
+changeset:   44:4fc1fa5fc31b
+parent:      36:71fcbc5e1bcf
+parent:      43:0379e528a69b
+user:        pekangas
+date:        Mon Jun 07 21:57:02 2010 -0400
+files:       .hgtags README.txt README_source.txt build/s60v3/installnote.txt build/s60v3/putty.pkg build/s80v2/installnote.txt build/s80v2/putty.pkg engine/putty/ssh.c engine/puttysymbian/epocnet.cpp license.txt ui/common/netconnect.cpp ui/s60/profilelistview.cpp ui/s60/putty.rss ui/s60/puttyui.hrh ui/s60/terminalview.cpp ui/s80/putty.rss
+description:
+Merged in changes from the 1.5 release branch to trunk
+
+
+changeset:   43:0379e528a69b
+branch:      branch-1.5
+user:        pekangas
+date:        Sun Jun 06 15:23:58 2010 -0400
+files:       .hgtags
+description:
+Added tag release-1.5.2 for changeset 90dd035442f0
+
+
+changeset:   42:90dd035442f0
+branch:      branch-1.5
+tag:         release-1.5.2
+user:        pekangas
+date:        Sun Mar 21 20:29:44 2010 -0400
+files:       README.txt build/s80v2/putty.pkg putty_users_guide.odt putty_users_guide.pdf
+description:
+Updated the S80v2 package to use new keys which are valid until 2035.
+
+
+changeset:   41:eafab1ed98cd
+branch:      branch-1.5
+user:        pekangas
+date:        Sun Mar 21 19:36:14 2010 -0400
+files:       README.txt README_source.txt build/s60v3/installnote.txt build/s60v3/putty.pkg build/s80v2/installnote.txt build/s80v2/putty.pkg license.txt ui/s80/putty.rss
+description:
+Updated README files, version numbers, etc for a final 1.5.1 release.
+
+
+changeset:   40:3bf5b35a475f
+branch:      branch-1.5
+user:        pekangas
+date:        Mon Feb 15 20:55:56 2010 -0500
+files:       README.txt README_source.txt build/s60v3/installnote.txt build/s60v3/putty.pkg
+description:
+Updated README and package files for a new 1.5 snapshot release
+
+
+changeset:   39:07e4d93ac7e9
+branch:      branch-1.5
+user:        pekangas
+date:        Mon Feb 15 20:48:32 2010 -0500
+files:       build/s60v3/puttyui.mmp ui/s60/sendgrid.cpp
+description:
+Added Juha Sahakangas's Send Grid fix for Nokia E55 keyboards.
+This should fix #2881316.
+
+
+changeset:   38:52fce708ae4e
+branch:      branch-1.5
+user:        pekangas
+date:        Mon Feb 15 20:42:36 2010 -0500
+files:       ui/s60/terminalview.cpp
+description:
+Don't show an error message when the user selects "Cancel" in the access point list.
+This fixes #2539620.
+
+
+changeset:   37:7b0d9584adbf
+branch:      branch-1.5
+parent:      19:1aa600839f2e
+user:        pekangas
+date:        Mon Feb 15 20:37:51 2010 -0500
+files:       build/s60v3/puttyui.mmp ui/common/netconnect.cpp
+description:
+Added Risto Avila's access point fix to the 1.5 branch.
+This should fix #2853147 on S60 3rd edition.
+
+
+changeset:   36:71fcbc5e1bcf
+user:        ristoavila
+date:        Thu Oct 22 16:00:07 2009 +0300
+files:       ui/s60v5/customtoolbar.cpp
+description:
+Fixed error with Enter button in toolbar
+
+
+changeset:   35:63978975808f
+user:        ristoavila
+date:        Tue Oct 20 18:48:53 2009 +0300
+files:       ui/common/netconnect.cpp ui/common/netconnect.h ui/s60/profileeditgeneralsettinglist.cpp ui/s60/profileeditgeneralsettinglist.h ui/s60/putty.rss ui/s60/terminalview.cpp ui/s60v5/touchuisettings.cpp ui/s60v5/touchuisettings.h
+description:
+Added general settings access point selection UI side for both 5.0 and 3.x
+
+
+changeset:   34:fbff432c5e91
+user:        ristoavila
+date:        Tue Oct 20 18:45:00 2009 +0300
+files:       engine/putty/putty.h engine/putty/settings.c
+description:
+Added accesspoint setting to engine
+
+
+changeset:   33:8d6445bf9288
+user:        ristoavila
+date:        Thu Oct 15 10:59:36 2009 +0300
+files:       build/s60v3/puttyui.mmp ui/common/netconnect.cpp
+description:
+Added prompt for access point also to s60 3.0. With out configuration so it's allways on.
+
+
+changeset:   32:1a9656106f78
+user:        ristoavila
+date:        Wed Oct 14 16:27:11 2009 +0300
+files:       ui/s60v5/toolbarbutton.cpp
+description:
+Improved the icon generation
+
+
+changeset:   31:6908fc404901
+user:        ristoavila
+date:        Wed Oct 14 16:25:30 2009 +0300
+files:       build/s60v5/puttyui.mmp ui/common/netconnect.cpp ui/common/netconnect.h ui/s60/profileeditgeneralsettinglist.cpp ui/s60/profileeditgeneralsettinglist.h ui/s60/putty.rss ui/s60/puttyui.hrh ui/s60/terminalview.cpp ui/s60v5/touchuisettings.cpp ui/s60v5/touchuisettings.h
+description:
+Added prompt for access point for 5.0 should work also on 3.x if settings file implementation is changed.
+
+
+changeset:   30:69bce305f7e9
+user:        ristoavila
+date:        Tue Sep 08 14:14:14 2009 +0300
+files:       ui/s60v5/customtoolbar.cpp ui/s60v5/toolbarbutton.cpp ui/s60v5/toolbarbutton.h
+description:
+Fixed bug and made icon generation less time consuming
+
+
+changeset:   29:c26b20a58baf
+user:        ristoavila
+date:        Tue Sep 08 08:59:36 2009 +0300
+files:       ui/s60/putty.rss ui/s60/puttyui.hrh ui/s60/terminalview.cpp ui/s60v5/customtoolbar.cpp ui/s60v5/profileeditgeneraltoolbarsettinglist.cpp ui/s60v5/profileeditgeneraltoolbarsettinglist.h ui/s60v5/terminalcontainer.cpp ui/s60v5/touchuisettings.cpp ui/s60v5/touchuisettings.h
+description:
+Added setting for button fontsize
+
+
+changeset:   28:07605ea904da
+user:        ristoavila
+date:        Tue Aug 25 16:13:10 2009 +0300
+files:       ui/s60/putty.rss ui/s60/terminalview.cpp
+description:
+Added ESC key as gesture option
+
+
+changeset:   27:0082a8247aad
+user:        ristoavila
+date:        Tue Aug 25 16:11:34 2009 +0300
+files:       ui/s60/putty.rss ui/s60/puttyui.hrh ui/s60/terminalview.cpp ui/s60v5/customtoolbar.cpp ui/s60v5/profileeditgeneraltoolbarsettinglist.cpp ui/s60v5/profileeditgeneraltoolbarsettinglist.h ui/s60v5/toolbarbutton.cpp ui/s60v5/touchuisettings.cpp ui/s60v5/touchuisettings.h
+description:
+Added toolbar transparency configuration
+
+
+changeset:   26:bd9800fdfdc0
+user:        ristoavila
+date:        Tue Aug 11 18:04:02 2009 +0300
+files:       ui/s60v5/customtoolbar.cpp ui/s60v5/customtoolbar.h ui/s60v5/toolbarbutton.cpp ui/s60v5/toolbarbutton.h
+description:
+Added text scaling to button generation
+
+
+changeset:   25:499b8cb7b577
+user:        ristoavila
+date:        Tue Aug 11 15:37:40 2009 +0300
+files:       build/s60v5/puttyui.mmp
+description:
+Added toolbarbutton.cpp to puttyui.mmp
+
+
+changeset:   24:c31d18327fba
+user:        ristoavila
+date:        Tue Aug 11 15:21:43 2009 +0300
+files:       ui/s60/terminalview.cpp ui/s60v5/customtoolbar.cpp ui/s60v5/customtoolbar.h ui/s60v5/terminalcontainer.cpp ui/s60v5/terminalcontainer.h ui/s60v5/toolbarbutton.cpp ui/s60v5/toolbarbutton.h
+description:
+Added on the fly toolbar button icon generation
+
+
+changeset:   23:418d68e70458
+user:        ristoavila
+date:        Tue Aug 04 09:11:44 2009 +0300
+files:       ui/s60v5/icons/altp_button_down_48x48.svg ui/s60v5/icons/altp_button_up_48x48.svg ui/s60v5/icons/copy_button_down_48x48.svg ui/s60v5/icons/copy_button_up_48x48.svg ui/s60v5/icons/ctrlad_button_down_48x48.svg ui/s60v5/icons/ctrlad_button_up_48x48.svg ui/s60v5/icons/ctrlp_button_down_48x48.svg ui/s60v5/icons/ctrlp_button_up_48x48.svg ui/s60v5/icons/delete_button_down_48x48.svg ui/s60v5/icons/delete_button_up_48x48.svg ui/s60v5/icons/down_button_down_48x48.svg ui/s60v5/icons/down_button_up_48x48.svg ui/s60v5/icons/end_button_down_48x48.svg ui/s60v5/icons/end_button_up_48x48.svg ui/s60v5/icons/enter_button_down_48x48.svg ui/s60v5/icons/enter_button_up_48x48.svg ui/s60v5/icons/esc_button_down_48x48.svg ui/s60v5/icons/esc_button_up_48x48.svg ui/s60v5/icons/home_button_down_48x48.svg ui/s60v5/icons/home_button_up_48x48.svg ui/s60v5/icons/insert_button_down_48x48.svg ui/s60v5/icons/insert_button_up_48x48.svg ui/s60v5/icons/left_button_down_48x48.svg ui/s60v5/icons/left_button_up_48x48.svg ui/s60v5/icons/lock_button_down_48x48.svg ui/s60v5/icons/lock_button_up_48x48.svg ui/s60v5/icons/pagedown_button_down_48x48.svg ui/s60v5/icons/pagedown_button_up_48x48.svg ui/s60v5/icons/pageup_button_down_48x48.svg ui/s60v5/icons/pageup_button_up_48x48.svg ui/s60v5/icons/paste_button_down_48x48.svg ui/s60v5/icons/paste_button_up_48x48.svg ui/s60v5/icons/pipe_button_down_48x48.svg ui/s60v5/icons/pipe_button_up_48x48.svg ui/s60v5/icons/right_button_down_48x48.svg ui/s60v5/icons/right_button_up_48x48.svg ui/s60v5/icons/select_button_down_48x48.svg ui/s60v5/icons/select_button_up_48x48.svg ui/s60v5/icons/tab_button_down_48x48.svg ui/s60v5/icons/tab_button_up_48x48.svg ui/s60v5/icons/up_button_down_48x48.svg ui/s60v5/icons/up_button_up_48x48.svg
+description:
+Fixed icons for China variant and emulator
+
+
+changeset:   22:152f9fc6fcd8
+user:        ristoavila
+date:        Mon Aug 03 18:11:47 2009 +0300
+files:       build/s60v5/backup_registration.xml build/s60v5/bld.inf build/s60v5/installnote.txt build/s60v5/putty.pkg build/s60v5/puttyengine.mmp build/s60v5/puttyicons.mk build/s60v5/puttytoolbaricons.miflist build/s60v5/puttytoolbaricons.mk build/s60v5/puttyui.mmp ui/common/terminalcontrol.cpp ui/common/terminalcontrol.h ui/s60/profileeditview.cpp ui/s60/profileeditview.h ui/s60/putty.rss ui/s60/puttyui.hrh ui/s60/terminalview.cpp ui/s60/terminalview.h ui/s60v5/customtoolbar.cpp ui/s60v5/customtoolbar.h ui/s60v5/icons/altp_button_down_48x48.svg ui/s60v5/icons/altp_button_up_48x48.svg ui/s60v5/icons/copy_button_down_48x48.svg ui/s60v5/icons/copy_button_up_48x48.svg ui/s60v5/icons/ctrlad_button_down_48x48.svg ui/s60v5/icons/ctrlad_button_up_48x48.svg ui/s60v5/icons/ctrlp_button_down_48x48.svg ui/s60v5/icons/ctrlp_button_up_48x48.svg ui/s60v5/icons/delete_button_down_48x48.svg ui/s60v5/icons/delete_button_up_48x48.svg ui/s60v5/icons/down_button_down_48x48.svg ui/s60v5/icons/down_button_up_48x48.svg ui/s60v5/icons/end_button_down_48x48.svg ui/s60v5/icons/end_button_up_48x48.svg ui/s60v5/icons/enter_button_down_48x48.svg ui/s60v5/icons/enter_button_up_48x48.svg ui/s60v5/icons/esc_button_down_48x48.svg ui/s60v5/icons/esc_button_up_48x48.svg ui/s60v5/icons/home_button_down_48x48.svg ui/s60v5/icons/home_button_up_48x48.svg ui/s60v5/icons/insert_button_down_48x48.svg ui/s60v5/icons/insert_button_up_48x48.svg ui/s60v5/icons/left_button_down_48x48.svg ui/s60v5/icons/left_button_up_48x48.svg ui/s60v5/icons/lock_button_down_48x48.svg ui/s60v5/icons/lock_button_up_48x48.svg ui/s60v5/icons/pagedown_button_down_48x48.svg ui/s60v5/icons/pagedown_button_up_48x48.svg ui/s60v5/icons/pageup_button_down_48x48.svg ui/s60v5/icons/pageup_button_up_48x48.svg ui/s60v5/icons/paste_button_down_48x48.svg ui/s60v5/icons/paste_button_up_48x48.svg ui/s60v5/icons/pipe_button_down_48x48.svg ui/s60v5/icons/pipe_button_up_48x48.svg ui/s60v5/icons/right_button_down_48x48.svg ui/s60v5/icons/right_button_up_48x48.svg ui/s60v5/icons/select_button_down_48x48.svg ui/s60v5/icons/select_button_up_48x48.svg ui/s60v5/icons/tab_button_down_48x48.svg ui/s60v5/icons/tab_button_up_48x48.svg ui/s60v5/icons/up_button_down_48x48.svg ui/s60v5/icons/up_button_up_48x48.svg ui/s60v5/profileeditgeneraltoolbarsettinglist.cpp ui/s60v5/profileeditgeneraltoolbarsettinglist.h ui/s60v5/profileedittoolbarsettinglist.cpp ui/s60v5/profileedittoolbarsettinglist.h ui/s60v5/profileedittouchsettinglist.cpp ui/s60v5/profileedittouchsettinglist.h ui/s60v5/terminalcontainer.cpp ui/s60v5/terminalcontainer.h ui/s60v5/touchuisettings.cpp ui/s60v5/touchuisettings.h
+description:
+Merged my Touch UI 0.7.3 with main branch
+
+
+changeset:   21:ee1433a4f912
+user:        convert-repo
+date:        Thu Jul 23 20:55:08 2009 +0000
+files:       .hgtags
+description:
+update tags
+
+
+changeset:   20:98583fa3c498
+parent:      0:84b943510a13
+user:        pekangas
+date:        Sun Jul 19 17:46:16 2009 +0000
+files:       README.txt README_source.txt build/s60v3/installnote.txt build/s60v3/putty.pkg build/s80v2/installnote.txt build/s80v2/putty.pkg engine/putty/ssh.c engine/puttyengineimp.cpp engine/puttysymbian/epocnet.cpp license.txt putty_users_guide.odt putty_users_guide.pdf ui/s60/profileeditdisplaysettinglist.cpp ui/s60/profileeditdisplaysettinglist.h ui/s60/profilelistview.cpp ui/s60/putty.rss ui/s60/puttyui.hrh ui/s60/sendgrid.cpp ui/s60/terminalcontainer.cpp ui/s60/terminalcontainer.h ui/s60/terminalview.cpp ui/s80/putty.rss ui/s80/puttyui.hrh ui/s80/settingsdialog.cpp
+description:
+Merged in changes between 1.5.0 and 1.5.1 from the 1.5 branch to the
+trunk. This covers revisions 420 through 439 from branch-1.5
+
+
+changeset:   19:1aa600839f2e
+branch:      branch-1.5
+tag:         release-1.5.1
+user:        pekangas
+date:        Sun Jul 19 15:42:16 2009 +0000
+files:       README.txt README_source.txt build/s60v3/installnote.txt build/s60v3/putty.pkg build/s80v2/installnote.txt build/s80v2/putty.pkg ui/s80/putty.rss
+description:
+Updated README files, version numbers, etc for a final 1.5.1 release.
+
+
+changeset:   18:9bc45fb711e0
+branch:      branch-1.5
+user:        pekangas
+date:        Sun Jul 19 15:32:30 2009 +0000
+files:       putty_users_guide.odt putty_users_guide.pdf
+description:
+Updated the User's Guide for 1.5.1.
+
+
+changeset:   17:bee74b97d132
+branch:      branch-1.5
+user:        pekangas
+date:        Sun Jul 19 15:30:19 2009 +0000
+files:       README_source.txt license.txt
+description:
+Fixed README_source.txt and license.txt to use CRLF linefeeds.
+
+
+changeset:   16:5bcd64e9c4fc
+branch:      branch-1.5
+user:        pekangas
+date:        Thu Jul 16 20:02:06 2009 +0000
+files:       ui/s60/putty.rss
+description:
+Increased the password prompt length limit to 64 characters, the
+previous 32 caused problems with some one-time password generators.
+
+
+changeset:   15:3e00a88cf5fe
+branch:      branch-1.5
+user:        pekangas
+date:        Sat Jul 11 21:04:32 2009 +0000
+files:       README.txt README_source.txt build/s60v3/installnote.txt build/s60v3/putty.pkg build/s80v2/installnote.txt build/s80v2/putty.pkg ui/s80/putty.rss
+description:
+Updated files for 1.5.1 RC 1 release
+
+
+changeset:   14:8ffad638e208
+branch:      branch-1.5
+user:        pekangas
+date:        Sat Jul 11 20:51:39 2009 +0000
+files:       ui/s60/profilelistview.cpp ui/s60/terminalview.cpp
+description:
+Merged in general bug fixes from Risto Avila's touch UI
+
+
+changeset:   13:eeb115af6ae6
+branch:      branch-1.5
+user:        pekangas
+date:        Sat Jul 11 20:36:33 2009 +0000
+files:       ui/s80/putty.rss ui/s80/puttyui.hrh ui/s80/settingsdialog.cpp
+description:
+Added the backspace setting to the S80 UI
+
+
+changeset:   12:2507873daa7f
+branch:      branch-1.5
+user:        pekangas
+date:        Sat Jul 11 20:22:27 2009 +0000
+files:       README.txt
+description:
+Updated the list of changes in the README file
+
+
+changeset:   11:fda6975cdb2f
+branch:      branch-1.5
+user:        pekangas
+date:        Sat Jul 11 16:56:30 2009 +0000
+files:       ui/s60/sendgrid.cpp
+description:
+Changed the Send Grid to "loop" instead of "snake" when navigating
+using cursor keys. This should make it easier to send an Esc on phones
+where the asterisk key doesn't produce the expected keycodes.
+
+
+changeset:   10:9b0db99b7de9
+branch:      branch-1.5
+user:        pekangas
+date:        Sat Jul 11 16:45:37 2009 +0000
+files:       engine/puttysymbian/epocnet.cpp
+description:
+Don't bind the socket before connecting. This seems to fix at least
+some variants of the infamous KErrBadName error, and does not appear
+to have any side effects.
+
+
+changeset:   9:973ca6f760a4
+branch:      branch-1.5
+user:        pekangas
+date:        Sat Jul 11 15:46:25 2009 +0000
+files:       engine/putty/ssh.c engine/puttyengineimp.cpp engine/puttysymbian/epocnet.cpp
+description:
+Fixed memory leaks when the socket connection fails
+
+
+changeset:   8:164d79059240
+branch:      branch-1.5
+user:        pekangas
+date:        Sun Apr 26 19:07:25 2009 +0000
+files:       engine/putty/ssh.c engine/puttysymbian/epocnet.cpp
+description:
+Fixed port forwarding at least for local ports. Thanks to Shai Ayal
+for the original fix. This fixes long-standing bug 918200.
+
+
+changeset:   7:1c84daef8ebc
+branch:      branch-1.5
+user:        pekangas
+date:        Sun Apr 26 18:09:02 2009 +0000
+files:       ui/s60/profilelistview.cpp ui/s60/putty.rss ui/s60/puttyui.hrh
+description:
+Added profile import and export to the profile list view
+
+
+changeset:   6:2b0016b05ce0
+branch:      branch-1.5
+user:        pekangas
+date:        Mon Mar 02 20:22:31 2009 +0000
+files:       README.txt README_source.txt build/s60v3/installnote.txt build/s60v3/putty.pkg
+description:
+Updated documents and package files for use with 1.5 development
+snapshots.
+
+
+changeset:   5:f6fc377a8878
+branch:      branch-1.5
+user:        pekangas
+date:        Mon Mar 02 20:15:02 2009 +0000
+files:       ui/s60/terminalview.cpp
+description:
+Implemented very rudimentary support for the LockSize setting. The
+current implementation simply ignores all resize events, which makes
+the UI look corrupted, and therefore it is not accessible through the
+settings UI.
+
+
+changeset:   4:eca69a402915
+branch:      branch-1.5
+user:        pekangas
+date:        Mon Mar 02 20:02:11 2009 +0000
+files:       ui/s60/terminalcontainer.cpp
+description:
+Integrated another patch from Damion Yates to force a 80x24 terminal
+on E90 when using a 10x14 font.
+
+
+changeset:   3:28bcdb63b25e
+branch:      branch-1.5
+user:        pekangas
+date:        Mon Mar 02 19:57:56 2009 +0000
+files:       README.txt README_source.txt build/s60v3/installnote.txt license.txt
+description:
+Updated copyright messages to account for Damion's and James'
+contributions.
+
+
+changeset:   2:c912274918d7
+branch:      branch-1.5
+user:        pekangas
+date:        Mon Mar 02 19:54:12 2009 +0000
+files:       ui/s60/profileeditdisplaysettinglist.cpp ui/s60/profileeditdisplaysettinglist.h ui/s60/putty.rss ui/s60/puttyui.hrh ui/s60/terminalcontainer.h
+description:
+Integrated backspace setting (Ctrl-H vs Delete) patch from Damion Yates.
+Thanks Damion!
+
+
+changeset:   1:cc7f7a93fe0b
+branch:      branch-1.5
+user:        pekangas
+date:        Mon Mar 02 19:31:56 2009 +0000
+description:
+Branching off 1.5
+
+
+changeset:   0:84b943510a13
+tag:         release-1.5.0
+user:        pekangas
+date:        Sun Jan 25 18:06:09 2009 +0000
+files:       README.txt README_source.txt build/bmarm/mrecu.def build/bmarm/puttyengineu.def build/bwins/mrecu.def build/bwins/puttyengineu.def build/common/configrecog.mmp build/common/puttyengine.mmh build/eabi/puttyengineu.def build/s60v1/bld.inf build/s60v1/emulatorfonts.cmd build/s60v1/installnote.txt build/s60v1/putty.pkg build/s60v1/puttyengine.mmp build/s60v1/puttyui.mmp build/s60v2/bld.inf build/s60v2/emulatorfonts.cmd build/s60v2/installnote.txt build/s60v2/putty.pkg build/s60v2/puttyengine.mmp build/s60v2/puttyui.mmp build/s60v3/backup_registration.xml build/s60v3/bld.inf build/s60v3/emulatorfonts.cmd build/s60v3/installnote.txt build/s60v3/putty.pkg build/s60v3/puttyengine.mmp build/s60v3/puttyicons.mk build/s60v3/puttyui.mmp build/s80v1/bld.inf build/s80v1/installnote.txt build/s80v1/putty.doxygen build/s80v1/putty.pkg build/s80v1/puttyengine.mmp build/s80v1/puttyui.mmp build/s80v2/bld.inf build/s80v2/installnote.txt build/s80v2/putty.pkg build/s80v2/puttyengine.mmp build/s80v2/puttyui.mmp build/s90/README.txt build/s90/bld.inf build/s90/emulatorfonts.cmd build/s90/installnote.txt build/s90/putty.pkg build/s90/puttyengine.mmp build/s90/puttyui.mmp configrecog/puttyconfigrecog.cpp configrecog/puttyconfigrecog.h engine/oneshottimer.cpp engine/oneshottimer.h engine/putty/Buildscr engine/putty/CHECKLST.txt engine/putty/LATEST.VER engine/putty/LICENCE engine/putty/README engine/putty/Recipe engine/putty/be_all.c engine/putty/be_all_s.c engine/putty/be_none.c engine/putty/be_nos_s.c engine/putty/be_nossh.c engine/putty/charset/README engine/putty/charset/charset.h engine/putty/charset/enum.c engine/putty/charset/fromucs.c engine/putty/charset/internal.h engine/putty/charset/localenc.c engine/putty/charset/macenc.c engine/putty/charset/mimeenc.c engine/putty/charset/sbcs.c engine/putty/charset/sbcs.dat engine/putty/charset/sbcsdat.c engine/putty/charset/sbcsgen.pl engine/putty/charset/slookup.c engine/putty/charset/toucs.c engine/putty/charset/utf8.c engine/putty/charset/xenc.c engine/putty/cmdgen.c engine/putty/cmdline.c engine/putty/config.c engine/putty/contrib/kh2reg.py engine/putty/cproxy.c engine/putty/dialog.c engine/putty/dialog.h engine/putty/doc/AppendixA.html engine/putty/doc/AppendixB.html engine/putty/doc/AppendixC.html engine/putty/doc/AppendixD.html engine/putty/doc/AppendixE.html engine/putty/doc/Chapter1.html engine/putty/doc/Chapter10.html engine/putty/doc/Chapter2.html engine/putty/doc/Chapter3.html engine/putty/doc/Chapter4.html engine/putty/doc/Chapter5.html engine/putty/doc/Chapter6.html engine/putty/doc/Chapter7.html engine/putty/doc/Chapter8.html engine/putty/doc/Chapter9.html engine/putty/doc/IndexPage.html engine/putty/doc/Makefile engine/putty/doc/blurb.but engine/putty/doc/chm.but engine/putty/doc/chm.css engine/putty/doc/config.but engine/putty/doc/errors.but engine/putty/doc/faq.but engine/putty/doc/feedback.but engine/putty/doc/gs.but engine/putty/doc/index.but engine/putty/doc/index.html engine/putty/doc/intro.but engine/putty/doc/licence.but engine/putty/doc/man-pg.but engine/putty/doc/man-pl.but engine/putty/doc/man-pscp.but engine/putty/doc/man-psft.but engine/putty/doc/man-ptel.but engine/putty/doc/man-pter.but engine/putty/doc/man-putt.but engine/putty/doc/mancfg.but engine/putty/doc/manpages.but engine/putty/doc/pageant.but engine/putty/doc/pgpkeys.but engine/putty/doc/plink.1 engine/putty/doc/plink.but engine/putty/doc/pscp.1 engine/putty/doc/pscp.but engine/putty/doc/psftp.1 engine/putty/doc/psftp.but engine/putty/doc/pterm.1 engine/putty/doc/pubkey.but engine/putty/doc/putty.1 engine/putty/doc/putty.cnt engine/putty/doc/putty.hlp engine/putty/doc/puttydoc.txt engine/putty/doc/puttygen.1 engine/putty/doc/puttytel.1 engine/putty/doc/site.but engine/putty/doc/udp.but engine/putty/doc/using.but engine/putty/doc/vids.but engine/putty/doc/vstr.but engine/putty/icons/Makefile engine/putty/icons/cicon.pl engine/putty/icons/icon.pl engine/putty/icons/mkicon.py engine/putty/import.c engine/putty/int64.c engine/putty/int64.h engine/putty/ldisc.c engine/putty/ldisc.h engine/putty/ldiscucs.c engine/putty/logging.c engine/putty/mac/Makefile.mpw engine/putty/mac/README.mac engine/putty/mac/mac.c engine/putty/mac/mac.h engine/putty/mac/mac_res.r engine/putty/mac/macabout.c engine/putty/mac/macctrls.c engine/putty/mac/macdlg.c engine/putty/mac/macevlog.c engine/putty/mac/macmisc.c engine/putty/mac/macnet.c engine/putty/mac/macnoise.c engine/putty/mac/macpgen.c engine/putty/mac/macpgen.r engine/putty/mac/macpgkey.c engine/putty/mac/macpgrid.h engine/putty/mac/macresid.h engine/putty/mac/macstore.c engine/putty/mac/macstuff.h engine/putty/mac/macterm.c engine/putty/mac/macucs.c engine/putty/mac/mkputty.mpw engine/putty/mac/mtcpnet.c engine/putty/mac/otnet.c engine/putty/mac/setfile.sh engine/putty/mac/stricmp.c engine/putty/mac/version.r engine/putty/mac/vsnprint.c engine/putty/macosx/Makefile engine/putty/macosx/README.OSX engine/putty/macosx/info.plist engine/putty/macosx/osx.h engine/putty/macosx/osxclass.h engine/putty/macosx/osxctrls.m engine/putty/macosx/osxdlg.m engine/putty/macosx/osxmain.m engine/putty/macosx/osxsel.m engine/putty/macosx/osxwin.m engine/putty/macosx/putty.icns engine/putty/manifest engine/putty/minibidi.c engine/putty/misc.c engine/putty/misc.h engine/putty/mkauto.sh engine/putty/mkfiles.pl engine/putty/mksrcarc.sh engine/putty/mkunxarc.sh engine/putty/network.h engine/putty/nocproxy.c engine/putty/noprint.c engine/putty/notiming.c engine/putty/pinger.c engine/putty/portfwd.c engine/putty/pproxy.c engine/putty/proxy.c engine/putty/proxy.h engine/putty/pscp.c engine/putty/psftp.c engine/putty/psftp.h engine/putty/putty.h engine/putty/puttymem.h engine/putty/puttyps.h engine/putty/raw.c engine/putty/resource.h engine/putty/rlogin.c engine/putty/sercfg.c engine/putty/settings.c engine/putty/sftp.c engine/putty/sftp.h engine/putty/sign.sh engine/putty/ssh.c engine/putty/ssh.h engine/putty/sshaes.c engine/putty/ssharcf.c engine/putty/sshblowf.c engine/putty/sshbn.c engine/putty/sshcrc.c engine/putty/sshcrcda.c engine/putty/sshdes.c engine/putty/sshdh.c engine/putty/sshdss.c engine/putty/sshdssg.c engine/putty/sshmd5.c engine/putty/sshprime.c engine/putty/sshpubk.c engine/putty/sshrand.c engine/putty/sshrsa.c engine/putty/sshrsag.c engine/putty/sshsh256.c engine/putty/sshsh512.c engine/putty/sshsha.c engine/putty/sshzlib.c engine/putty/storage.h engine/putty/telnet.c engine/putty/terminal.c engine/putty/terminal.h engine/putty/testback.c engine/putty/testdata/colours.txt engine/putty/testdata/lattrs.txt engine/putty/testdata/scocols.txt engine/putty/testdata/utf8.txt engine/putty/testdata/vt100.txt engine/putty/time.c engine/putty/timing.c engine/putty/tree234.c engine/putty/tree234.h engine/putty/unix/Makefile.gtk engine/putty/unix/Makefile.in engine/putty/unix/configure engine/putty/unix/configure.ac engine/putty/unix/gtkcfg.c engine/putty/unix/gtkcols.c engine/putty/unix/gtkcols.h engine/putty/unix/gtkdlg.c engine/putty/unix/gtkwin.c engine/putty/unix/install-sh engine/putty/unix/unix.h engine/putty/unix/ux_x11.c engine/putty/unix/uxagentc.c engine/putty/unix/uxcfg.c engine/putty/unix/uxconfig.in engine/putty/unix/uxcons.c engine/putty/unix/uxgen.c engine/putty/unix/uxmisc.c engine/putty/unix/uxnet.c engine/putty/unix/uxnoise.c engine/putty/unix/uxplink.c engine/putty/unix/uxprint.c engine/putty/unix/uxproxy.c engine/putty/unix/uxpterm.c engine/putty/unix/uxpty.c engine/putty/unix/uxputty.c engine/putty/unix/uxsel.c engine/putty/unix/uxser.c engine/putty/unix/uxsftp.c engine/putty/unix/uxsignal.c engine/putty/unix/uxstore.c engine/putty/unix/uxucs.c engine/putty/unix/xkeysym.c engine/putty/unix/xpmptcfg.c engine/putty/unix/xpmpterm.c engine/putty/unix/xpmpucfg.c engine/putty/unix/xpmputty.c engine/putty/version.c engine/putty/version.def engine/putty/wcwidth.c engine/putty/wildcard.c engine/putty/windows/DEVCPP/pageant/pageant.dev engine/putty/windows/DEVCPP/plink/plink.dev engine/putty/windows/DEVCPP/pscp/pscp.dev engine/putty/windows/DEVCPP/psftp/psftp.dev engine/putty/windows/DEVCPP/putty/putty.dev engine/putty/windows/DEVCPP/puttygen/puttygen.dev engine/putty/windows/DEVCPP/puttytel/puttytel.dev engine/putty/windows/MSVC/pageant/pageant.dsp engine/putty/windows/MSVC/plink/plink.dsp engine/putty/windows/MSVC/pscp/pscp.dsp engine/putty/windows/MSVC/psftp/psftp.dsp engine/putty/windows/MSVC/putty.dsw engine/putty/windows/MSVC/putty/putty.dsp engine/putty/windows/MSVC/puttygen/puttygen.dsp engine/putty/windows/MSVC/puttytel/puttytel.dsp engine/putty/windows/Makefile.bor engine/putty/windows/Makefile.cyg engine/putty/windows/Makefile.lcc engine/putty/windows/Makefile.vc engine/putty/windows/README.txt engine/putty/windows/pageant.ico engine/putty/windows/pageant.mft engine/putty/windows/pageant.rc engine/putty/windows/pageants.ico engine/putty/windows/plink.rc engine/putty/windows/pscp.ico engine/putty/windows/pscp.rc engine/putty/windows/psftp.rc engine/putty/windows/putty.ico engine/putty/windows/putty.iss engine/putty/windows/putty.mft engine/putty/windows/putty.rc engine/putty/windows/puttycfg.ico engine/putty/windows/puttygen.ico engine/putty/windows/puttygen.mft engine/putty/windows/puttygen.rc engine/putty/windows/puttyins.ico engine/putty/windows/puttytel.rc engine/putty/windows/rcstuff.h engine/putty/windows/sizetip.c engine/putty/windows/version.rc2 engine/putty/windows/website.url engine/putty/windows/win_res.h engine/putty/windows/win_res.rc2 engine/putty/windows/wincfg.c engine/putty/windows/wincons.c engine/putty/windows/winctrls.c engine/putty/windows/windefs.c engine/putty/windows/windlg.c engine/putty/windows/window.c engine/putty/windows/winhandl.c engine/putty/windows/winhelp.c engine/putty/windows/winhelp.h engine/putty/windows/winmisc.c engine/putty/windows/winnet.c engine/putty/windows/winnoise.c engine/putty/windows/winpgen.c engine/putty/windows/winpgnt.c engine/putty/windows/winpgntc.c engine/putty/windows/winplink.c engine/putty/windows/winprint.c engine/putty/windows/winproxy.c engine/putty/windows/winser.c engine/putty/windows/winsftp.c engine/putty/windows/winstore.c engine/putty/windows/winstuff.h engine/putty/windows/wintime.c engine/putty/windows/winucs.c engine/putty/windows/winutils.c engine/putty/x11fwd.c engine/puttyengineimp.cpp engine/puttyengineimp.h engine/puttysymbian/assert.cpp engine/puttysymbian/assert.h engine/puttysymbian/charutil.cpp engine/puttysymbian/charutil.h engine/puttysymbian/epocmemory.cpp engine/puttysymbian/epocmemory.h engine/puttysymbian/epocmisc.cpp engine/puttysymbian/epocmisc.h engine/puttysymbian/epocnet.cpp engine/puttysymbian/epocnet.h engine/puttysymbian/epocnoise.cpp engine/puttysymbian/epocnoise.h engine/puttysymbian/epocpageantc.cpp engine/puttysymbian/epocprinting.cpp engine/puttysymbian/epocstore.cpp engine/puttysymbian/epocstore.h engine/puttysymbian/epocunicode.cpp engine/puttysymbian/puttysymbian.h engine/puttysymbian/snprintf.c engine/puttysymbian/snprintf.h engine/puttysymbian/snprintfconfig.h engine/terminalkeys.cpp engine/terminalkeys.h include/puttyclient.h include/puttyengine.h include/puttyuids.hrh license.txt putty_users_guide.odt putty_users_guide.pdf test/fonts/fonttest.cpp test/fonts/fonttest.h test/fonts/fonttest.hrh test/fonts/fonttest.mmp test/fonts/fonttest.rss test/s60termtest/bld.inf test/s60termtest/test.mmp test/s60termtest/test.pkg test/s60termtest/test.rss test/s60termtest/test_reg.rss test/s60termtest/test_s60v3.mmp test/s60termtest/testapp.cpp test/s60termtest/testapp.h test/s60termtest/testappui.cpp test/s60termtest/testappui.h test/s60termtest/testappview.cpp test/s60termtest/testappview.h test/s60termtest/testdoc.cpp test/s60termtest/testdoc.h test/s60termtest/testui.hrh test/s60testapp/test.mmp test/s60testapp/test.rss test/s60testapp/testapp.cpp test/s60testapp/testapp.h test/s60testapp/testappui.cpp test/s60testapp/testappui.h test/s60testapp/testappview.cpp test/s60testapp/testappview.h test/s60testapp/testdoc.cpp test/s60testapp/testdoc.h test/s60testapp/testui.hrh test/sendgrid/bld.inf test/sendgrid/test.pkg test/sendgrid/test.rss test/sendgrid/test_reg.rss test/sendgrid/test_s60v3.mmp test/sendgrid/test_s60v3.pkg test/sendgrid/testapp.cpp test/sendgrid/testapp.h test/sendgrid/testappui.cpp test/sendgrid/testappui.h test/sendgrid/testappview.cpp test/sendgrid/testappview.h test/sendgrid/testdoc.cpp test/sendgrid/testdoc.h test/sendgrid/testui.hrh test/ssh/sshtest.cpp test/ssh/sshtest.mmp test/ssh/sshtestconsole.cpp test/ssh/sshtestconsole.h test/sshterm/sshtermtest.cpp test/sshterm/sshtermtest.mmp test/sshterm/sshtestconsole.cpp test/sshterm/sshtestconsole.h test/sshterm/terminalkeys.cpp test/telnet/telnettest.cpp test/telnet/telnettest.mmp test/ui/uitest.cpp test/ui/uitest.h test/ui/uitest.hrh test/ui/uitest.mmp test/ui/uitest.rss ui/common/logfile.cpp ui/common/logfile.h ui/common/netconnect.cpp ui/common/netconnect.h ui/common/oneshottimer.cpp ui/common/oneshottimer.h ui/common/palettes.cpp ui/common/palettes.h ui/common/termfepext1.cpp ui/common/termfepext1.h ui/common/terminalcontrol.cpp ui/common/terminalcontrol.h ui/common/terminalcontrols2font.cpp ui/common/terminalcontrols2font.h ui/common/terminalcontrolsystemfont.cpp ui/common/terminalcontrolsystemfont.h ui/s2font/bdftos2font.awk ui/s2font/fixed4x6.bdf ui/s2font/fixed4x6.s2f ui/s2font/fixed5x7.bdf ui/s2font/fixed5x7.s2f ui/s2font/fixed6x10.bdf ui/s2font/fixed6x10.s2f ui/s2font/fixed6x12.bdf ui/s2font/fixed6x12.s2f ui/s2font/fixed6x13.bdf ui/s2font/fixed6x13.s2f ui/s2font/fixed8x13b.bdf ui/s2font/fixed8x13b.s2f ui/s2font/fixed9x15b.bdf ui/s2font/fixed9x15b.s2f ui/s2font/packagefont.sh ui/s2font/s2font.cpp ui/s2font/s2font.h ui/s2font/s2font.txt ui/s60/dynamicenumtextsettingitem.cpp ui/s60/dynamicenumtextsettingitem.h ui/s60/filelistdialog.cpp ui/s60/filelistdialog.h ui/s60/iconlarge.bmp ui/s60/iconlargemask.bmp ui/s60/iconsmall.bmp ui/s60/iconsmallmask.bmp ui/s60/profileeditdisplaysettinglist.cpp ui/s60/profileeditdisplaysettinglist.h ui/s60/profileeditgeneralsettinglist.cpp ui/s60/profileeditgeneralsettinglist.h ui/s60/profileeditloggingsettinglist.cpp ui/s60/profileeditloggingsettinglist.h ui/s60/profileeditsettinglistbase.cpp ui/s60/profileeditsettinglistbase.h ui/s60/profileeditsshsettinglist.cpp ui/s60/profileeditsshsettinglist.h ui/s60/profileeditview.cpp ui/s60/profileeditview.h ui/s60/profilelistview.cpp ui/s60/profilelistview.h ui/s60/putty.rss ui/s60/putty42x29.bmp ui/s60/putty44x44.bmp ui/s60/puttyapp.cpp ui/s60/puttyapp.h ui/s60/puttyappui.cpp ui/s60/puttyappui.h ui/s60/puttydoc.cpp ui/s60/puttydoc.h ui/s60/puttyui.hrh ui/s60/puttyuiaif.rss ui/s60/s60_42x29.bmp ui/s60/s60_42x29_mask.bmp ui/s60/s60_44x44.bmp ui/s60/s60_44x44_mask.bmp ui/s60/sendgrid.cpp ui/s60/sendgrid.h ui/s60/sendgrid.rh ui/s60/stringutils.cpp ui/s60/stringutils.h ui/s60/terminalcontainer.cpp ui/s60/terminalcontainer.h ui/s60/terminalview.cpp ui/s60/terminalview.h ui/s60v1/audiorecorder.cpp ui/s60v1/audiorecorder.h ui/s60v1/netconnectcici.cpp ui/s60v1/netconnectcici.h ui/s60v2/audiorecorder.cpp ui/s60v2/audiorecorder.h ui/s60v3/putty.svg ui/s60v3/putty_reg.rss ui/s80/authdialog.cpp ui/s80/authdialog.h ui/s80/connectiondialog.cpp ui/s80/connectiondialog.h ui/s80/iconlarge.bmp ui/s80/iconlargemask.bmp ui/s80/iconsmall.bmp ui/s80/iconsmallmask.bmp ui/s80/profilelistdialog.cpp ui/s80/profilelistdialog.h ui/s80/putty.rss ui/s80/puttyapp.cpp ui/s80/puttyapp.h ui/s80/puttyappui.cpp ui/s80/puttyappui.h ui/s80/puttyappview.cpp ui/s80/puttyappview.h ui/s80/puttydoc.cpp ui/s80/puttydoc.h ui/s80/puttyui.hrh ui/s80/puttyuiaif.rss ui/s80/settingsdialog.cpp ui/s80/settingsdialog.h ui/s80v1/audiorecorder.cpp ui/s80v1/audiorecorder.h ui/s80v1/dialler.cpp ui/s80v1/dialler.h ui/s80v2/audiorecorder.cpp ui/s80v2/audiorecorder.h ui/s90/audiorecorder.cpp ui/s90/audiorecorder.h ui/s90/authdialog.cpp ui/s90/authdialog.h ui/s90/connectiondialog.cpp ui/s90/connectiondialog.h ui/s90/dialler.cpp ui/s90/dialler.h ui/s90/iconlarge.bmp ui/s90/iconlargemask.bmp ui/s90/iconsmall.bmp ui/s90/iconsmallmask.bmp ui/s90/oneshottimer.cpp ui/s90/oneshottimer.h ui/s90/putty.rss ui/s90/puttyapp.cpp ui/s90/puttyapp.h ui/s90/puttyappui.cpp ui/s90/puttyappui.h ui/s90/puttyappview.cpp ui/s90/puttyappview.h ui/s90/puttydoc.cpp ui/s90/puttydoc.h ui/s90/puttyui.hrh ui/s90/puttyuiaif.rss ui/s90/settingsdialog.cpp ui/s90/settingsdialog.h
+description:
+Update documentation, package files, and resources for the 1.5.0 release.
+
 

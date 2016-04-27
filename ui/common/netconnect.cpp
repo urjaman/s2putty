@@ -9,7 +9,12 @@
 
 #include <es_sock.h>
 #ifdef PUTTY_S60V3
-    #include <CommDbConnPref.h>
+    #include <commdbconnpref.h>
+    #include <commdb.h>
+#endif
+
+#ifdef PUTTY_SYM3
+    #include <extendedconnpref.h>
 #endif
 
 #include "netconnect.h"
@@ -38,9 +43,7 @@ CNetConnect::CNetConnect(MNetConnectObserver &aObserver)
 
 // Second-phase constructor
 void CNetConnect::ConstructL() {
-#ifdef PUTTY_S60TOUCH
-    iPromptAP = -1;
-#endif
+    iPromptAP = 0;
 }
 
 
@@ -76,23 +79,56 @@ void CNetConnect::Connect() {
         return;
     }
     iRConnectionOpen = ETrue;
-
-#ifdef PUTTY_S60V3
-    #ifdef PUTTY_S60TOUCH  //for setting to touch phones 
-        if ( iPromptAP == 1 ) {
-    #endif
-            TCommDbConnPref pref;
-            pref.SetDialogPreference( ECommDbDialogPrefPrompt  );
-            iConnection.Start(pref, iStatus);
-    #ifdef PUTTY_S60TOUCH //for setting to touch phones       
-        } else {
-            // Connect to the network using default settings
-            iConnection.Start(iStatus);
-        }
-    #endif
+#ifdef PUTTY_SYM3
+    //seems in sym^3 connection methodes have changed.
+    // more info from 
+    // http://developer.symbian.org/wiki/One_Click_Connectivity_%28OCC%29_-_A_guide_for_developers#Disallow_forced_reconnection
+    // http://developer.symbian.org/wiki/IP_connection_management_code_examples#Opening_a_connection_and_disabling_forced_reconnection
+    if ( iPromptAP == 0 ) {
+        // Create connection preferences
+        TConnPrefList prefList;
+        TExtendedConnPref prefs;
+        prefs.SetConnSelectionDialog( ETrue );
+        prefs.SetForcedRoaming(EFalse); // disable ALR
+        prefList.AppendL( &prefs );
+        iConnection.Start(prefList, iStatus);
+    } else if ( iPromptAP == 1 ) {
+        // Connect to the network Default Internet AP
+        TConnPrefList prefList;
+        TExtendedConnPref prefs;
+        prefs.SetSnapPurpose( CMManager::ESnapPurposeInternet );
+        prefs.SetNoteBehaviour( TExtendedConnPref::ENoteBehaviourConnSilent );
+        prefs.SetForcedRoaming( EFalse ); // disable ALR
+        prefList.AppendL( &prefs );
+        iConnection.Start(prefList, iStatus);
+    } else {        
+        //Connect without prompting to user set AP
+        TConnPrefList prefList;
+        TExtendedConnPref prefs;
+        prefs.SetNoteBehaviour( TExtendedConnPref::ENoteBehaviourConnSilent ); // should not be needed.
+        prefs.SetConnSelectionDialog( EFalse ); // dont prompt
+        prefs.SetIapId(ConvertPromptApToAPIdL(iPromptAP-2)); // set access point to connect
+        prefs.SetForcedRoaming( EFalse ); // disable ALR, altough this should already be false in this case.
+        prefList.AppendL( &prefs );        
+        iConnection.Start(prefList, iStatus);            
+    }    
 #else
-    // Connect to the network using default settings
-    iConnection.Start(iStatus);
+    if ( iPromptAP == 0 ) {
+        TCommDbConnPref pref;
+        //pref.SetIapId(iIapId); // set access point to connect
+        //ECommDbDialogPrefDoNotPrompt == do not prompt for ap
+        pref.SetDialogPreference( ECommDbDialogPrefPrompt  );
+        iConnection.Start(pref, iStatus);
+    } else if ( iPromptAP == 1 ) {
+        // Connect to the network Default Internet AP
+        iConnection.Start(iStatus);
+    } else {        
+        //Connect without prompting to user set AP
+        TCommDbConnPref pref;
+        pref.SetIapId(ConvertPromptApToAPIdL(iPromptAP-2)); // set access point to connect           
+        pref.SetDialogPreference( ECommDbDialogPrefDoNotPrompt  );
+        iConnection.Start(pref, iStatus);            
+    }
 #endif
     iState = EStateConnecting;
     SetActive();
@@ -123,5 +159,37 @@ void CNetConnect::DoCancel() {
     iConnection.Close();
     iRConnectionOpen = EFalse;
     iState = EStateNone;
+}
+
+// Looks for the access point ID
+TUint32 CNetConnect::ConvertPromptApToAPIdL(TInt aValue) {
+    TUint32 iapID = 0;
+    CCommsDatabase* iCommsDB=CCommsDatabase::NewL();
+    TInt i = 0;
+    TInt err = KErrNone;
+    CleanupStack::PushL(iCommsDB);
+
+#ifdef PUTTY_S60V3  
+    CCommsDbTableView* iIAPView = iCommsDB->OpenIAPTableViewMatchingBearerSetLC(
+            ECommDbBearerGPRS|ECommDbBearerWLAN|ECommDbBearerVirtual,
+            ECommDbConnectionDirectionOutgoing); 
+#else  
+    CCommsDbTableView* iIAPView = iCommsDB->OpenTableLC((TPtrC(IAP)));
+#endif
+
+    if ( iIAPView->GotoFirstRecord() == KErrNone ){
+        do
+        {
+            if ( i == aValue ) {
+                iIAPView->ReadUintL(TPtrC(COMMDB_ID), iapID);            
+                break; // break from loop
+            }
+            i++;
+        } while ( err = iIAPView->GotoNextRecord(), err == KErrNone);
+    }
+
+    CleanupStack::PopAndDestroy(); // view
+    CleanupStack::PopAndDestroy(); // commDB
+    return iapID;
 }
 

@@ -443,6 +443,10 @@ void save_open_settings(void *sesskey, Config *cfg)
     write_setting_i(sesskey, "SerialStopHalfbits", cfg->serstopbits);
     write_setting_i(sesskey, "SerialParity", cfg->serparity);
     write_setting_i(sesskey, "SerialFlowControl", cfg->serflow);
+    /* Added for S60 accesspoint setting - Risto Avila*/
+    write_setting_i(sesskey, "AccessPoint", cfg->accesspoint);
+    /* [Petteri] UI orientation */
+    write_setting_i(sesskey, "Orientation", cfg->orientation);    
 }
 
 void load_settings(char *section, Config * cfg)
@@ -775,6 +779,10 @@ void load_open_settings(void *sesskey, Config *cfg)
     gppi(sesskey, "SerialStopHalfbits", 2, &cfg->serstopbits);
     gppi(sesskey, "SerialParity", SER_PAR_NONE, &cfg->serparity);
     gppi(sesskey, "SerialFlowControl", SER_FLOW_XONXOFF, &cfg->serflow);
+    /* Added for S60 accesspoint setting - Risto Avila*/
+    gppi(sesskey, "AccessPoint",0, &cfg->accesspoint);
+    /* [Petteri] UI orientation */
+    gppi(sesskey, "Orientation",0, &cfg->orientation);
 }
 
 void do_defaults(char *session, Config * cfg)

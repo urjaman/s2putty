@@ -2,7 +2,8 @@
  *
  * Putty terminal view
  *
- * Copyright 2007,2009 Petteri Kangaslampi
+ * Copyright 2007,2009-2011 Petteri Kangaslampi
+ * Portions copyright 2009 Risto Avila
  *
  * See license.txt for full copyright and license information.
 */
@@ -17,8 +18,19 @@
 #include <aknnotewrappers.h>
 #include <aknlists.h>
 #include <baclipb.h>
+#include <aknsoundsystem.h>
 #include "terminalview.h"
-#include "terminalcontainer.h"
+#ifdef PUTTY_S60TOUCH
+    #include "../s60v5/terminalcontainer.h"
+    #include <APGCLI.H>
+    #include <APGTASK.H>
+#else
+    #include "terminalcontainer.h"
+#endif
+#ifdef PUTTY_SYM3
+    #include <txtclipboard.h>
+    //#include <e32debug.h> //this is for rdebug
+#endif
 #include "puttyappui.h"
 #include "puttyengine.h"
 #include "puttyuids.hrh"
@@ -35,6 +47,9 @@ _LIT(KFontExtension, ".s2f");
 const TInt KFatalErrorExit = -1;
 const TInt KConnectionErrorExit = -2;
 static const TInt KFullScreenWidth = 0xf5;
+
+const TInt KVibraDuration = 250; // milliseconds
+const TInt KVibraIntensity = KHWRMVibraMaxIntensity/2;
 
 
 // Factory
@@ -55,13 +70,21 @@ CTerminalView::CTerminalView() {
 // Second-phase constructor
 void CTerminalView::ConstructL() {
     BaseConstructL(R_PUTTY_TERMINAL_VIEW);
+#ifdef PUTTY_S60TOUCH
+    iReleaseAltAfterKey = EFalse;
+    iReleaseCtrlAfterKey = EFalse;
+#endif
+    iSoundSystem = AppUi()->KeySounds();
+    iVibra = CHWRMVibra::NewL(this);
 }
 
 
 // Destructor
 CTerminalView::~CTerminalView() {
+    iSoundSystem = NULL;
     if ( iSendGrid ) {
         AppUi()->RemoveFromStack(iSendGrid);
+        iContainer->SetSendGrid(NULL);
         delete iSendGrid;
     }
     delete iPutty;
@@ -69,6 +92,7 @@ CTerminalView::~CTerminalView() {
     delete iConnectIdle;
     delete iNetConnect;
     delete iConnectionError;
+    delete iVibra;
 }
 
 
@@ -162,7 +186,8 @@ void CTerminalView::HandleCommandL(TInt aCommand) {
                                            (cr.Height() - size.iHeight) / 4);
                 iSendGrid = CSendGrid::NewL(TRect(tl, br), R_PUTTY_SEND_GRID,
                                             *this);
-                AppUi()->AddToStackL(iSendGrid);                
+                AppUi()->AddToStackL(iSendGrid);
+                iContainer->SetSendGrid(iSendGrid);
             }
             break;
 
@@ -210,7 +235,62 @@ void CTerminalView::HandleCommandL(TInt aCommand) {
             }
             break;
         }
-
+#ifdef PUTTY_S60TOUCH
+        case EPuttyCmdSendCtrlAN: {
+            if ( iState == EStateConnected ) {
+                iPutty->SendKeypress((TKeyCode)0x01, 0); // Ctrl-A
+                iPutty->SendKeypress((TKeyCode)'n', 0);
+            }
+            break;
+        }
+        case EPuttyCmdSendCtrlAP: {
+            if ( iState == EStateConnected ) {
+                iPutty->SendKeypress((TKeyCode)0x01, 0); // Ctrl-A
+                iPutty->SendKeypress((TKeyCode)'p', 0);
+            }
+            break;
+        }
+        case EPuttyCmdSendAltALeft: {
+            if ( iState == EStateConnected ) {
+                iPutty->SendKeypress(EKeyLeftArrow, EModifierAlt); // Alt-ArrowLeft
+            }
+            break;
+        }
+        case EPuttyCmdSendAltARight: {
+            if ( iState == EStateConnected ) {
+                iPutty->SendKeypress(EKeyRightArrow, EModifierAlt); // Alt-ArrowRight
+            }
+            break;
+        }
+        case EPuttyCmdUiSettings: {       
+            OpenSettingsPopupL();
+            break;
+        }
+        case EPuttyCmdToolbarSettings: {
+            SetToolbarButtonL();
+            break;
+        }
+        case EPuttyCmdGeneralToolbar: {
+            SetGeneralToolbarSettingsL();
+            break;        
+        }
+        case EPuttyCmdTouchSettings: {
+            SetTouchSettingsL();
+            break;
+        }
+        case EPuttyCmdGrepHttp: {
+            GrepHttpL();
+            break;
+        }
+        case EPuttyCmdLockTb: {
+            iContainer->LockToolbar(ETrue);
+            break;
+        }
+        case EPuttyCmdUnlockTb: {
+            iContainer->LockToolbar(EFalse);
+            break;
+        }        
+#endif
         case EPuttyCmdFullScreen: {
             SetFullScreenL(iFullScreen ? (TBool)EFalse : (TBool)ETrue);
             break;
@@ -230,6 +310,9 @@ void CTerminalView::HandleCommandL(TInt aCommand) {
             if ( iState == EStateConnected ) {
                 // activate selection (if not active)
                 if ( !iSelection ) {
+#ifdef PUTTY_S60TOUCH
+                    iContainer->Select(ETrue);
+#endif
                     iSelection = ETrue;
                     iContainer->Terminal().SetSelectMode(ETrue);
                     iMark = EFalse;
@@ -238,6 +321,9 @@ void CTerminalView::HandleCommandL(TInt aCommand) {
                     CEikButtonGroupContainer::Current()->DrawDeferred();
                 } else {
                     // selection already active -- stop
+#ifdef PUTTY_S60TOUCH
+                    iContainer->Select(EFalse);
+#endif
                     iSelection = EFalse;
                     iMark = EFalse;
                     iContainer->Terminal().RemoveMark();
@@ -257,7 +343,12 @@ void CTerminalView::HandleCommandL(TInt aCommand) {
             break;
 
         case EPuttyCmdCopy:
+#ifdef PUTTY_S60TOUCH
+            if ( (iState == EStateConnected) ) {
+            if ( iContainer->Terminal().DoWeHaveSelection() ) {          
+#else
             if ( (iState == EStateConnected) && iMark ) {
+#endif
                 // get selection
                 const HBufC *text = iContainer->Terminal().CopySelectionLC();
                 if ( text->Length() > 0 ) {
@@ -279,6 +370,10 @@ void CTerminalView::HandleCommandL(TInt aCommand) {
                 CleanupStack::PopAndDestroy(); // text
             }
             // terminate selection mode
+#ifdef PUTTY_S60TOUCH
+            } //!iContainer->Terminal().DoWeHaveSelection() ends
+            iContainer->Select(EFalse);
+#endif
             iSelection = EFalse;
             iMark = EFalse;
             iContainer->Terminal().RemoveMark();
@@ -328,6 +423,9 @@ void CTerminalView::HandleCommandL(TInt aCommand) {
         case EAknSoftkeyCancel:
             // Cancel selection
             if ( iSelection ) {
+#ifdef PUTTY_S60TOUCH
+                iContainer->Select(EFalse);
+#endif
                 iSelection = EFalse;
                 iMark = EFalse;
                 iContainer->Terminal().RemoveMark();
@@ -359,7 +457,7 @@ void CTerminalView::HandleCommandL(TInt aCommand) {
 
 
 // CAknView::DoActivateL
-void CTerminalView::DoActivateL(const TVwsViewId &aPrevViewId,
+void CTerminalView::DoActivateL(const TVwsViewId &/*aPrevViewId*/,
                                    TUid /*aCustomMessageId*/,
                                    const TDesC8 & /*aCustomMessage*/) {
 
@@ -400,12 +498,19 @@ void CTerminalView::DoActivateL(const TVwsViewId &aPrevViewId,
 
     if ( !iContainer ) {
         TRect rect;
+        
         if ( iFullScreen ) {
             rect = CEikonEnv::Static()->EikAppUi()->ApplicationRect();
         } else {
             rect = ClientRect();
         }
+#ifdef PUTTY_S60TOUCH
+        iSettingsFile = ((CPuttyAppUi*)AppUi())->TerminalSettingsFile();
+        iContainer = CTerminalContainer::NewL(
+            rect, this, this, iFontFile, iSettingsFile);
+#else
         iContainer = CTerminalContainer::NewL(rect, this, this, iFontFile);
+#endif
         iContainer->SetMopParent(this);
         iContainer->SetDefaultColors(TRgb(cfg->colours[0][0],
                                           cfg->colours[0][1],
@@ -424,6 +529,17 @@ void CTerminalView::DoActivateL(const TVwsViewId &aPrevViewId,
     CAknTitlePane* titlePane = static_cast<CAknTitlePane*>
         (StatusPane()->ControlL(TUid::Uid(EEikStatusPaneUidTitle)));
     titlePane->SetText(title); //takes ownership
+
+    // Set orientation if not default
+    if ( cfg->orientation != 0 ) {
+        if ( cfg->orientation == 1 ) {
+            AppUi()->SetOrientationL(CAknAppUi::EAppUiOrientationPortrait);
+        } else if ( cfg->orientation == 2 ) {
+            AppUi()->SetOrientationL(CAknAppUi::EAppUiOrientationLandscape);
+        } else {
+            AppUi()->SetOrientationL(CAknAppUi::EAppUiOrientationUnspecified);
+        }
+    }
 
     // Prompt for the host to connect to if not already set
     if ( cfg->host[0] != 0 ) {
@@ -463,6 +579,7 @@ void CTerminalView::DoDeactivate() {
 
     if ( iSendGrid ) {
         AppUi()->RemoveFromStack(iSendGrid);
+        iContainer->SetSendGrid(NULL);
         delete iSendGrid;
         iSendGrid = NULL;
     }
@@ -488,12 +605,23 @@ void CTerminalView::DynInitMenuPaneL(TInt aResourceId,
 
 // Disconnect and return to the profile list view
 void CTerminalView::DoDisconnectL() {
+
+#ifdef PUTTY_S60TOUCH
+    // Save UI settings
+    if ( iContainer ) {
+        iContainer->SaveSettingsL();
+    }
+#endif
+    
     // Delete our PuTTY engine instance, since currently multiple
     // simultaneous instances won't work
     delete iPutty;
     iPutty = NULL;
     delete iNetConnect;
     iNetConnect = NULL;
+
+    // Reset orientation and return to profile list view
+    AppUi()->SetOrientationL(CAknAppUi::EAppUiOrientationUnspecified);
     AppUi()->ActivateLocalViewL(TUid::Uid(KUidPuttyProfileListViewDefine));
 }
 
@@ -508,6 +636,7 @@ void CTerminalView::DoConnectL() {
     delete iNetConnect;
     iNetConnect = NULL;
     iNetConnect = CNetConnect::NewL(*this);
+    iNetConnect->SetPromptAP(iPutty->GetConfig()->accesspoint);
     iNetConnect->Connect();
 
     // Show wait dialog
@@ -618,10 +747,11 @@ void CTerminalView::HandleStatusPaneSizeChange() {
     // The send grid doesn't handle size changes well -- just delete it
     if ( iSendGrid ) {
         AppUi()->RemoveFromStack(iSendGrid);
+        iContainer->SetSendGrid(NULL);
         delete iSendGrid;
         iSendGrid = NULL;
     }
-    if ( iContainer && (!iPutty->GetConfig()->resize_action) ) {
+    if ( iContainer && ((iPutty == NULL) || ((!iPutty->GetConfig()->resize_action))) ) {
         if ( iFullScreen ) {
             iContainer->SetRect(
                 CEikonEnv::Static()->EikAppUi()->ApplicationRect());
@@ -677,6 +807,437 @@ void CTerminalView::SetFullScreenL(TBool aFullScreen) {
     }
 }
 
+#ifdef PUTTY_S60TOUCH
+//Shows popuplist with strings loaded from resources
+TInt CTerminalView::PopUpListViewL(TInt aResourceId, TInt aSelectedItem) {
+    TInt ret = 0;
+    // We'll show a popup list of fonts and let the user select one
+    CAknSinglePopupMenuStyleListBox *box = new (ELeave) CAknSinglePopupMenuStyleListBox;
+    CleanupStack::PushL(box);
+
+    CAknPopupList *popup = CAknPopupList::NewL(box,
+                                           R_AVKON_SOFTKEYS_SELECT_CANCEL,
+                                           AknPopupLayouts::EMenuWindow);    
+    CleanupStack::PushL(popup);
+    box->ConstructL(popup, 0);
+    box->CreateScrollBarFrameL(ETrue);
+    box->ScrollBarFrame()->SetScrollBarVisibilityL(CEikScrollBarFrame::EAuto,
+                                               CEikScrollBarFrame::EAuto);
+
+    // Add fonts to the listbox
+    //CDesCArrayFlat* items = iCoeEnv->ReadDesCArrayResourceL(R_PUTTY_PROFILEEDIT_TBBUTTON_POPPED_UP_TEXT_ARRAY);
+    CDesCArrayFlat* items = iCoeEnv->ReadDesCArrayResourceL(aResourceId);
+    CleanupStack::PushL( items );
+
+    box->Model()->SetItemTextArray((MDesC16Array*)items);
+    //box->Model()->SetOwnershipType(ELbmDoesNotOwnItemArray);
+    CleanupStack::Pop(); // items
+
+    box->SetCurrentItemIndex(aSelectedItem);
+
+    // Run selection
+    TInt ok = popup->ExecuteLD();
+    CleanupStack::Pop(); // popup
+    if ( ok ) {
+        ret = box->CurrentItemIndex();
+    } else {
+        ret = -1;
+    }
+    CleanupStack::PopAndDestroy(); // box
+    return ret;
+}
+
+TInt CTerminalView::CheckGestureMap (TInt aCmd, TBool aItemToCmd) {
+     static struct {
+        TInt iCommand;
+     } KItemMap [] = {
+        { EPuttyCmdNone },
+        { EPuttyCmdStartVKB },
+        { EPuttyCmdOpenPopUpMenu },
+        { EPuttyCmdFullScreen },
+        { EPuttyCmdToggleToolbar },
+        { EPuttyCmdSendTab },
+        { EPuttyCmdSend },
+        { EPuttyCmdSendLine },
+        { EPuttyCmdSendCtrlAN },
+        { EPuttyCmdSendCtrlAP },
+        { EPuttyCmdSendAltALeft },
+        { EPuttyCmdSendAltARight },
+        { EPuttyCmdSendPageUp },
+        { EPuttyCmdSendPageDown },
+        { EPuttyCmdSendHome },
+        { EPuttyCmdSendEnd },
+        { EPuttyCmdSendDelete },
+        { EPuttyCmdSendInsert },
+        { EPuttyCmdSendCR },
+        { EPuttyCmdSendCtrlP },
+        { EPuttyCmdSendAltP },
+        { EPuttyCmdSendEsc }
+    };    
+//Update also gesture action count!!!
+     const TInt iGestureCount = 22; 
+     if ( aItemToCmd ) {
+         if ( aCmd < iGestureCount && aCmd > -1 ) {
+             return KItemMap[aCmd].iCommand;
+         } else {
+             return -1;
+         }
+     } 
+     
+    for(int i = 0; i < iGestureCount; i++) {
+        if ( KItemMap[i].iCommand == aCmd ) {
+            return i;        
+        }
+    }
+    return -1;
+}
+
+// Show touch settings
+void CTerminalView::SetTouchSettingsL() {
+    //R_PUTTY_PROFILEEDIT_GESTURE_POPPED_UP_TEXT_ARRAY
+    TTouchSettings *iTouchSettings = iContainer->GetTouchSettings();
+    TInt itemToEdit = PopUpListViewL(R_PUTTY_PROFILEEDIT_TOUCH_SETTINGLIST_TEXT,0);
+    TInt itemCommand = -1;
+/*      
+        AVKON_ENUMERATED_TEXT { value = EPuttyCmdNone; text = "None"; },
+        AVKON_ENUMERATED_TEXT { value = EPuttyCmdStartVKB; text = "Open virtual keyboard"; },
+        AVKON_ENUMERATED_TEXT { value = EPuttyCmdOpenPopUpMenu; text = "Open popup menu"; },
+        AVKON_ENUMERATED_TEXT { value = EPuttyCmdFullScreen; text = "Toggle full screen"; },
+        AVKON_ENUMERATED_TEXT { value = EPuttyCmdToggleToolbar; text = "Toggle toolbar"; },
+        AVKON_ENUMERATED_TEXT { value = EPuttyCmdSendTab; text = "Send tab key"; },
+        AVKON_ENUMERATED_TEXT { value = EPuttyCmdSend; text = "Open send grid"; },
+        AVKON_ENUMERATED_TEXT { value = EPuttyCmdSendLine; text = "Open send line dialog"; },
+        AVKON_ENUMERATED_TEXT { value = EPuttyCmdSendCtrlAN; text = "Send ctrl+an"; },
+        AVKON_ENUMERATED_TEXT { value = EPuttyCmdSendCtrlAP; text = "Send ctrl+ap"; },
+        AVKON_ENUMERATED_TEXT { value = EPuttyCmdSendAltALeft; text = "Send alt+left arrow"; },
+        AVKON_ENUMERATED_TEXT { value = EPuttyCmdSendAltARight; text = "Send alt+right arrow"; },
+        AVKON_ENUMERATED_TEXT { value = EPuttyCmdSendPageUp; text = "Send page up key"; },
+        AVKON_ENUMERATED_TEXT { value = EPuttyCmdSendPageDown; text = "Send page down key"; },
+        AVKON_ENUMERATED_TEXT { value = EPuttyCmdSendHome; text = "Send home key"; },
+        AVKON_ENUMERATED_TEXT { value = EPuttyCmdSendEnd; text = "Send end key"; },
+        AVKON_ENUMERATED_TEXT { value = EPuttyCmdSendDelete; text = "Send delete key"; },
+        AVKON_ENUMERATED_TEXT { value = EPuttyCmdSendInsert; text = "Send insert key"; },
+        AVKON_ENUMERATED_TEXT { value = EPuttyCmdSendCR; text = "Send insert key"; },
+        AVKON_ENUMERATED_TEXT { value = EPuttyCmdSendCtrlP; text = "Add ctrl modifier to next key"; },
+        AVKON_ENUMERATED_TEXT { value = EPuttyCmdSendAltP; text = "Add alt modifier to next key"; },
+        AVKON_ENUMERATED_TEXT { value = EPuttyCmdSendAltP; text = "Add alt modifier to next key"; },
+        AVKON_ENUMERATED_TEXT { value = EPuttyCmdSendEsc; text = "Send esc key"; }
+*/    
+    
+    if (itemToEdit >= 0) {
+        TInt selectedItem = 0;
+        switch ( itemToEdit ) {
+            case 0:
+                selectedItem = iTouchSettings->GetSingleTap();
+                break;
+            case 1:
+                selectedItem = iTouchSettings->GetDoubleTap();
+                break;
+            case 2:
+                selectedItem = iTouchSettings->GetLongTap();
+                break;
+            case 3:
+                selectedItem = iTouchSettings->GetSwipeUp();
+                break;
+            case 4:
+                selectedItem = iTouchSettings->GetSwipeDown();
+                break;
+            case 5:
+                selectedItem = iTouchSettings->GetSwipeLeft();
+                break;
+            case 6:
+                selectedItem = iTouchSettings->GetSwipeRight();
+                break;
+        }
+        selectedItem = CheckGestureMap(selectedItem, EFalse);
+        itemCommand = PopUpListViewL(R_PUTTY_PROFILEEDIT_GESTURE_POPPED_UP_TEXT_ARRAY, selectedItem);        
+        itemCommand = CheckGestureMap(itemCommand, ETrue);
+        if ( itemCommand != -1 ) {
+            switch ( itemToEdit ) {
+                case 0:                   
+                    iTouchSettings->SetSingleTap(itemCommand);
+                    break;
+                case 1:                   
+                    iTouchSettings->SetDoubleTap(itemCommand);
+                    break;
+                case 2:                   
+                    iTouchSettings->SetLongTap(itemCommand);
+                    break;
+                case 3:                   
+                    iTouchSettings->SetSwipeUp(itemCommand);
+                    break;
+                case 4:                   
+                    iTouchSettings->SetSwipeDown(itemCommand);
+                    break;
+                case 5:                   
+                    iTouchSettings->SetSwipeLeft(itemCommand);
+                    break;
+                case 6:                   
+                    iTouchSettings->SetSwipeRight(itemCommand);
+                    break;
+            }
+        }
+
+        iTouchSettings->WriteSettingFileL(iSettingsFile);
+    } // end if
+}
+
+// Show general toolbar settings
+void CTerminalView::SetGeneralToolbarSettingsL() {
+    //R_PUTTY_PROFILEEDIT_GESTURE_POPPED_UP_TEXT_ARRAY
+    TTouchSettings *iTouchSettings = iContainer->GetTouchSettings();
+    TInt itemToEdit = PopUpListViewL(R_PUTTY_PROFILEEDIT_GENERAL_TOOLBAR_SETTINGLIST_TEXT,0);
+    TInt itemCommand = -1;
+    
+    if (itemToEdit >= 0) {
+        TInt selectedItem = 0;
+        switch ( itemToEdit ) {
+            case 0:
+                selectedItem = iTouchSettings->GetShowToolbar();
+                itemCommand = PopUpListViewL(R_PUTTY_PROFILEEDIT_TBSHOWSTARTUP_POPPED_UP_TEXT_ARRAY, selectedItem);
+                if ( itemCommand != -1 ) {
+                    iTouchSettings->SetShowToolbar(itemCommand);
+                }
+                break;
+            case 1: //Set button count
+                {                
+                selectedItem = iTouchSettings->GetTbButtonCount();
+
+                CAknNumberQueryDialog* dlg =
+                    CAknNumberQueryDialog::NewL( selectedItem );
+                dlg->SetPromptL(_L("Enter toolbar button count:"));
+                if ( dlg->ExecuteLD( R_PUTTY_TBCOUNT_QUERY ) ) {
+                  
+                    if ( selectedItem < 1 ) {
+                        selectedItem = 1;
+                    } else if ( selectedItem > 8 ) {
+                        selectedItem = 8;
+                    }
+                    iTouchSettings->SetTbButtonCount(selectedItem);
+                    iTouchSettings->WriteSettingFileL(iSettingsFile);
+                    iContainer->UpdateAfterSettingsChangeL();
+                } else {
+                  //user canceled
+                }
+                break;
+                }
+            case 2: //Set Width
+            case 3: //Set Heigth                
+                {
+                TInt width = iTouchSettings->GetTbButtonWidth();
+                TInt heigth = iTouchSettings->GetTbButtonHeigth();
+                CAknMultiLineDataQueryDialog* dlg =
+                    CAknMultiLineDataQueryDialog::NewL( width,  heigth );
+                if ( dlg->ExecuteLD( R_PUTTY_TBWIDHTHEIGTH_QUERY ) ) {
+                    //If changed remember to change from putty.rss also
+                    if ( width < 25 ) {
+                        width = 25;
+                    } else if (width > 150 ) {
+                        width = 150;
+                    }
+                    if ( heigth < 25 ) {
+                        heigth = 25;
+                    } else if (heigth > 150 ) {
+                        heigth = 150;
+                    }
+                    iTouchSettings->SetTbButtonWidth(width);
+                    iTouchSettings->SetTbButtonHeigth(heigth);
+                    iTouchSettings->WriteSettingFileL(iSettingsFile);
+                    iContainer->UpdateAfterSettingsChangeL();
+                } else {
+                  //user canceled
+                }
+                break;
+                }
+            case 4: //Set button up transparency                
+                {
+                TInt bg = iTouchSettings->GetButtonUpBGTransparency();
+                TInt text = iTouchSettings->GetButtonUpTextTransparency();
+                CAknMultiLineDataQueryDialog* dlg =
+                    CAknMultiLineDataQueryDialog::NewL( bg,  text );
+                if ( dlg->ExecuteLD( R_PUTTY_TBUPTRANSPARENCY_QUERY ) ) {
+                    //If changed remember to change from putty.rss also                 
+                    if ( bg < 0 ) {
+                        bg = 0;
+                    } else if (bg > 255 ) {
+                        bg = 255;
+                    }
+                    if ( text < 0 ) {
+                        text = 0;
+                    } else if (text > 255 ) {
+                        text = 255;
+                    }
+                    iTouchSettings->SetButtonUpBGTransparency(bg);
+                    iTouchSettings->SetButtonUpTextTransparency(text);
+                    iTouchSettings->WriteSettingFileL(iSettingsFile);
+                    iContainer->UpdateAfterSettingsChangeL();
+                } else {
+                  //user canceled
+                }
+                break;
+                }
+            case 5: //Set button down transparency                
+                {
+                TInt bg = iTouchSettings->GetButtonDownBGTransparency();
+                TInt text = iTouchSettings->GetButtonDownTextTransparency();
+                CAknMultiLineDataQueryDialog* dlg =
+                    CAknMultiLineDataQueryDialog::NewL( bg,  text );
+                if ( dlg->ExecuteLD( R_PUTTY_TBUPTRANSPARENCY_QUERY ) ) {
+                    //If changed remember to change from putty.rss also
+                    if ( bg < 0 ) {
+                        bg = 0;
+                    } else if (bg > 255 ) {
+                        bg = 255;
+                    }
+                    if ( text < 0 ) {
+                        text = 0;
+                    } else if (text > 255 ) {
+                        text = 255;
+                    }
+                    iTouchSettings->SetButtonDownBGTransparency(bg);
+                    iTouchSettings->SetButtonDownTextTransparency(text);
+                    iTouchSettings->WriteSettingFileL(iSettingsFile);
+                    iContainer->UpdateAfterSettingsChangeL();
+                } else {
+                  //user canceled
+                }
+                break;
+                }
+            case 6: //Set button font size
+                {
+                TInt fontSize = iTouchSettings->GetButtonFontSize();
+
+                CAknNumberQueryDialog* dlg =
+                    CAknNumberQueryDialog::NewL( fontSize );
+                dlg->SetPromptL(_L("Enter button font size:"));
+                if ( dlg->ExecuteLD( R_PUTTY_TBFONTSIZE_QUERY ) ){
+                  
+                    if ( fontSize > 2000 ) {
+                        fontSize = 2000;
+                    }
+                    iTouchSettings->SetButtonFontSize(fontSize);
+                    iTouchSettings->WriteSettingFileL(iSettingsFile);
+                    iContainer->UpdateAfterSettingsChangeL();
+                } else {
+                  //user canceled
+                }
+                break;
+                }
+
+        }
+        
+              
+    } // end if
+}
+
+// Show toolbar settings
+void CTerminalView::OpenSettingsPopupL() {
+    TInt openOtherList = PopUpListViewL(R_PUTTY_SETTINGSPOPUP_TEXT_ARRAY, 0);
+    
+    //Forward selection back to HandleCommandL
+    switch (openOtherList) {
+        case 0:
+            HandleCommandL(EPuttyCmdTouchSettings);
+            break;
+        case 1:
+            HandleCommandL(EPuttyCmdGeneralToolbar);
+            break;
+        case 2:
+            HandleCommandL(EPuttyCmdToolbarSettings);
+            break;
+        case 3:
+            HandleCommandL(EPuttyCmdSetFont);
+            break;
+        case 4:
+            HandleCommandL(EPuttyCmdSetPalette);
+            break;
+        default:
+            break;
+    }
+}
+
+
+// Show toolbar settings
+void CTerminalView::SetToolbarButtonL() {
+    //TInt buttonToEdit = PopUpListViewL(R_PUTTY_PROFILEEDIT_TBBUTTON_POPPED_UP_TEXT_ARRAY, 0);
+    TTouchSettings *iTouchSettings = iContainer->GetTouchSettings();
+    TInt buttonToEdit = PopUpListViewL(R_PUTTY_PROFILEEDIT_TBBUTTONS_TEXT_ARRAY, 0);
+    if (buttonToEdit >= 0) {
+        TInt selectedCommand = 0;
+        switch (buttonToEdit) {
+            case 0:                   
+                selectedCommand = iTouchSettings->GetTbButton1();
+            break;
+            case 1:                   
+                selectedCommand = iTouchSettings->GetTbButton2();
+            break;
+            case 2:                   
+                selectedCommand = iTouchSettings->GetTbButton3();
+            break;
+            case 3:                   
+                selectedCommand = iTouchSettings->GetTbButton4();
+            break;
+            case 4:                   
+                selectedCommand = iTouchSettings->GetTbButton5();
+            break;
+            case 5:                   
+                selectedCommand = iTouchSettings->GetTbButton6();
+            break;
+            case 6:                   
+                selectedCommand = iTouchSettings->GetTbButton7();
+            break;
+            case 7:                   
+                selectedCommand = iTouchSettings->GetTbButton8();
+            break;        
+        }
+        TInt buttonCommand = PopUpListViewL(R_PUTTY_PROFILEEDIT_TBBUTTON_POPPED_UP_TEXT_ARRAY, selectedCommand);
+        if ( buttonCommand != -1 ) {
+            //Test if button is allready defined in some of the buttons if not update it.
+            if ( iTouchSettings->TestIfToolBarActionAllreadySet(buttonCommand) ) {
+                //Show note
+                if ( CAknQueryDialog::NewL()->ExecuteLD( R_PUTTY_TBBUTTON_EXISTS_QUERY_DIALOG) ) {
+                  // do swap else return
+                    if ( iTouchSettings->SwapButtons(buttonToEdit, buttonCommand) ) {
+                        iTouchSettings->WriteSettingFileL(iSettingsFile);
+                        iContainer->SwapButtons(buttonToEdit, buttonCommand);
+                        //iContainer->UpdateAfterSettingsChangeL();
+                    }                
+                }
+                return;
+            }
+            
+            switch ( buttonToEdit ) {
+                case 0:                   
+                    iTouchSettings->SetTbButton1(buttonCommand);
+                break;
+                case 1:                   
+                    iTouchSettings->SetTbButton2(buttonCommand);
+                break;
+                case 2:                   
+                    iTouchSettings->SetTbButton3(buttonCommand);
+                break;
+                case 3:                   
+                    iTouchSettings->SetTbButton4(buttonCommand);
+                break;
+                case 4:                   
+                    iTouchSettings->SetTbButton5(buttonCommand);
+                break;
+                case 5:                   
+                    iTouchSettings->SetTbButton6(buttonCommand);
+                break;
+                case 6:                   
+                    iTouchSettings->SetTbButton7(buttonCommand);
+                break;
+                case 7:                   
+                    iTouchSettings->SetTbButton8(buttonCommand);
+                break;
+            }
+        }
+        iTouchSettings->WriteSettingFileL(iSettingsFile);
+        iContainer->UpdateAfterSettingsChangeL();
+    }
+}
+#endif
 
 // Change font
 void CTerminalView::SetFontL() {
@@ -786,7 +1347,13 @@ void CTerminalView::SetPaletteL() {
 
 // Handle Enter (center of joystick) key press
 TBool CTerminalView::HandleEnterL() {
+
+#ifdef PUTTY_S60TOUCH
+    if ( iSelection && iContainer->Terminal().DoWeHaveSelection() ) {
+#else
     if ( iSelection && iMark ) {
+#endif    
+    
         // Have a selection -- copy it
         HandleCommandL(EPuttyCmdCopy);
         return ETrue;
@@ -814,6 +1381,9 @@ void CTerminalView::DrawText(TInt aX, TInt aY, const TDesC &aText, TBool aBold,
                              TRgb aBackground) {
     iContainer->Terminal().DrawText(aX, aY, aText, aBold, aUnderline,
                                     aForeground, aBackground);
+#ifdef PUTTY_S60TOUCH
+    iContainer->DrawDeferred(); // lets redraw things so toolbar can be shown.
+#endif
 }
 
 
@@ -842,8 +1412,7 @@ void CTerminalView::ConnectionErrorL(const TDesC &aMessage) {
 }
 
 
-// MPuttyClient::ConnectionClosed()
-void CTerminalView::ConnectionClosed() {
+void CTerminalView::ConnectionClosedL() {
     // If we have a connection error waiting, show it as a waiting dialog box,
     // giving the user time to read it. Otherwise just display a
     // "Connection closed" note.
@@ -862,6 +1431,15 @@ void CTerminalView::ConnectionClosed() {
     }
     iState = EStateNone;
     DoDisconnectL();
+}
+
+
+// MPuttyClient::ConnectionClosed()
+void CTerminalView::ConnectionClosed() {
+    TRAPD(error, ConnectionClosedL());
+    if ( error != KErrNone ) {
+        User::Panic(KFatalErrorPanic, error);
+    }
 }
 
 
@@ -989,7 +1567,21 @@ void CTerminalView::TerminalSizeChanged(TInt aWidth, TInt aHeight) {
 // MTerminalObserver::KeyPressed();
 void CTerminalView::KeyPressed(TKeyCode aCode, TUint aModifiers) {
     if ( iPutty ) {
+#ifdef PUTTY_S60TOUCH
+        if ( iReleaseAltAfterKey ) {
+            iReleaseAltAfterKey = EFalse;
+            iContainer->ReleaseAlt();
+        }
+            
+        if ( iReleaseCtrlAfterKey ) {
+            iReleaseCtrlAfterKey = EFalse;
+            iContainer->ReleaseCtrl();
+        }                      
+
         iPutty->SendKeypress(aCode, aModifiers);
+#else
+        iPutty->SendKeypress(aCode, aModifiers);
+#endif
     }
 }
 
@@ -999,6 +1591,7 @@ void CTerminalView::MsgoCommandL(TInt aCommand) {
     HandleCommandL(aCommand);
     if ( iSendGrid ) {
         AppUi()->RemoveFromStack(iSendGrid);
+        iContainer->SetSendGrid(NULL);
         delete iSendGrid;
         iSendGrid = NULL;
     }
@@ -1009,7 +1602,176 @@ void CTerminalView::MsgoCommandL(TInt aCommand) {
 void CTerminalView::MsgoTerminated() {
     if ( iSendGrid ) {
         AppUi()->RemoveFromStack(iSendGrid);
+        iContainer->SetSendGrid(NULL);
         delete iSendGrid;
         iSendGrid = NULL;
     }
 }
+
+
+// MHWRMVibraObserver::VibraModeChanged()
+void CTerminalView::VibraModeChanged(CHWRMVibra::TVibraModeState /*aState*/) {
+}
+
+
+// MHWRMVibraObserver::VibraStatusChanged()
+void CTerminalView::VibraStatusChanged(CHWRMVibra::TVibraStatus /*aStatus*/) {
+}
+
+
+#ifdef PUTTY_S60TOUCH
+void CTerminalView::SendKeypress(TKeyCode aCode, TUint aModifiers) {
+  iPutty->SendKeypress(aCode,aModifiers);
+}
+
+void CTerminalView::SetReleaseAltAfterKeyPress(TBool aValue) {
+    iReleaseAltAfterKey = aValue;
+}
+
+void CTerminalView::SetReleaseCtrlAfterKeyPress(TBool aValue) {
+    iReleaseCtrlAfterKey = aValue;
+}
+
+TInt CTerminalView::MouseMode() {
+    TTouchSettings *iTouchSettings = iContainer->GetTouchSettings();
+    return iTouchSettings->GetAllowMouseGrab() && iPutty->MouseMode();
+}
+
+void CTerminalView::MouseClick(TInt modifiers, TInt row, TInt col) {
+    iPutty->MouseClick(modifiers, row, col);
+}
+
+void CTerminalView::GrepHttpL() {
+    iContainer->Terminal().CreateHttpListL(); //First create the list
+     
+     // Create a listbox and a popup to contain it
+     CAknSinglePopupMenuStyleListBox *box =
+         new (ELeave) CAknSinglePopupMenuStyleListBox;
+     CleanupStack::PushL(box);
+     CAknPopupList *popup = CAknPopupList::NewL(box,
+                                                R_AVKON_SOFTKEYS_SELECT_CANCEL,
+                                                AknPopupLayouts::EMenuWindow);    
+     CleanupStack::PushL(popup);
+     box->ConstructL(popup, 0);
+     box->CreateScrollBarFrameL(ETrue);
+     box->ScrollBarFrame()->SetScrollBarVisibilityL(CEikScrollBarFrame::EAuto,
+                                                    CEikScrollBarFrame::EAuto);
+
+     // Add fonts to the listbox
+     const CDesCArray &iHttp = iContainer->Terminal().HttpList();
+     box->Model()->SetItemTextArray((MDesC16Array*)&iHttp);
+     box->Model()->SetOwnershipType(ELbmDoesNotOwnItemArray);
+
+     // Run selection
+     TInt ok = popup->ExecuteLD();
+     CleanupStack::Pop(); // popup
+     if ( ok ) {
+         LaunchBrowserL(iHttp[box->CurrentItemIndex()]);
+     }
+     CleanupStack::PopAndDestroy(); // box  
+}
+
+void CTerminalView::LaunchBrowserL(const TDesC& aUrl) {
+    const TInt KWebBrowserUid = 0x10008D39;
+    TUid id( TUid::Uid( KWebBrowserUid ) );
+    TApaTaskList taskList( CEikonEnv::Static()->WsSession() );
+    TApaTask task = taskList.FindApp( id );
+    
+    if ( task.Exists() )
+        {
+        HBufC8* param = HBufC8::NewLC( aUrl.Length() + 2);
+        param->Des().Append(_L("4 "));
+        param->Des().Append(aUrl);
+        TInt ret = task.SendMessage( TUid::Uid( 0 ), *param ); // Uid is not used
+        
+        if ( ret != KErrNone )  { //if send failed copy addr to clipbaord.
+            //RDebug::Print(_L("task.SendMessage FAILED! RET: %d"), ret); 
+            // print error code -46 == permission denied not enough capabilities. Needs SwEvent capability.   
+            if ( aUrl.Length() > 0 ) {
+                // put selection on clipboard
+                CClipboard* cb = CClipboard::NewForWritingLC(
+                    CCoeEnv::Static()->FsSession());
+                cb->StreamDictionary().At(KClipboardUidTypePlainText);               
+                CPlainText *plainText = CPlainText::NewL();
+                CleanupStack::PushL(plainText);              
+                plainText->InsertL(0, aUrl);                                    
+                plainText->CopyToStoreL(cb->Store(),
+                                        cb->StreamDictionary(),
+                                        0,
+                                        plainText->DocumentLength());
+                CleanupStack::PopAndDestroy(); // plainText
+                cb->CommitL();
+                CleanupStack::PopAndDestroy(); // cb
+                         
+                // Show info note that addr was copied to clipboard.               
+                if ( CAknQueryDialog::NewL()->ExecuteLD(R_PUTTY_STR_MISSING_CAPABILITY_BROWSER_OPEN) ) {
+                    task.BringToForeground();    // answered yes.
+                }
+            }            
+        } else {
+            task.BringToForeground();
+        }
+        CleanupStack::PopAndDestroy(param);
+        }
+    else
+        {
+        HBufC16* param = HBufC16::NewLC( aUrl.Length() + 2);
+        param->Des().Append(_L("4 "));
+        param->Des().Append(aUrl);
+        RApaLsSession appArcSession;
+        User::LeaveIfError(appArcSession.Connect()); 
+        TThreadId id;
+        appArcSession.StartDocument( *param, TUid::Uid( KWebBrowserUid), id );
+        appArcSession.Close(); 
+        CleanupStack::PopAndDestroy(param);
+        }
+}
+#endif
+
+#ifdef PUTTY_SYM3 //partial screen vkb
+void CTerminalView::SetHalfKB(TInt aValue, TRect aRect) {
+    if ( iContainer ) {
+        iContainer->SetHalfKB(aValue);
+        
+        if ( !aValue ) {
+            if ( iFullScreen ) {
+                iContainer->SetRect( CEikonEnv::Static()->EikAppUi()->ApplicationRect());
+            } else {
+                iContainer->SetRect(ClientRect());
+            }
+        } else {            
+            iContainer->LockToolbar(ETrue);
+            iContainer->SetRect(aRect); //partial input mode enabled
+        }
+    }
+}
+#endif
+
+void CTerminalView::PlayBeep(const TInt iMode) {
+    switch ( iMode ) {
+        case 1: // Beep
+            iSoundSystem->PlaySound(EAvkonSIDInformationTone);
+            break;
+
+        case 2: // Vibrate    
+            if (iVibra->VibraStatus() == CHWRMVibra::EVibraStatusStopped) {
+                TRAPD(error, iVibra->StartVibraL(KVibraDuration,
+                                                 KVibraIntensity));
+                // We'll just ignore any vibra errors - they could result from
+                // another app using the vibra, it being disabled in the
+                // profile etc. No reason to bother the user.
+            }
+            break;
+
+        case 3: // Beep and vibrate
+            iSoundSystem->PlaySound(EAvkonSIDInformationTone);
+            if (iVibra->VibraStatus() == CHWRMVibra::EVibraStatusStopped) {
+                TRAPD(error, iVibra->StartVibraL(KVibraDuration,
+                                                 KVibraIntensity));
+            }
+            break;
+
+        default: ;
+    }
+}
+

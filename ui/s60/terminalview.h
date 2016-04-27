@@ -2,7 +2,8 @@
  *
  * Putty terminal view
  *
- * Copyright 2007,2009 Petteri Kangaslampi
+ * Copyright 2007,2009-2010 Petteri Kangaslampi
+ * Portions copyright 2009 Risto Avila
  *
  * See license.txt for full copyright and license information.
 */
@@ -12,6 +13,7 @@
 
 #include <aknview.h>
 #include <aknwaitdialog.h>
+#include "hwrmvibra.h"
 #include "puttyclient.h"
 #include "terminalcontrol.h"
 #include "netconnect.h"
@@ -20,15 +22,20 @@
 // Forward declarations
 class CPuttyEngine;
 class CTerminalContainer;
-
+class CAknKeySoundSystem; //For Beep
+#ifdef PUTTY_S60TOUCH
+#include "touchuisettings.h"
+class TTouchSettings;
+#endif
 /**
  * PuTTY terminal view. The terminal view is tha view that handles the actual
  * SSH connection, from network connection establishment to disconnection.
  */
 class CTerminalView : public CAknView, public MPuttyClient,
                       public MTerminalObserver, public MNetConnectObserver,
-                      public MProgressDialogCallback,
-                      public MSendGridObserver {
+                      public MProgressDialogCallback,    
+                      public MSendGridObserver,
+                      public MHWRMVibraObserver {
 
 public:
     /** 
@@ -59,6 +66,19 @@ public: // From CAknView
     void DoDeactivate();
     void HandleStatusPaneSizeChange();
     void DynInitMenuPaneL(TInt aResourceId, CEikMenuPane *aMenuPane);
+#ifdef PUTTY_S60TOUCH
+    //Forward generated keypresses to putty engine
+    void SendKeypress(TKeyCode aCode, TUint aModifiers);
+    void SetReleaseAltAfterKeyPress(TBool aValue); //Default state off
+    void SetReleaseCtrlAfterKeyPress(TBool aValue); //Default state off
+    TInt MouseMode();
+    void MouseClick(TInt modifiers, TInt row, TInt col);
+    void GrepHttpL(); //Show popuplist of http addresses.
+    void LaunchBrowserL(const TDesC& aUrl); //Open up the browser with the url
+#ifdef PUTTY_SYM3 //partial screen vkb
+    void SetHalfKB(TBool aValue, TRect aRect);
+#endif
+#endif
     
 private: // Constructors
     CTerminalView();
@@ -77,7 +97,8 @@ private: // From MPuttyEngine
     TBool AcceptCipher(const TDesC &aCipherName,
                        const TDesC &aCipherType);
     TBool AuthenticationPrompt(const TDesC &aPrompt, TDes &aTarget,
-                               TBool aSecret);
+                               TBool aSecret);  
+    void PlayBeep(const TInt aMode);
 
 private: // From MTerminalObserver
     void TerminalSizeChanged(TInt aWidth, TInt aHeight);
@@ -94,6 +115,10 @@ private: // From MSendGridObserver
     void MsgoCommandL(TInt aCommand);
     void MsgoTerminated();
 
+private: // From MHWRMVibraObserver
+    void VibraModeChanged(CHWRMVibra::TVibraModeState aState);
+    void VibraStatusChanged(CHWRMVibra::TVibraStatus aStatus);
+
 private:
     void FatalError(TInt aResourceId);
     void DoDisconnectL();
@@ -101,6 +126,7 @@ private:
     void DoConnect();
     static TInt ConnectIdleCallback(void *aAny);
     void ConnectionErrorL(const TDesC &aMessage);
+    void ConnectionClosedL();
     void FatalErrorL(const TDesC &aMessage);
     MPuttyClient::THostKeyResponse HostKeyDialogL(const TDesC &aFingerprint,
                                                   TInt aDialogFormatRes);
@@ -112,6 +138,14 @@ private:
     void SetFullScreenL(TBool aFullScreen);
     void SetFontL();
     void SetPaletteL();
+#ifdef PUTTY_S60TOUCH
+    TInt PopUpListViewL(TInt aResourceId, TInt aSelectedItem);
+    void SetToolbarButtonL(); //Show toolbar settings
+    void SetTouchSettingsL(); //Show touch settings
+    void SetGeneralToolbarSettingsL(); //Show general toolbar settings
+    void OpenSettingsPopupL(); //Show first level of settings
+    TInt CheckGestureMap (TInt aCmd, TBool aItemToCmd);
+#endif
 
 private:
     enum {
@@ -136,6 +170,13 @@ private:
     CSendGrid *iSendGrid;
     TBool iSelection;
     TBool iMark;
+#ifdef PUTTY_S60TOUCH
+    TBool iReleaseAltAfterKey;
+    TBool iReleaseCtrlAfterKey;
+    TFileName iSettingsFile;
+#endif    
+    CAknKeySoundSystem* iSoundSystem;
+    CHWRMVibra *iVibra;
 };
 
 

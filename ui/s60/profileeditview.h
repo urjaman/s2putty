@@ -17,6 +17,7 @@
 // Forward declarations
 class CPuttyEngine;
 class CAknNavigationDecorator;
+class TTouchSettings;
 
 
 /**
@@ -61,6 +62,11 @@ private:
         EViewGeneral,
         EViewSsh,
         EViewDisplay,
+#ifdef PUTTY_S60TOUCH
+        EViewTouch,
+        EViewGeneralToolbar,
+        EViewToolbar,
+#endif
         EViewLogging // the order must match the listbox
     };
 
@@ -91,6 +97,7 @@ private:
     TDes *iProfileName;
     CViewSwitcher *iSwitcher;
     CAknNavigationDecorator *iDecorator;
+    TTouchSettings *iSettings;
 };
 
 
