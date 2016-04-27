@@ -29,7 +29,7 @@ static void hmacmd5_chap(const unsigned char *challenge, int challen,
 	MD5Simple(passwd, pwlen, md5buf);
 	hmacmd5_key(hmacmd5_ctx, md5buf, 16);
     } else {
-	hmacmd5_key(hmacmd5_ctx, passwd, pwlen);
+	hmacmd5_key(hmacmd5_ctx, (const unsigned char*) passwd, pwlen);
     }
 
     hmacmd5_do_hmac(hmacmd5_ctx, challenge, challen, response);
@@ -131,7 +131,7 @@ int proxy_socks5_handlechap (Proxy_Socket p)
 		outbuf[3] = 0x10; /* Length */
 		hmacmd5_chap(data, p->chap_current_datalen,
 			     p->cfg.proxy_password, &outbuf[4]);
-		sk_write(p->sub_socket, outbuf, 20);
+		sk_write(p->sub_socket, (const char*) outbuf, 20);
 	      break;
 	      case 0x11:
 	        /* Chose a protocol */

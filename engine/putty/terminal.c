@@ -1324,6 +1324,8 @@ void term_free(Terminal *term)
     sfree(term->pre_bidi_cache);
     sfree(term->post_bidi_cache);
 
+    sfree(term->tabs);
+
     sfree(term);
 }
 

@@ -18,6 +18,9 @@ extern "C" {
 }
 
 
+class CPuttyEngine;
+
+
 /**
  * Settings dialog. Prompts the user to enter various PuTTY configuration
  * settings. Uses the resource structure R_SETTINGS_DIALOG.
@@ -27,9 +30,14 @@ class CSettingsDialog : public CEikDialog {
 public:
     /** 
      * Constructor.
+     * @param aProfileName Profile name, modified if appropriate
+     * @param aIsDefault ETrue if this is the default profile.
+     *                   Default profile cannot be renamed or deleted.
      * @param aConfig PuTTY configuration to use and modify.
+     * @param aPutty PuTTY engine instance to use
      */
-    CSettingsDialog(Config *aConfig);
+    CSettingsDialog(TDes &aProfileName, TBool aIsDefault, Config *aConfig,
+                    CPuttyEngine *aPutty);
     
     void PreLayoutDynInitL();
     TBool OkToExitL(TInt aButtonId);
@@ -38,7 +46,11 @@ public:
 
 private:
     Config *iConfig;
+    CPuttyEngine *iPutty;
     TBool iKeyLine;
+    CDesCArray *iCharSets;
+    TDes &iProfileName;
+    TBool iIsDefault;
 };
 
 

@@ -1,46 +1,67 @@
-/*    dialer.cpp
+/*    netconnectcici.cpp
  *
- * A network connection setup class
+ * A concrete network connection setup class using CIntConnectionInitiator
  *
- * Copyright 2003 Sergei Khloupnov
- * Copyright 2002,2004 Petteri Kangaslampi
+ * Copyright 2006 Petteri Kangaslampi
  *
  * See license.txt for full copyright and license information.
 */
 
-#include <e32std.h>
 #include <intconninit.h>
-#include "dialer.h"
+#include "netconnectcici.h"
 
-_LIT(KAssertPanic, "dialer.cpp");
-#define assert(x) __ASSERT_ALWAYS(x, User::Panic(KAssertPanic, __LINE__))
-_LIT(KDialObserver, "DialObserver");
-_LIT(KDialerPanic2, "dialer2");
+_LIT(KPanic, "nccici");
+#define assert(x) __ASSERT_ALWAYS(x, User::Panic(KPanic, __LINE__))
 
 const TInt KMaxAccessDeniedRetryCount = 3;
 
 
-CDialer *CDialer::NewL(MDialObserver *aObserver) {
-    CDialer *self = NewLC(aObserver);;
-    CleanupStack::Pop(self);
-    return self;
-}
-
-CDialer* CDialer::NewLC(MDialObserver* aObserver) {
-    CDialer* self = new (ELeave) CDialer(aObserver);
+// Factory
+CNetConnect *CNetConnect::NewL(MNetConnectObserver &aObserver) {
+    CNetConnectCICI *self =
+        new (ELeave) CNetConnectCICI(aObserver);
     CleanupStack::PushL(self);
     self->ConstructL();
+    CleanupStack::Pop();
     return self;
 }
 
 
-CDialer::CDialer(MDialObserver *aObserver)
-    : CActive(EPriorityNormal),
-      iObserver(aObserver) {
+// Constructor
+CNetConnectCICI::CNetConnectCICI(MNetConnectObserver &aObserver) :
+    iObserver(aObserver) {
+    CActiveScheduler::Add(this);
 }
 
 
-CDialer::~CDialer() {
+// Second-phase constructor
+void CNetConnectCICI::ConstructL() {
+    
+    // On a 6600, CIntConnectionInitiator::NewL() will fail with
+    // KErrNotFound once after an access point has been deleted and a
+    // new one created, at least if the access point was the only one
+    // in use. After a single network connection has been established
+    // automatically, future connection attempts will work fine. To
+    // work around this, we'll simply return immediately from
+    // connection attempts if this breakage happends.
+    //
+    // On Series 60 2.0, RConnection is the preferred way to set up
+    // connections, but it's possible that somebody will try to run the
+    // S60v1 build on v2 devices since they should be compatible, so we'll
+    // keep the workaround.
+    TRAPD(err, iIntConnInit = CIntConnectionInitiator::NewL());
+    if ( err == KErrNotFound ) {
+        iIntConnInitBroken = ETrue;
+    } else {
+        User::LeaveIfError(err);
+        User::LeaveIfError(iNif.Open());
+        iNifOpen = ETrue;
+    }
+}
+
+
+// Destructor
+CNetConnectCICI::~CNetConnectCICI() {
     Cancel();
     if ( iNifTimersDisabled ) {
         iNif.DisableTimers(EFalse);
@@ -52,44 +73,19 @@ CDialer::~CDialer() {
 }
 
 
-void CDialer::ConstructL() {
+// Connect
+void CNetConnectCICI::Connect(RSocketServ & /*aSocketServ*/) {
 
-    // On a 6600, CIntConnectionInitiator::NewL() will fail with
-    // KErrNotFound once after an access point has been deleted and a
-    // new one created, at least if the access point was the only one
-    // in use. After a single network connection has been established
-    // automatically, future connection attempts will work fine. To
-    // work around this, we'll simply return immediately from
-    // connection attempts if this breakage happends.
-    //
-    // On Series 60 2.0, RConnection is the preferred way to set up
-    // connections. It's not available in previous versions though, and we
-    // don't want to build separate binaries for different versions...
-    TRAPD(err, iIntConnInit = CIntConnectionInitiator::NewL());
-    if ( err == KErrNotFound ) {
-        iIntConnInitBroken = ETrue;
-    } else {
-        User::LeaveIfError(err);
-        User::LeaveIfError(iNif.Open());
-        iNifOpen = ETrue;
-    }
-
-    CActiveScheduler::Add(this);
-}
-
-
-void CDialer::DialL() {
     assert(iState == EStateNone);
-
-    // Disable connection inactivity timers
     
     // Work around a broken CIntConnectionInitiator
     if ( iIntConnInitBroken ) {
-        iObserver->DialCompletedL(KErrNone);
+        iObserver.NetConnectComplete(KErrNone);
         iState = EStateOldConnection;
         return;
     }
 
+    // Disable connection inactivity timers    
     // Note that we don't check for the return code. That's because the call
     // fails with KErrNotReady on a 6600, but it still seems to work. We can't
     // defer the call to after the connection has been set up, since in that
@@ -99,11 +95,14 @@ void CDialer::DialL() {
     iNifTimersDisabled = ETrue;
             
     iAccessDeniedRetryCount = 0;
-    DoDialL();
-} 
+    DoConnect();
+    iState = EStateConnecting;
+}
 
 
-void CDialer::DoDialL() {
+// Really connect, used for retries too
+void CNetConnectCICI::DoConnect() {
+    
     // Build connection preferences
     CCommsDbConnectionPrefTableView::TCommDbIapConnectionPref pref;
     pref.iRanking = 1;
@@ -118,13 +117,34 @@ void CDialer::DoDialL() {
     // before calling ConnectL(), otherwise we'll eat events from other active
     // objects. v2.0 does work without this, but it doesn't hurt...
     iStatus = KRequestPending;
-    iIntConnInit->ConnectL(pref, iStatus);
+
+    // Grr, why can this leave when it's an asynchronous method?
+    TRAPD(err, iIntConnInit->ConnectL(pref, iStatus));
+    if ( err != KErrNone ) {
+        iStatus = err;
+        iObserver.NetConnectComplete(err);
+        return;
+    }
     SetActive();
-    iState = EStateDialing;
 }
 
 
-void CDialer::RunL() {
+// Cancel connection
+void CNetConnectCICI::CancelConnect() {
+    if ( iState != EStateConnecting ) {
+        return;
+    }
+    Cancel();
+    if ( iNifTimersDisabled ) {
+        iNif.DisableTimers(EFalse);
+        iNifTimersDisabled = EFalse;
+    }
+}
+
+
+// Active object RunL
+void CNetConnectCICI::RunL() {
+
     TInt err = iStatus.Int();
 
     switch ( err ) {
@@ -145,9 +165,8 @@ void CDialer::RunL() {
             iState = EStateNone;
             iAccessDeniedRetryCount++;
             if ( iAccessDeniedRetryCount < KMaxAccessDeniedRetryCount ) {
-                TRAP(err, DoDialL());
-                if ( err == KErrNone )
-                    return;
+                DoConnect();
+                return;
             }
             break;
         }
@@ -161,57 +180,21 @@ void CDialer::RunL() {
             delete iIntConnInit;
             TRAPD(err2, iIntConnInit = CIntConnectionInitiator::NewL());
             if ( err2 != KErrNone ) {
-                User::Panic(KDialerPanic2, err2);
+                User::Panic(KPanic, err2);
             }
             break;
         }
     }
-    
-    TRAPD(error, iObserver->DialCompletedL(err));
-    if ( error != KErrNone ) {
-        User::Panic(KDialObserver, error);
-    }
+
+    iObserver.NetConnectComplete(err);
 }
 
 
-void CDialer::DoCancel() {
-    assert(iState == EStateDialing);
+// Active object cancel
+void CNetConnectCICI::DoCancel() {
+    assert(iState == EStateConnecting);
     // Not sure if this is really correct, but this is what the IAPConnect
     // example does...
     iIntConnInit->Cancel();
-}
-
-
-void CDialer::CancelDialL() {
-
-    if ( iState == EStateDialing ) {
-        Cancel();
-        if ( iNifTimersDisabled ) {
-            User::LeaveIfError(iNif.DisableTimers(EFalse));
-            iNifTimersDisabled = EFalse;
-        }
-        iState = EStateNone;
-    } else if ( iState == EStateConnected ) {
-        User::LeaveIfError(iIntConnInit->TerminateActiveConnection());
-        if ( iNifTimersDisabled ) {
-            User::LeaveIfError(iNif.DisableTimers(EFalse));
-            iNifTimersDisabled = EFalse;
-        }
-        iState = EStateNone;
-    }
-}
-
-
-void CDialer::CloseConnectionL() {
-
-    if ( iState == EStateDialing ) {
-        CancelDialL();
-    } else if ( iState == EStateConnected ) {
-        User::LeaveIfError(iIntConnInit->TerminateActiveConnection());
-        if ( iNifTimersDisabled ) {
-            User::LeaveIfError(iNif.DisableTimers(EFalse));
-            iNifTimersDisabled = EFalse;
-        }
-        iState = EStateNone;
-    }
+    iState = EStateNone;
 }

@@ -22,7 +22,6 @@ SOURCE		s60\puttydoc.cpp
 SOURCE		s60\puttyappui.cpp
 SOURCE		s60\puttyterminalview.cpp
 SOURCE		s60\puttyterminalcontainer.cpp
-SOURCE		s60v2\dialer.cpp
 SOURCE		s60v2\audiorecorder.cpp
 SOURCE		s60\filelistdialog.cpp
 
@@ -30,6 +29,7 @@ SOURCE		common\terminalcontrol.cpp
 SOURCE		common\terminalcontrols2font.cpp
 SOURCE		common\termfepext1.cpp
 SOURCE		common\oneshottimer.cpp
+SOURCE		common\netconnectrconnection.cpp
 SOURCE		s2font\s2font.cpp
 
 USERINCLUDE	..\..\ui\s60v2 ..\..\ui\s60 ..\..\ui\common ..\..\ui\s2font
@@ -42,4 +42,5 @@ LIBRARY		euser.lib apparc.lib cone.lib eikcore.lib gdi.lib eikcoctl.lib
 LIBRARY		efsrv.lib
 LIBRARY		mediaclientaudio.lib commonengine.lib
 LIBRARY		ws32.lib bitgdi.lib fbscli.lib fepbase.lib
+LIBRARY		esock.lib
 LIBRARY		puttyengine.lib

@@ -17,16 +17,32 @@
 #include <e32svr.h>
 #include <eikbtgpc.h>
 #include <eikchkbx.h>
+#include <badesca.h>
+#include <cknconf.h>
 #include "puttyui.hrh"
 #include <putty.rsg>
 extern "C" {
 #include "putty.h" // struct Config
 }
 #include "settingsdialog.h"
+#include "puttyengine.h"
 
 _LIT(KAssertPanic, "settingsdialog.cpp");
 #define assert(x) __ASSERT_ALWAYS(x, User::Panic(KAssertPanic, __LINE__))
 
+_LIT8(KSmallFontName, "small");
+_LIT8(KLargeFontName, "large");
+static const TInt KNormalSmallWidth = 80;
+static const TInt KNormalSmallHeight = 24;
+static const TInt KNormalLargeWidth = 74;
+static const TInt KNormalLargeHeight = 14;
+static const TInt KFullSmallWidth = 106;
+static const TInt KFullSmallHeight = 25;
+static const TInt KFullLargeWidth = 91;
+static const TInt KFullLargeHeight = 14;
+
+static const TInt KSmallFontIndex = 0;
+static const TInt KLargeFontIndex = 1;
 
 
 // Converts a null-terminated string to a descriptor. Doesn't support anything
@@ -62,8 +78,12 @@ static void DesToString(const TDesC &aDes, char *aTarget, int targetLen) {
 
 
 // Dialog constructor
-CSettingsDialog::CSettingsDialog(Config *aConfig) {
+CSettingsDialog::CSettingsDialog(TDes &aProfileName, TBool aIsDefault,
+                                 Config *aConfig, CPuttyEngine *aPutty)
+    : iProfileName(aProfileName),
+      iIsDefault(aIsDefault) {
     iConfig = aConfig;
+    iPutty = aPutty;
 }
 
 
@@ -72,6 +92,14 @@ void CSettingsDialog::PreLayoutDynInitL() {
 
     HBufC *buf = HBufC::NewLC(256);
     TPtr ptr = buf->Des();
+
+    // Profile
+    CEikEdwin *profileEdwin = ((CEikEdwin*)Control(ESettingsProfile));
+    profileEdwin->SetTextL(&iProfileName);
+    profileEdwin->SetReadOnly(iIsDefault);
+    if ( iIsDefault ) {
+        SetLineDimmedNow(ESettingsProfile, ETrue);
+    }
 
     // Hostname
     StringToDes(iConfig->host, ptr);
@@ -103,6 +131,45 @@ void CSettingsDialog::PreLayoutDynInitL() {
     StringToDes(iConfig->keyfile.path, ptr);
     ((CEikEdwin*)Control(ESettingsPrivateKey))->SetTextL(&ptr);
 
+    // Font
+    TPtrC8 fontDes((const TUint8*)iConfig->font.name);
+    TBool largeFont;
+    CEikChoiceList *fontList = (CEikChoiceList*)Control(ESettingsFont);
+    if ( fontDes.CompareF(KLargeFontName) == 0 ) {
+        fontList->SetCurrentItem(KLargeFontIndex);
+        largeFont = ETrue;
+    } else {
+        fontList->SetCurrentItem(KSmallFontIndex);
+        largeFont = EFalse;
+    }
+
+    // Full screen
+    CEikCheckBox::TState state = CEikCheckBox::EClear;
+    if ( largeFont ) {
+        if ( (iConfig->width == KFullLargeWidth) &&
+             (iConfig->height == KFullLargeHeight) ) {
+            state = CEikCheckBox::ESet;
+        }
+    } else {
+        if ( (iConfig->width == KFullSmallWidth) &&
+             (iConfig->height == KFullSmallHeight) ) {
+            state = CEikCheckBox::ESet;
+        }
+    }
+    ((CEikCheckBox*)Control(ESettingsFullScreen))->SetState(state);
+
+    // Character set
+    // FIXME: This is the only thing we need the engine for -- consider another solution
+    iCharSets = iPutty->SupportedCharacterSetsL();
+    CEikChoiceList *csList = ((CEikChoiceList*)Control(ESettingsCharacterSet));
+    StringToDes(iConfig->line_codepage, ptr);
+    TInt curcs;
+    if ( iCharSets->Find(ptr, curcs) != 0 ) {
+        curcs = 0;
+    }
+    csList->SetArrayL(iCharSets);
+    csList->SetCurrentItem(curcs);
+
     // Logging type
     assert((iConfig->logtype >= 0) && (iConfig->logtype <= 3));
     ((CEikChoiceList*)Control(ESettingsLogType))
@@ -114,6 +181,11 @@ void CSettingsDialog::PreLayoutDynInitL() {
     ((CEikEdwin*)Control(ESettingsLogFile))->SetTextL(&ptr);
 
     CleanupStack::PopAndDestroy(); // buf
+
+    // Disable delete button for the default profile
+    if ( iIsDefault ) {
+        ButtonGroupContainer().MakeCommandVisible(ECmdSettingsDelete, EFalse);
+    }
     
     ButtonGroupContainer().SetDefaultCommand(EEikBidOk);
 }
@@ -121,6 +193,16 @@ void CSettingsDialog::PreLayoutDynInitL() {
 
 // Dialog close, reads dialog data and writes it to the configuration
 TBool CSettingsDialog::OkToExitL(TInt aButtonId) {
+
+    // Confirm profile deletion
+    if ( aButtonId == ECmdSettingsDelete ) {
+        if ( CCknConfirmationDialog::RunDlgLD(
+                 R_STR_DELETE_PROFILE_CONFIRM_TITLE,
+                 R_STR_DELETE_PROFILE_CONFIRM_TEXT) ) {
+            return ETrue;
+        }
+        return EFalse;
+    }
 
     // If the "Browse" button was pressed, just show a file selection dialog
     if ( aButtonId == ECmdSettingsBrowseKeyFile ) {
@@ -143,6 +225,11 @@ TBool CSettingsDialog::OkToExitL(TInt aButtonId) {
     
     HBufC *buf = HBufC::NewLC(256);
     TPtr ptr = buf->Des();
+
+    // Profile
+    if ( !iIsDefault ) {
+        ((CEikEdwin*)Control(ESettingsProfile))->GetText(iProfileName);
+    }
 
     // Hostname
     ((CEikEdwin*)Control(ESettingsHost))->GetText(ptr);
@@ -176,6 +263,46 @@ TBool CSettingsDialog::OkToExitL(TInt aButtonId) {
     // FIXME: This won't work with non-ASCII characters in the path!
     ((CEikEdwin*)Control(ESettingsPrivateKey))->GetText(ptr);
     DesToString(ptr, iConfig->keyfile.path, sizeof(iConfig->keyfile.path));
+
+    // Font
+    TPtr8 fontPtr((TUint8*)iConfig->font.name, sizeof(iConfig->font.name));
+    TBool largeFont = EFalse;
+    switch ( ((CEikChoiceList*)Control(ESettingsFont))->CurrentItem() ) {
+        case KSmallFontIndex:
+            fontPtr = KSmallFontName;
+            break;
+
+        case KLargeFontIndex:
+            fontPtr = KLargeFontName;
+            largeFont = ETrue;
+            break;
+    }
+    fontPtr.Append('\0');
+
+    // Full screen
+    if ( ((CEikCheckBox*)Control(ESettingsFullScreen))->State() ==
+         CEikCheckBox::ESet ) {
+        if ( largeFont ) {
+            iConfig->width = KFullLargeWidth;
+            iConfig->height = KFullLargeHeight;
+        } else {
+            iConfig->width = KFullSmallWidth;
+            iConfig->height = KFullSmallHeight;
+        }
+    } else {
+        if ( largeFont ) {
+            iConfig->width = KNormalLargeWidth;
+            iConfig->height = KNormalLargeHeight;
+        } else {
+            iConfig->width = KNormalSmallWidth;
+            iConfig->height = KNormalSmallHeight;
+        }
+    }
+
+    // Character set
+    CEikChoiceList *csList = ((CEikChoiceList*)Control(ESettingsCharacterSet));
+    DesToString((*iCharSets)[csList->CurrentItem()], iConfig->line_codepage,
+                sizeof(iConfig->line_codepage));    
     
     // Logging type
     iConfig->logtype =

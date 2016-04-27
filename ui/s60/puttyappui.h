@@ -3,154 +3,146 @@
  * Putty UI Application UI class
  *
  * Copyright 2003 Sergei Khloupnov
- * Copyright 2002,2003 Petteri Kangaslampi
+ * Copyright 2002,2003,2007 Petteri Kangaslampi
  *
  * See license.txt for full copyright and license information.
 */
 
-#ifndef __PUTTYAPPUI_H__
-#define __PUTTYAPPUI_H__
+#ifndef PUTTYAPPUI_H
+#define PUTTYAPPUI_H
 
 #include <aknviewappui.h>
-#include <aknprogressdialog.h>
-#include "puttyclient.h"
-#include "terminalcontrol.h"
-#include "dialer.h"
-#ifndef PUTTY_NO_AUDIORECORDER
-#include "audiorecorder.h"
-#endif
-extern "C" {
-#include "putty.h" // struct Config
-}
 
-class CPuttyTerminalView;
+
+// Forward declarations
+class CProfileListView;
+class CProfileEditView;
+class CTerminalView;
 class CPuttyEngine;
-class CEikMenuPane;
-class CAknWaitDialog;
+class CAknNavigationControlContainer;
 
 
 /**
- * PuTTY UI Application UI class. Contains most of the UI logic, including
- * engine and terminal callbacks.
+ * PuTTY application UI class. This class mainly constructs views and contains
+ * some minimal global logic. Most application logic is placed in views.
  */
-class CPuttyAppUi: public CAknViewAppUi, public MPuttyClient,
-                   public MTerminalObserver, public MDialObserver,
-#ifndef PUTTY_NO_AUDIORECORDER
-                   public MRecorderObserver,
-#endif
-                   public MProgressDialogCallback {
-    
+class CPuttyAppUi : public CAknViewAppUi {
+
 public:
+    /** 
+     * Second-phase constructor.
+     */
     void ConstructL();
-    CPuttyAppUi();
+
+    /** 
+     * Destructor.
+     */
     ~CPuttyAppUi();
 
-    virtual TBool ProcessCommandParametersL(TApaCommand aCommand,
-                                            TFileName &aDocumentName,
-                                            const TDesC8 &aTail);
-    void DoDynInitMenuPaneL(TInt aResourceId, CEikMenuPane *aMenuPane);
+    /** 
+     * Activates the profile list view.
+     */
+    void ActivateProfileListViewL();
 
     /** 
-     * Callback from the terminal view when the terminal control has been
-     * created.
+     * Activates the profile edit view. This is typically called from the
+     * profile list view only.
+     * 
+     * @param aPutty The PuTTY engine instance to use. The correct settings
+     *               file must have already been loaded. The profile edit view
+     *               will update the settings in the engine. The reference must
+     *               remain valid as long as the view is active.
+     * @param aProfileName Profile name, may be modified. The reference must
+     *                     remain valid as long as the view is active.
      */
-    void TerminalCreatedL();
+    void ActivateProfileEditViewL(CPuttyEngine &aPutty, TDes &aProfileName);
 
     /** 
-     * Callback from the terminal view when the terminal control has been
-     * created.
+     * Gets profile edit view data. This is typically called from the profile
+     * edit view upon activation, and will return the data written in using
+     * ActivateProfileEditViewL().
+     * 
+     * @param aPutty The PuTTY engine instance to use.
+     * @param aProfileName Profile name
+     *
+     * @see ActivateProfileEditViewL
      */
-    void TerminalDeleted();
+    void GetProfileEditDataL(CPuttyEngine *&aPutty, TDes *&aProfileName);
 
+    /** 
+     * Activates the terminal view, using a specified profile to connect to.
+     * This is typically called from the profile list view only.
+     * 
+     * @param aProfileFile The profile file to use. The app UI makes a copy
+     *                     of the contents, so using a temporary descriptor
+     *                     is safe.
+     */
+    void ActivateTerminalViewL(TDesC &aProfileFile);
 
-    // MDialObserver methods
-    virtual void DialCompletedL(TInt aError);
+    /** 
+     * Gets the profile file to use for initializing the engine for the
+     * connection. Called from the terminal view only after being activated
+     * from the profile list view.
+     * 
+     * @return Profile file name, including full path
+     */
+    const TDesC &TerminalProfileFile();
 
-#ifndef PUTTY_NO_AUDIORECORDER
-    // MRecorderObserver methods
-    virtual void RecordCompleted(TInt anError);
-#endif
+    /** 
+     * Retrieves the profile directory, <drive>:\private\<SID>\profiles\
+     *
+     * @return Profile directory, including a trailing backslash
+     */
+    const TDesC &ProfileDirectory();
+
+    /** 
+     * Retrieves the data directory, <drive>:\private\<SID>\data\
+     *
+     * @return Data directory, including a trailing backslash
+     */
+    const TDesC &DataDirectory();
+
+    /** 
+     * Retrieves the font directory, <drive>:\resource\puttyfonts\
+     *
+     * @return Font directory, including a trailing backslash
+     */
+    const TDesC &FontDirectory();
+
+    /** 
+     * Retrieves the navi pane
+     * 
+     * @return Navigation control container
+     */
+    CAknNavigationControlContainer &NaviPane();
+
+    /** 
+     * Retrieves a list of available fonts
+     * 
+     * @return Font array
+     */
+    const CDesCArray &Fonts();
+
     
-    // MPuttyClient methods
-    virtual void DrawText(TInt aX, TInt aY, const TDesC &aText, TBool aBold,
-                          TBool aUnderline, TRgb aForeground,
-                          TRgb aBackground);
-    virtual void SetCursor(TInt aX, TInt aY);
-    virtual void ConnectionError(const TDesC &aMessage);
-    virtual void FatalError(const TDesC &aMessage);
-    virtual void ConnectionClosed();
-    virtual THostKeyResponse UnknownHostKey(const TDesC &aFingerprint);
-    virtual THostKeyResponse DifferentHostKey(const TDesC &aFingerprint);
-    virtual TBool AcceptCipher(const TDesC &aCipherName,
-                               TCipherDirection aDirection);
-    virtual TBool AuthenticationPrompt(const TDesC &aPrompt, TDes &aTarget,
-                                       TBool aSecret);
-
-    // MTerminalObserver methods
-    virtual void TerminalSizeChanged(TInt aWidth, TInt aHeight);
-    virtual void KeyPressed(TKeyCode aCode, TUint aModifiers);
-    virtual void RePaintWindow();
-
-    // MProgressDialogCallback methods
-    virtual void DialogDismissedL(TInt aButtonId);
-
+public: // from CAknAppUi
     void HandleCommandL(TInt aCommand);
-    CPuttyEngine* Engine();
 
-private:        
-    virtual TKeyResponse HandleKeyEventL(const TKeyEvent& aKeyEvent,
-                                         TEventCode aType);
-    void ConnectionErrorL(const TDesC &aMessage);
-    void FatalErrorL(const TDesC &aMessage);
-    THostKeyResponse HostKeyDialogL(const TDesC &aFingerprint,
-                                    TInt aDialogFormatRes);
-    TBool AcceptCipherL(const TDesC &aCipherName,
-                        TCipherDirection aDirection);
-    void ReadUiSettingsL(Config *aConfig);
-    void WriteUiSettingsL(Config *aConfig);
-    TBool AuthenticationPromptL(const TDesC &aPrompt, TDes &aTarget,
-                                TBool aSecret);
-    
-    void StringToDes(const char *aStr, TDes &aTarget);
-    void DesToString(const TDesC &aDes, char *aTarget, int targetLen);
-
-    void ShowDialWaitDialogL();
-    void RemoveDialWaitDialogL();
-    void ShowRecordWaitDialogL();
-    void RemoveRecordWaitDialogL();
-    
 private:
-    CPuttyTerminalView *iTerminalView;
-    CPuttyEngine *iEngine;
-    TInt iTermWidth, iTermHeight;
-    HBufC *iFatalErrorPanic;
-    TBool iFullScreen;
-    CDialer *iDialer;
-#ifndef PUTTY_NO_AUDIORECORDER
-    CAudioRecorder *iRecorder;
-    HBufC8 *iAudio;
-    TPtr8 iAudioRecordDes;
-    TBool iRecording;
-#endif
-    TFileName iDataPath;
-    TFileName iFontPath;
-    TFileName iFontName;
-    TInt iLastCommand;
-    TBool iDialWaitDialogOpen;
-    HBufC *iConnectedMsg;
-    CTerminalControl *iTerminal;
-    TBool iRandomExists;
-    HBufC **iFonts;
-    TInt iNumFonts;
+    CProfileListView *iProfileListView;
+    CProfileEditView *iProfileEditView;
+    CTerminalView *iTerminalView;
 
-    enum {
-        EPuttyUIStateNone = 0,
-        EPuttyUIStateDialing,
-        EPuttyUIStateConnecting,
-        EPuttyUIStateConnected,
-        EPuttyUIStateDisconnected
-    } iState;
+    CPuttyEngine *iProfileEditPutty;
+    TDes *iProfileEditName;
 
+    TFileName iTerminalProfileFile;
+
+    TBuf<29> iProfileDirectory; // "x:\private\12345678\profiles\"
+    TBuf<25> iDataDirectory; // "x:\private\12345678\data\"
+    TBuf<23> iFontDirectory; // "x:\resource\puttyfonts\"
+
+    CDesCArray *iFonts;
+    CAknNavigationControlContainer *iNaviPane;
 };
 
 

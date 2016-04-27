@@ -51,7 +51,7 @@ public:
 
     // CPuttyEngine methods
     virtual Config *GetConfig();
-    virtual TInt Connect();
+    virtual TInt Connect(RSocketServ &aSocketServ, RConnection &aConnection);
     virtual void GetErrorMessage(TDes &aTarget);
     virtual void Disconnect();
     virtual void SetTerminalSize(TInt aWidth, TInt aHeight);
@@ -61,6 +61,7 @@ public:
     virtual void ReadConfigFileL(const TDesC &aFile);
     virtual void WriteConfigFileL(const TDesC &aFile);
     virtual void SetDefaults();
+    virtual CDesCArray *SupportedCharacterSetsL();
 
     // MSocketWatcher methods
     virtual void SocketOpened();

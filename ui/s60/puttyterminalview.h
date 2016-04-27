@@ -113,6 +113,11 @@ public: // from CAknView
      */
     void DoDeactivate();
     
+    /** 
+     * Called when the screen size changes
+     */
+    void HandleStatusPaneSizeChange();
+    
 
 private:
     // Constructor

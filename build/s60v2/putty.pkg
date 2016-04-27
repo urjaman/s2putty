@@ -25,8 +25,8 @@
 ; Recognizer
 "..\..\..\epoc32\release\armi\urel\recputty.mdl"-"!:\system\recogs\recputty.mdl"
 
-; Fonts - big fonts disabled
+; Fonts
 "..\..\ui\s2font\fixed4x6.s2f"-"!:\system\apps\putty\fonts\fixed4x6.s2f"
-;"..\..\ui\s2font\fixed5x7.s2f"-"!:\system\apps\putty\fonts\fixed5x7.s2f"
-;"..\..\ui\s2font\fixed6x10.s2f"-"!:\system\apps\putty\fonts\fixed6x10.s2f"
-;"..\..\ui\s2font\fixed6x12.s2f"-"!:\system\apps\putty\fonts\fixed6x12.s2f"
+"..\..\ui\s2font\fixed5x7.s2f"-"!:\system\apps\putty\fonts\fixed5x7.s2f"
+"..\..\ui\s2font\fixed6x10.s2f"-"!:\system\apps\putty\fonts\fixed6x10.s2f"
+"..\..\ui\s2font\fixed6x12.s2f"-"!:\system\apps\putty\fonts\fixed6x12.s2f"

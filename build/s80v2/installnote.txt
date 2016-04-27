@@ -1,7 +1,7 @@
 PuTTY for Nokia 9300/9500 Communicators
-Version 1.4 Beta 1, 5 March 2006
+Version 1.5 Beta 1, 4 March 2008
 
-The PuTTY Symbian OS port is copyright 2002-2006 Petteri Kangaslampi.
+The PuTTY Symbian OS port is copyright 2002-2008 Petteri Kangaslampi.
 Portions of the Symbian OS version copyright Gabor Keresztfavli.
 PuTTY is copyright 1997-2004 Simon Tatham.
 

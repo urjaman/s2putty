@@ -10,6 +10,7 @@
 #include <e32std.h>
 #include <assert.h>
 #include <stdlib.h>
+#include <badesca.h>
 #include "charutil.h"
 #include "puttyengineimp.h"
 #include "epocmemory.h"
@@ -138,7 +139,8 @@ Config *CPuttyEngineImp::GetConfig() {
 
 
 // MPuttyEngine::Connect()
-TInt CPuttyEngineImp::Connect() {
+TInt CPuttyEngineImp::Connect(RSocketServ &aSocketServ,
+                              RConnection &aConnection) {
 
     assert(iState == EStateInitialized);
 
@@ -176,6 +178,7 @@ TInt CPuttyEngineImp::Connect() {
     // Initialize networking
     sk_init();
     iNumSockets = 0;
+    sk_set_connection(aSocketServ, aConnection);
     sk_set_watcher(this);
     sk_provide_logctx(iLogContext);
 
@@ -251,16 +254,19 @@ void CPuttyEngineImp::Disconnect() {
     delete iTermUpdatePeriodic;
     iTermUpdatePeriodic = NULL;
 
-    // Close networking
-    sk_set_watcher(NULL);
-    sk_cleanup();
-
     term_free(iTerminal);
     iTerminal = NULL;
     ldisc_free(iLineDisc);
     iLineDisc = NULL;
     log_free(iLogContext);
     iLogContext = NULL;
+    iBackend->free(iBackendHandle);
+    iBackend = NULL;
+    iBackendHandle = NULL;
+
+    // Close networking
+    sk_set_watcher(NULL);
+    sk_cleanup();
 
     iState = EStateInitialized;
     delete[] iConnError;
@@ -359,7 +365,7 @@ void CPuttyEngineImp::SetDefaults() {
     statics()->default_port = iConfig.port;
     strcpy(iConfig.line_codepage, "ISO-8859-15");
     iConfig.vtmode = VT_UNICODE;
-    iConfig.sshprot = 1;
+    iConfig.sshprot = 2;
     iConfig.compression = 1;
     for ( TInt i = 0; i < 22; i++ ) {
         iConfig.colours[i][0] = KDefaultColors[i][0];
@@ -367,6 +373,22 @@ void CPuttyEngineImp::SetDefaults() {
         iConfig.colours[i][2] = KDefaultColors[i][2];
     }
     strcpy(iConfig.logfilename.path, "c:\\putty.log");
+}
+
+
+// MPuttyEngine::SupportedCharacterSetsL
+CDesCArray *CPuttyEngineImp::SupportedCharacterSetsL() {
+
+    CDesCArrayFlat *arr = new (ELeave) CDesCArrayFlat(16);
+    TInt i = 0;
+    const char *cs;
+    TBuf<40> buf;
+    while ( (cs = cp_enumerate(i)) != NULL ) {
+        StringToDes(cs, buf);
+        arr->AppendL(buf);
+        i++;
+    }
+    return arr;
 }
 
 
@@ -789,7 +811,6 @@ void CPuttyEngineImp::RunL() {
 
 
 void CPuttyEngineImp::DoCancel() {
-    assert(EFalse);
 }
 
 

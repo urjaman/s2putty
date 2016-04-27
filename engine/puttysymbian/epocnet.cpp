@@ -98,7 +98,8 @@ struct SockAddr_tag {
 
 struct TNetStatics {
     tree234 *iSocketTree;
-    RSocketServ iSocketServ;
+    RSocketServ *iSocketServ;
+    RConnection *iConnection;
     TInt iNextId;
     MSocketWatcher *iWatcher;
     void *iLogCtx;
@@ -138,11 +139,10 @@ void sk_init(void)
     statics->iNextId = 1;
     statics->iWatcher = NULL;
     statics->iLogCtx = NULL;
+    statics->iConnection = NULL;
+    statics->iSocketServ = NULL;
     ((SymbianStatics*)statics()->platform)->net_state = statics;
     
-    TInt err = netStatics->iSocketServ.Connect(2*MAXSOCKETS);
-    if ( err != KErrNone )
-        fatalbox("Unable to connect to socket server");
     netStatics->iSocketTree = newtree234(cmpfortree);
 }
 
@@ -160,8 +160,6 @@ void sk_cleanup(void)
             sk_close(s);
 	}
 
-        statics->iSocketServ.Close();
-
         freetree234(statics->iSocketTree);
         statics->iSocketTree = NULL;
     }
@@ -173,6 +171,12 @@ void sk_cleanup(void)
 // Set watcher object. Set to NULL to disable.
 void sk_set_watcher(MSocketWatcher *aWatcher) {
     netStatics->iWatcher = aWatcher;
+}
+
+// Set connection
+void sk_set_connection(RSocketServ &aSocketServ, RConnection &aConnection) {
+    netStatics->iSocketServ = &aSocketServ;
+    netStatics->iConnection = &aConnection;
 }
 
 void sk_provide_logctx(void *aLogCtx) {
@@ -278,7 +282,9 @@ SockAddr sk_namelookup(const char *host, char **canonicalname)
 	    ret->error="Not enough memory to allocate TInetAddr.";
 	    return ret;
     }
-    err=hres.Open(netStatics->iSocketServ, KAfInet, KProtocolInetUdp);
+    assert((netStatics->iSocketServ != NULL) && (netStatics->iConnection != NULL));
+    err=hres.Open(*netStatics->iSocketServ, KAfInet, KProtocolInetUdp,
+                  *netStatics->iConnection);
     if (err!=KErrNone)
     {
             ret->error = FormatError("Resolver open", err);
@@ -366,7 +372,10 @@ int sk_hostname_is_local(char *name)
 int sk_address_is_local(SockAddr addr)
 {
 #ifdef IPV6
-    return addr->address->IsLoopback();
+    if (addr->address)
+        return addr->address->IsLoopback();
+    else
+        return 0;
 #else
     if (addr->family == KAfInet) {
 	struct in_addr a;
@@ -566,8 +575,9 @@ Socket sk_new(SockAddr addr, int port, int privport, int oobinline,
         netStatics->iWatcher->SocketOpened();
     }
 
-    err=ret->s->Open(netStatics->iSocketServ, KAfInet, KSockStream,
-                     KProtocolInetTcp);
+    assert((netStatics->iSocketServ != NULL) && (netStatics->iConnection != NULL));
+    err=ret->s->Open(*netStatics->iSocketServ, KAfInet, KSockStream,
+                     KProtocolInetTcp, *netStatics->iConnection);
     if (err!=KErrNone) {
 	    ret->error = FormatError("Socket open", err);
             LOGF(("sk_new: Open failed: %d, %s", err, ret->error));
@@ -577,11 +587,13 @@ Socket sk_new(SockAddr addr, int port, int privport, int oobinline,
     ret->oobinline = oobinline;
     if (oobinline) {
 	err=ret->s->SetOpt(KSoTcpOobInline, KSolInetTcp, 1);
+#if !defined(EKA2) && !defined(WINSCW)
 	if (err!=KErrNone) {
 	    ret->error = FormatError("Socket OOB inline", err);
             LOGF(("sk_new: SetOpt for KSoTcpOobInline failed: %d, %s", err, ret->error));
 	    return (Socket) ret;
         }
+#endif
     }
 
     if (nodelay) {
@@ -734,8 +746,9 @@ Socket sk_newlistener(char *srcaddr, int port, Plug plug, int local_host_only)
         netStatics->iWatcher->SocketOpened();
     }
 
-    err=ret->s->Open(netStatics->iSocketServ, KAfInet, KSockStream,
-                     KUndefinedProtocol);
+    assert((netStatics->iSocketServ != NULL) && (netStatics->iConnection != NULL));
+    err=ret->s->Open(*netStatics->iSocketServ, KAfInet, KSockStream,
+                     KUndefinedProtocol, *netStatics->iConnection);
     if (err!=KErrNone) {
         ret->error = FormatError("Socket open", err);
         LOGF(("sk_newlistener: Open failed: %d, %s", err, ret->error));
@@ -1220,7 +1233,8 @@ void CAcceptor::StartAcceptor()
 
 	listener->accepted = new (ELeave) RSocketS;
 
-	err=listener->accepted->Open(netStatics->iSocketServ);
+        assert(netStatics->iSocketServ != NULL);
+	err=listener->accepted->Open(*netStatics->iSocketServ);
 	if (err!=KErrNone)
 	{
             LOGF(("CAcceptor::StartAcceptor: Open failed: %d, %s", err,

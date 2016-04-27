@@ -187,9 +187,7 @@ const char *cp_name(int codepage)
 const char *cp_enumerate(int index)
 {
     int charset;
-    if (index == 0)
-	return "Use font encoding";
-    charset = charset_localenc_nth(index-1);
+    charset = charset_localenc_nth(index);
     if (charset == CS_NONE)
 	return NULL;
     return charset_to_localenc(charset);

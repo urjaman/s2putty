@@ -11,10 +11,13 @@
 #define __PUTTYENGINE_H__
 
 #include <e32keys.h>
+#include <badesca.h>
 #include "putty.h"
 
 
 class MPuttyClient;
+class RSocketServ;
+class RConnection;
 
 
 /**
@@ -47,13 +50,21 @@ public:
     virtual Config *GetConfig() = 0;
 
     /** 
-     * Opens a new connection. 
+     * Opens a new connection.
+     *
+     * @param aSocketServ The socket server session to use for this connection.
+     *                    Must remain valid until the connection is closed.
+     * @param aConnection The network connection to use for this connection.
+     *                    Must remain valid until the connection is closed.
+     *                    The connection must be opened in the socket server
+     *                    session given as aSocketServ.
      * 
      * @return KErrNone if the connection was opened successfully,
      * KErrGeneral if not. Use GetErrorMessage() to get the error
      * message when the connection fails.
      */
-    virtual TInt Connect() = 0;
+    virtual TInt Connect(RSocketServ &aSocketServ,
+                         RConnection &aConnection) = 0;
 
     /** 
      * Gets the most recent error message.
@@ -118,6 +129,14 @@ public:
      * Resets settings back to their default values.
      */
     virtual void SetDefaults() = 0;
+
+    /** 
+     * Returns an array of supported character sets.
+     * 
+     * @return An array containing names for the supported character sets.
+     *         Array ownership is transferred to the client.
+     */
+    virtual CDesCArray *SupportedCharacterSetsL() = 0;
 
     
     CPuttyEngine() : CActive(EPriorityNormal) {};

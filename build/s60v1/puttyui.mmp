@@ -22,7 +22,7 @@ SOURCE		s60\puttydoc.cpp
 SOURCE		s60\puttyappui.cpp
 SOURCE		s60\puttyterminalview.cpp
 SOURCE		s60\puttyterminalcontainer.cpp
-SOURCE		s60v1\dialer.cpp
+SOURCE		s60v1\netconnectcici.cpp
 SOURCE		s60v1\audiorecorder.cpp
 SOURCE		s60\filelistdialog.cpp
 
@@ -42,4 +42,5 @@ LIBRARY		euser.lib apparc.lib cone.lib eikcore.lib gdi.lib eikcoctl.lib
 LIBRARY		efsrv.lib nifman.lib intconninit.lib commdb.lib
 LIBRARY		mediaclientaudio.lib commonengine.lib
 LIBRARY		ws32.lib bitgdi.lib fbscli.lib fepbase.lib
+LIBRARY		esock.lib
 LIBRARY		puttyengine.lib

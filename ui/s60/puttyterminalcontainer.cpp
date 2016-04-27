@@ -80,6 +80,7 @@ void CPuttyTerminalContainer::SetFontL(const TDesC &aFontFile) {
     delete iFont;
     iFont = newFont;
     CleanupStack::Pop();
+    SizeChanged(); // recalculate terminal rect
 }
 
 

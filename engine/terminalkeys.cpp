@@ -81,6 +81,11 @@ TInt TranslateKey(Config *aCfg, Terminal *aTerm, TKeyCode aKey,
         *p++ = (char) (aKey - 'a' + 1);
         return p - aOutput;
     }
+    if ( (shiftMod & EModifierCtrl) && (aKey >= '[') && (aKey <= '_') ) {
+        // Ctrl-[ through Ctrl-_
+        *p++ = (char) (aKey - '[' + 27);
+        return p - aOutput;
+    }
 
     // Next we'll handle function keys, and miscellaneous other weirdness
     int code = 0;
@@ -114,6 +119,9 @@ TInt TranslateKey(Config *aCfg, Terminal *aTerm, TKeyCode aKey,
     if ( (aKey == EKeyDelete) ||
          ((shiftMod & EModifierFunc) && (aKey == EKeyBackspace)) ) {
         code = 3;
+    }
+    if ( aKey == EKeyInsert ) {
+        code = 2;
     }
 
     if ( code > 0 ) {

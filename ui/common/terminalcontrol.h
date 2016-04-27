@@ -239,7 +239,7 @@ protected:
         TBool iBold;
         TBool iUnderline;
     };
-    
+
 
     // Internal methods    
     virtual void Resize();
@@ -265,8 +265,6 @@ protected:
     TBool iHaveSelection;
     TUint iNextKeyModifiers;
     TBool iCtrlDown;
-    TBool iIsTermWritten;
-    TRgb iTermFG,iTermBG;
 
     TBool iFepEditActive;
     TBuf<64> iFepEditBuf;

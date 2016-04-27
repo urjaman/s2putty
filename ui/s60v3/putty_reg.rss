@@ -1,7 +1,8 @@
 #include <appinfo.rh>
+#include "puttyuids.hrh"
 
 UID2 KUidAppRegistrationResourceFile
-UID3 0xf01f9075
+UID3 KUidPuttyAppDefine
 
 RESOURCE APP_REGISTRATION_INFO {
     app_file = "putty";

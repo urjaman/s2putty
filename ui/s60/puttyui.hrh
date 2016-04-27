@@ -19,7 +19,6 @@ enum TCommands {
 
     EPuttyCmdSendText = 100,
     EPuttyCmdSendLine,
-    EPuttyCmdSendTab,
     EPuttyCmdSendPipe,
     EPuttyCmdSendCR,
     EPuttyCmdSendSpace,
@@ -31,6 +30,7 @@ enum TCommands {
     EPuttyCmdSendPageUp,
     EPuttyCmdSendPageDown,
     EPuttyCmdSendBackquote,
+    EPuttyCmdSendTab,
     EPuttyCmdSendCtrlKeys,
     EPuttyCmdSendCtrlAD,
     EPuttyCmdSendCtrlC,
@@ -67,9 +67,21 @@ enum TCommands {
     
     EPuttyCmdNotRepeated,
 
+
+    EPuttyCmdProfileListConnect,
+    EPuttyCmdProfileListEdit,
+    EPuttyCmdProfileListNew,
+    EPuttyCmdProfileListDelete,
+
+    EPuttyCmdProfileEditOpen,
+    EPuttyCmdProfileEditNextSettingList,
+    EPuttyCmdProfileEditPrevSettingList,
+    
+
     EPuttyCmdConnectionConnect,
     EPuttyCmdConnectionClose,
-    EPuttyCmdConnectionDisconnect,
+    EPuttyCmdDisconnect,
+    EPuttyCmdDisconnectCba,
     EPuttyCommand1,
     EPuttyCommand2,
     EPuttyCmdLargeFont,
@@ -127,7 +139,7 @@ enum TDlgControls {
     ESelectExistingFileDialog,
     
     EInfoMessage,
-    EReallyExit,
+    EConfirmDisconnectQuery,
     ERecordConfirmation,
     ERecorderInUse,
     EUnknownHostKey,
@@ -143,6 +155,32 @@ enum TDlgControls {
     ERecordingDialog,
 
     ELastOne
+};
+
+enum TSettingItems {
+    EPuttySettingGeneralProfileName = 1,
+    EPuttySettingGeneralHost,
+    EPuttySettingGeneralUsername,
+
+    EPuttySettingSshPort,
+    EPuttySettingSshVersion,
+    EPuttySettingSshPrivateKey,
+    EPuttySettingSshCompression,
+    EPuttySettingSshKeepalive,
+
+    EPuttySettingDisplayFont,
+    EPuttySettingDisplayFullScreen,
+    EPuttySettingDisplayCharSet,
+
+    EPuttySettingLoggingType,
+    EPuttySettingLoggingFile
+};
+
+enum TSettingTabs {
+    EPuttySettingTabGeneral = 0,
+    EPuttySettingTabSsh,
+    EPuttySettingTabDisplay,
+    EPuttySettingTabLogging
 };
 
 #endif

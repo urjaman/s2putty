@@ -11,10 +11,11 @@
 #define __PUTTYAPPUI_H__
 
 #include <eikappui.h>
+#include <es_sock.h>
 #include "puttyclient.h"
 #include "terminalcontrol.h"
-#include "dialler.h"
 #include "audiorecorder.h"
+#include "netconnect.h"
 extern "C" {
 #include "putty.h" // struct Config
 }
@@ -29,7 +30,7 @@ class CEikMenuPane;
  * engine and terminal callbacks.
  */
 class CPuttyAppUi: public CEikAppUi, public MPuttyClient,
-                   public MTerminalObserver, public MDialObserver,
+                   public MTerminalObserver, public MNetConnectObserver,
                    public MRecorderObserver {
     
 public:
@@ -37,13 +38,12 @@ public:
     CPuttyAppUi();
     ~CPuttyAppUi();
 
-    virtual TBool ProcessCommandParametersL(TApaCommand aCommand,
-                                            TFileName &aDocumentName,
-                                            const TDesC8 &aTail);
     virtual void DynInitMenuPaneL(TInt aResourceId, CEikMenuPane *aMenuPane);
 
-    // MDialObserver methods
-    virtual void DialCompleted(TInt anError);
+    // MNetConnectObserver methods
+    virtual void NetConnectComplete(TInt aError,
+                                    RSocketServ &aSocketServ,
+                                    RConnection &aConnection);
 
     // MRecorderObserver methods
     virtual void RecordCompleted(TInt anError);
@@ -79,7 +79,9 @@ private:
     TBool AcceptCipherL(const TDesC &aCipherName,
                         TCipherDirection aDirection);
     void ReadUiSettingsL(Config *aConfig);
-    void WriteUiSettingsL(Config *aConfig);
+    static TInt ConnectToProfileCallback(TAny *aAny);
+    void DoConnectToProfile();
+    void DoConnectToProfileL();
     
 private:
     CPuttyAppView *iAppView;
@@ -88,7 +90,7 @@ private:
     HBufC *iFatalErrorPanic;
     TBool iLargeFont;
     TBool iFullScreen;
-    CDialler *iDialler;
+    CNetConnect *iNetConnect;
     CAudioRecorder *iRecorder;
     HBufC8 *iAudio;
     TPtr8 iAudioRecordDes;
@@ -96,10 +98,11 @@ private:
     TFileName iDataPath;
     TBool iSelectMode;
     TBool iHaveMark;
+    CIdle *iConnectIdle;
 
     enum {
         EStateNone = 0,
-        EStateDialing,
+        EStateNetConnecting,
         EStateConnecting,
         EStateConnected,
         EStateDisconnected

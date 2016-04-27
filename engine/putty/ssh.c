@@ -6889,6 +6889,7 @@ static void ssh_free(void *handle)
 	    sfree(c);
 	}
 	freetree234(ssh->channels);
+	ssh->channels = NULL;
     }
 
     if (ssh->rportfwds) {

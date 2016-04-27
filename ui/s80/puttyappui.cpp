@@ -2,7 +2,7 @@
  *
  * Putty UI Application UI class
  *
- * Copyright 2002,2003,2005 Petteri Kangaslampi
+ * Copyright 2002,2003,2005,2007 Petteri Kangaslampi
  *
  * See license.txt for full copyright and license information.
 */
@@ -31,6 +31,7 @@
 #include "connectiondialog.h"
 #include "settingsdialog.h"
 #include "authdialog.h"
+#include "profilelistdialog.h"
 #include <putty.rsg>
 extern "C" {
 #include "putty.h"
@@ -44,6 +45,7 @@ _LIT(KAssertPanic, "puttyappui.cpp");
 
 _LIT(KRandomFile,"random.dat");
 _LIT(KDefaultSettingsFile, "defaults");
+_LIT(KProfileDir, "profiles\\");
 
 #ifdef __WINS__
 _LIT(KPuttyEngine, "puttyengine.dll");
@@ -81,13 +83,11 @@ CPuttyAppUi::CPuttyAppUi() : iAudioRecordDes(NULL, 0, 0) {
 
 void CPuttyAppUi::ConstructL() {
 
-    CEikonEnv::Static()->DisableExitChecks(ETrue);
     BaseConstructL();
 
     iFatalErrorPanic =
         CEikonEnv::Static()->AllocReadResourceL(R_STR_FATAL_ERROR);
 
-    iDialler = CDialler::NewL(this);
     iRecorder = CAudioRecorder::NewL(this);
     
     iAppView = new (ELeave) CPuttyAppView(this, this);
@@ -133,17 +133,13 @@ void CPuttyAppUi::ConstructL() {
     iEngine = CPuttyEngine::NewL(this, iDataPath);
     iEngine->SetTerminalSize(iTermWidth, iTermHeight);
 
-    // Check if the default settings file exists. If yes, read it, otherwise
-    // create one
+    // Check if the default settings file exists. If not, create it
     HBufC *settingsFileBuf = HBufC::NewLC(KMaxFileName);
     TPtr settingsFile = settingsFileBuf->Des();
     settingsFile = iDataPath;
     settingsFile.Append(KDefaultSettingsFile);
     if ( CEikonEnv::Static()->FsSession().Entry(settingsFile, dummy)
-         == KErrNone ) {
-        iEngine->ReadConfigFileL(settingsFile);
-        ReadUiSettingsL(iEngine->GetConfig());
-    } else {
+         != KErrNone ) {
         iEngine->SetDefaults();
         iEngine->WriteConfigFileL(settingsFile);
     }
@@ -160,7 +156,23 @@ void CPuttyAppUi::ConstructL() {
         }
     }
 
-    CleanupStack::PopAndDestroy(3); // appDll, settingsFileBuf, seedFileBuf
+    // Profile directory
+    HBufC *profileDirBuf = HBufC::NewLC(KMaxFileName);
+    TPtr profileDir = profileDirBuf->Des();
+    profileDir = iDataPath;
+    profileDir.Append(KProfileDir);
+
+    // Create profile directory if it doesn't exist
+    RFs &fs = CEikonEnv::Static()->FsSession();
+    if ( fs.Entry(profileDir, dummy) != KErrNone ) {
+        User::LeaveIfError(fs.MkDir(profileDir));
+    }
+
+    // Use a CIdle to asynchronously run profile selection
+    iConnectIdle = CIdle::NewL(CActive::EPriorityIdle);
+    iConnectIdle->Start(TCallBack(ConnectToProfileCallback, (TAny*) this));
+
+    CleanupStack::PopAndDestroy(4); // appDll, settingsFileBuf, seedFileBuf, profileDirBuf
 }
 
 
@@ -168,69 +180,19 @@ CPuttyAppUi::~CPuttyAppUi() {
     if ( iAppView ) {
         RemoveFromStack(iAppView);
     }
+    delete iConnectIdle;
     delete iAppView;
     delete iRecorder;
     delete iAudio;
-    delete iDialler;
     delete iEngine;
+    delete iNetConnect;
     delete iFatalErrorPanic;
 }
-
-
-TBool CPuttyAppUi::ProcessCommandParametersL(TApaCommand aCommand,
-                                             TFileName & aDocumentName,
-                                             const TDesC8 &aTail) {
-
-    // If we got a config file as a parameter, read it
-    if ( aCommand == EApaCommandOpen ) {
-        DEBUGPRINT((_L("ProcessCommandParametersL: Reading config file")));
-        iEngine->ReadConfigFileL(aDocumentName);
-    } else {
-        // Try to load default settings
-        
-    }
-
-    // Final hack, keep the system happy. This is necessary since we aren't
-    // really a proper file-based application.
-    DEBUGPRINT((_L("ProcessCommandParametersL: Init done")));
-    return CEikAppUi::ProcessCommandParametersL(aCommand, aDocumentName,
-                                                aTail);
-}
-
 
 
 void CPuttyAppUi::HandleCommandL(TInt aCommand) {
 
     switch (aCommand) {
-
-        case ECmdConnect: {
-            if ( iState != EStateNone ) {
-                break;
-            }
-            assert(iEngine);
-            Config *cfg = iEngine->GetConfig();
-
-            THostName hostName;
-            char *c = cfg->host;
-            while ( *c ) {
-                hostName.Append(*c++);
-            }
-            
-            CConnectionDialog *dlg = new (ELeave) CConnectionDialog(hostName);
-            
-            if ( dlg->ExecuteLD(R_CONNECTION_DIALOG)) {
-                c = cfg->host;
-                for ( TInt i = 0; i < hostName.Length(); i++ ) {
-                    *c++ = (char) hostName[i];
-                }
-                *c++ = 0;
-
-                TRAPD(error, CEikonEnv::Static()->BusyMsgL(R_STR_DIALING));
-                iState = EStateDialing;
-                iDialler->DialL();
-            }
-            break;
-        }
 
         case ECmdLargeFont: {
             if ( iLargeFont ) {
@@ -270,39 +232,6 @@ void CPuttyAppUi::HandleCommandL(TInt aCommand) {
                 CEikonEnv::Static()->BusyMsgL(R_STR_RECORDING);
             }
             
-            break;
-        }
-
-        case ECmdSettings: {
-            assert(iState == EStateNone);
-            CSettingsDialog *dlg =
-                new (ELeave) CSettingsDialog(iEngine->GetConfig());
-            dlg->ExecuteLD(R_SETTINGS_DIALOG);
-            break;
-        }
-
-        case ECmdLoadSettings: {
-            assert(iState == EStateNone);
-            TFileName fileName;
-            TUid uid = { 0x101f9075 };
-            if ( CCknOpenFileDialog::RunDlgLD(
-                     fileName,
-                     R_STR_SHOW_PUTTY_CONFIG_FILES,
-                     CCknFileListDialogBase::EShowAllDrives,
-                     uid) ) {
-                iEngine->ReadConfigFileL(fileName);
-                ReadUiSettingsL(iEngine->GetConfig());
-            }
-            break;
-        }
-
-        case ECmdSaveSettings: {
-            assert(iState == EStateNone);
-            TFileName fileName;
-            if ( CCknSaveAsFileDialog::RunDlgLD(fileName) ) {
-                WriteUiSettingsL(iEngine->GetConfig());
-                iEngine->WriteConfigFileL(fileName);
-            }
             break;
         }
 
@@ -441,22 +370,6 @@ void CPuttyAppUi::HandleCommandL(TInt aCommand) {
             }
             break;
 
-        case ECmdSaveSettingsAsDefault: {
-            TFileName fileName;
-            fileName = iDataPath;
-            fileName.Append(KDefaultSettingsFile);
-            WriteUiSettingsL(iEngine->GetConfig());
-            iEngine->WriteConfigFileL(fileName);
-            break;
-        }
-
-        case ECmdResetDefaultSettings: {
-            iEngine->SetDefaults();
-            ReadUiSettingsL(iEngine->GetConfig());
-            HandleCommandL(ECmdSaveSettingsAsDefault);
-            break;
-        }
-
         case ECmdAbout: {
             CCknInfoDialog::RunDlgLD(
                 *CEikonEnv::Static()->AllocReadResourceLC(R_STR_ABOUT_TITLE),
@@ -511,15 +424,6 @@ void CPuttyAppUi::DynInitMenuPaneL(TInt aResourceId, CEikMenuPane *aMenuPane) {
             aMenuPane->SetItemButtonState(ECmdFullScreen,
                                           EEikMenuItemSymbolIndeterminate);
         }
-        
-    } else if ( aResourceId == R_PUTTY_SETTINGS_MENU ) {
-        aMenuPane->SetItemDimmed(ECmdLoadSettings, (iState != EStateNone));
-        aMenuPane->SetItemDimmed(ECmdSettings, (iState != EStateNone));
-        aMenuPane->SetItemDimmed(ECmdSaveSettings, (iState != EStateNone));
-        aMenuPane->SetItemDimmed(ECmdSaveSettingsAsDefault,
-                                 (iState != EStateNone));
-        aMenuPane->SetItemDimmed(ECmdResetDefaultSettings,
-                                 (iState != EStateNone));
         
     } else if ( aResourceId == R_PUTTY_TOOLS_MENU ) {
         aMenuPane->SetItemDimmed(ECmdSendSpecialCharacter,
@@ -577,35 +481,101 @@ void CPuttyAppUi::ReadUiSettingsL(Config *aConfig) {
 }
 
 
-// Writes the UI settings (font size, full screen flag) to a config structure
-void CPuttyAppUi::WriteUiSettingsL(Config *aConfig) {
+// Asynchronous callback to display the profile selection dialog and connect
+TInt CPuttyAppUi::ConnectToProfileCallback(TAny *aAny) {
+    CPuttyAppUi *self = (CPuttyAppUi*) aAny;
+    self->DoConnectToProfile();
+    return 0;
+}
 
-    TPtr8 fontPtr((TUint8*)aConfig->font.name, sizeof(aConfig->font.name));
-
-    if ( iLargeFont ) {
-        fontPtr = KLargeFontName;
-    } else {
-        fontPtr = KSmallFontName;
-    }
-    fontPtr.Append('\0');
-
-    if ( iLargeFont ) {
-        if ( iFullScreen ) {
-            aConfig->width = KFullLargeWidth;
-            aConfig->height = KFullLargeHeight;
-        } else {
-            aConfig->width = KNormalLargeWidth;
-            aConfig->height = KNormalLargeHeight;
+void CPuttyAppUi::DoConnectToProfile() {
+    CEikonEnv *eenv = CEikonEnv::Static();    
+    TRAPD(error, DoConnectToProfileL());
+    if ( error == KLeaveExit ) {
+        User::Leave(error);
+    } else if ( error != KErrNone ) {
+        HBufC *title = eenv->AllocReadResourceLC(R_STR_ERROR_TITLE);
+        HBufC *errBuf = HBufC::NewLC(128);
+        TPtr err = errBuf->Des();
+        eenv->GetErrorText(err, error);
+        TRAP(error, CCknInfoDialog::RunDlgLD(*title, err));
+        if ( error != KErrNone ) {
+            User::Panic(*iFatalErrorPanic, error);
         }
-    } else {
-        if ( iFullScreen ) {
-            aConfig->width = KFullSmallWidth;
-            aConfig->height = KFullSmallHeight;
-        } else {
-            aConfig->width = KNormalSmallWidth;
-            aConfig->height = KNormalSmallHeight;
-        }
+        CleanupStack::PopAndDestroy(2); //title, errBuf
+        iConnectIdle->Start(TCallBack(ConnectToProfileCallback, (TAny*) this));        
     }
+}
+
+
+// Displays the profile selection dialog and connects if appropriate
+void CPuttyAppUi::DoConnectToProfileL() {
+
+    // Start with a fresh engine
+    delete iEngine;
+    iEngine = NULL;
+    iEngine = CPuttyEngine::NewL(this, iDataPath);
+    iEngine->SetTerminalSize(iTermWidth, iTermHeight);
+
+    // Profile directory
+    HBufC *profileDirBuf = HBufC::NewLC(KMaxFileName);
+    TPtr profileDir = profileDirBuf->Des();
+    profileDir = iDataPath;
+    profileDir.Append(KProfileDir);
+
+    // Default profile file
+    HBufC *settingsFileBuf = HBufC::NewLC(KMaxFileName);
+    TPtr settingsFile = settingsFileBuf->Des();
+    settingsFile = iDataPath;
+    settingsFile.Append(KDefaultSettingsFile);
+
+    // Selected profile
+    HBufC *selectedProfileBuf = HBufC::NewLC(KMaxFileName);
+    TPtr selectedProfile = selectedProfileBuf->Des();
+
+    // Run the profile dialog. 
+    CProfileListDialog *pldlg = new (ELeave) CProfileListDialog(profileDir,
+                                                                settingsFile,
+                                                                selectedProfile,
+                                                                iEngine);
+    if ( pldlg->ExecuteLD(R_PROFILE_LIST_DIALOG) == ECmdProfileListConnect ) {
+        // Read the selected profile and connect
+        iEngine->ReadConfigFileL(selectedProfile);
+        Config *cfg = iEngine->GetConfig();
+        ReadUiSettingsL(cfg);
+
+        // Prompt the user for the host if one isn't set in the profile
+        if ( cfg->host[0] == 0 ) {
+            TFileName hostName;
+            CConnectionDialog *dlg = new (ELeave) CConnectionDialog(hostName);            
+            if ( !dlg->ExecuteLD(R_CONNECTION_DIALOG) ) {
+                // Host name dialog cancelled
+                CleanupStack::PopAndDestroy(3); //profileDirBuf, settingsFileBuf, selectedProfileBuf
+                // Go to profile selection again
+                iConnectIdle->Start(TCallBack(ConnectToProfileCallback, (TAny*) this));
+                return;
+            }
+            char *c = cfg->host;
+            for ( TInt i = 0; i < hostName.Length(); i++ ) {
+                *c++ = (char) hostName[i];
+            }
+            *c++ = 0;
+        }
+
+        
+        TRAPD(error,
+              CEikonEnv::Static()->BusyMsgL(R_STR_CONNECTING_TO_NETWORK));
+        iState = EStateNetConnecting;
+        
+        delete iNetConnect;
+        iNetConnect = NULL;
+        iNetConnect = CNetConnect::NewL(*this);
+        iNetConnect->Connect();
+    } else {
+        Exit();
+    }
+    
+    CleanupStack::PopAndDestroy(3); //profileDirBuf, settingsFileBuf, selectedProfileBuf
 }
 
 
@@ -625,10 +595,12 @@ TBool CPuttyAppUi::OfferSelectKeyL() {
 }
 
 
-// MDialObserver::DialCompleted()
-void CPuttyAppUi::DialCompleted(TInt aError) {
+// MNetConnectObserver::NetConnectComplete();
+void CPuttyAppUi::NetConnectComplete(TInt aError,
+                                     RSocketServ &aSocketServ,
+                                     RConnection &aConnection) {
 
-    assert(iState == EStateDialing);
+    assert(iState == EStateNetConnecting);
     CEikonEnv *eenv = CEikonEnv::Static();    
     eenv->BusyMsgCancel();
     
@@ -639,30 +611,34 @@ void CPuttyAppUi::DialCompleted(TInt aError) {
         TPtr errp = err->Des();
         
         eenv->GetErrorText(errp, aError);
-        msgp.Format(*eenv->AllocReadResourceLC(R_STR_DIALUP_FAILED),
+        msgp.Format(*eenv->AllocReadResourceLC(R_STR_NET_CONNECT_FAILED),
                     &errp);
         HBufC *title = eenv->AllocReadResourceLC(R_STR_CONNECTION_ERROR_TITLE);
         
         CCknInfoDialog::RunDlgLD(*title, msgp);
         CleanupStack::PopAndDestroy(4); // title, formatstring, err, msg
 
+        delete iNetConnect;
+        iNetConnect = NULL;
         iState = EStateNone;
+        iConnectIdle->Start(TCallBack(ConnectToProfileCallback, (TAny*) this));
         return;
     }
 
-    TRAPD(error, eenv->BusyMsgL(R_STR_CONNECTING));
+    TRAPD(error, eenv->BusyMsgL(R_STR_CONNECTING_TO_SERVER));
     if ( error != KErrNone ) {
         User::Panic(*iFatalErrorPanic, error);
     }
     iState = EStateConnecting;
 
-    TInt err = iEngine->Connect();
+    TInt err = iEngine->Connect(aSocketServ, aConnection);
     if ( err != KErrNone ) {
         TBuf<128> msg;
         iEngine->GetErrorMessage(msg);
         ConnectionErrorL(msg);
-        // FIXME: We should be in a state where we can exit more cleanly
-        User::Exit(KExitReason);
+        // Connect again
+        iConnectIdle->Start(TCallBack(ConnectToProfileCallback, (TAny*) this));
+        return;
     }
 
     iState = EStateConnected;
@@ -749,10 +725,6 @@ void CPuttyAppUi::SetCursor(TInt aX, TInt aY) {
 void CPuttyAppUi::ConnectionError(const TDesC &aMessage) {
 
     TRAPD(error, ConnectionErrorL(aMessage));
-    if ( error != KErrNone ) {
-        User::Panic(*iFatalErrorPanic, error);
-    }
-    iAppView->Terminal()->SetGrayed(ETrue);
 }
 
 void CPuttyAppUi::ConnectionErrorL(const TDesC &aMessage) {
@@ -761,7 +733,6 @@ void CPuttyAppUi::ConnectionErrorL(const TDesC &aMessage) {
         CEikonEnv::Static()->AllocReadResourceLC(R_STR_CONNECTION_ERROR_TITLE);
     CCknInfoDialog::RunDlgLD(*title, aMessage);
     CleanupStack::PopAndDestroy();
-    User::Exit(KExitReason);
 }
 
 
@@ -788,7 +759,10 @@ void CPuttyAppUi::FatalErrorL(const TDesC &aMessage) {
 void CPuttyAppUi::ConnectionClosed() {
     CEikonEnv::Static()->InfoMsg(R_STR_CONNECTION_CLOSED);
     iAppView->Terminal()->SetGrayed(ETrue);
+    delete iNetConnect;
+    iNetConnect = NULL;
     iState = EStateDisconnected;
+    iConnectIdle->Start(TCallBack(ConnectToProfileCallback, (TAny*) this));
 }
 
 

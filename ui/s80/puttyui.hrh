@@ -49,14 +49,21 @@ enum TCommands {
     ECmdHostKeyAcceptOnce,
     ECmdHostKeyReject,
 
-    ECmdSettingsBrowseKeyFile
+    ECmdSettingsBrowseKeyFile,
+    ECmdSettingsDelete,
+
+    ECmdProfileListConnect,
+    ECmdProfileListEdit,
+    ECmdProfileListNew,
+    ECmdProfileListClose
 };
 
 enum TDlgControls {
     EConnDlgHost = 200,
 
-    ESettingsConnectionPage,
-    ESettingsAuthenticationPage,
+    ESettingsProfilePage,
+    ESettingsSshPage,
+    ESettingsDisplayPage,
     ESettingsLoggingPage,
     ESettingsHost,
     ESettingsPort,
@@ -67,8 +74,14 @@ enum TDlgControls {
     ESettingsLogFile,
     ESettingsKeepalive,
     ESettingsCompression,
+    ESettingsCharacterSet,
+    ESettingsProfile,
+    ESettingsFullScreen,
+    ESettingsFont,
 
-    EAuthPromptEditor
+    EAuthPromptEditor,
+
+    EProfileListDlgProfileList
 };
 
 #endif

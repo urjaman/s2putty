@@ -122,3 +122,9 @@ void CPuttyTerminalView::DoDeactivate() {
         AppUi()->RemoveFromStack(iContainer);
     }
 }
+
+
+// Display size changed
+void CPuttyTerminalView::HandleStatusPaneSizeChange() {
+    iContainer->SetRect(ClientRect());
+}

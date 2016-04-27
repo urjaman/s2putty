@@ -51,6 +51,17 @@ void sk_set_watcher(MSocketWatcher *aWatcher);
 
 
 /** 
+ * Sets the connection to use. Must be called after sk_init(), and
+ * the RSocketServ and RConnection objects must remain valid until
+ * sk_cleanup().
+ *
+ * @param aSocketServ The socket server session to use
+ * @param aConnection The network connection to use.
+ */
+void sk_set_connection(RSocketServ &aSocketServ, RConnection &aConnection);
+
+
+/** 
  * Gets the number of active sockets.
  * 
  * @return The number of active sockets.

@@ -52,9 +52,6 @@ CTerminalControl::CTerminalControl(MTerminalObserver &aObserver)
     iGrayed = EFalse;
     iCursorX = -1;
     iCursorY = -1;
-    iIsTermWritten = EFalse;
-    iTermFG = KRgbBlack;
-    iTermBG = KRgbWhite;
 }
 
 
@@ -95,33 +92,56 @@ void CTerminalControl::Resize() {
     TInt width = rect.iBr.iX - rect.iTl.iX;
     TInt height = rect.iBr.iY - rect.iTl.iY;
 
+    // Determine new size in characters
     assert((iFontWidth > 0) && (iFontHeight > 0));
     assert((width >= iFontWidth) && (height >= iFontHeight));
-    iCharWidth = width / iFontWidth;
-    iCharHeight = height / iFontHeight;
-    TRAPD(error, AllocateBuffersL());
-    iObserver.TerminalSizeChanged(iCharWidth, iCharHeight);
-    if ( error != KErrNone ) {
-        User::Panic(KPanic, error);
-    }
+    TInt newWidth = width / iFontWidth;
+    TInt newHeight = height / iFontHeight;
+
+    // If the size has actually changed, notify the observer, realllocate
+    // buffers and make sure the cursor is still within the terminal.
+    if ( (newWidth != iCharWidth) || (newHeight != iCharHeight) ) {
+        iCharWidth = newWidth;
+        iCharHeight = newHeight;
+        TRAPD(error, AllocateBuffersL());
+        iObserver.TerminalSizeChanged(iCharWidth, iCharHeight);
+        if ( error != KErrNone ) {
+            User::Panic(KPanic, error);
+        }
     
-    if ( iCursorX >= iCharWidth ) {
-        iCursorX = iCharWidth - 1;
-    }
-    if ( iCursorY >= iCharHeight ) {
-        iCursorY = iCharHeight - 1;
-    }
-    if ( iSelectX >= iCharWidth ) {
-        iSelectX = iCharWidth - 1;
-    }
-    if ( iSelectY >= iCharHeight ) {
-        iSelectY = iCharHeight - 1;
-    }
-    if ( iMarkX >= iCharWidth ) {
-        iMarkX = iCharWidth - 1;
-    }
-    if ( iMarkY >= iCharHeight ) {
-        iMarkY = iCharHeight - 1;
+        if ( iCursorX >= iCharWidth ) {
+            iCursorX = iCharWidth - 1;
+        }
+        if ( iCursorY >= iCharHeight ) {
+            iCursorY = iCharHeight - 1;
+        }
+        if ( iSelectX >= iCharWidth ) {
+            iSelectX = iCharWidth - 1;
+        }
+        if ( iSelectY >= iCharHeight ) {
+            iSelectY = iCharHeight - 1;
+        }
+        if ( iMarkX >= iCharWidth ) {
+            iMarkX = iCharWidth - 1;
+        }
+        if ( iMarkY >= iCharHeight ) {
+            iMarkY = iCharHeight - 1;
+        }
+        if ( iFepEditX >= 0 ) {
+            if ( iFepEditX >= iCharWidth ) {
+                iFepEditX = iCharWidth - 1;
+            }
+            if ( (iFepEditX+iFepEditDisplayLen) > iCharWidth ) {
+                iFepEditX = iCharWidth - iFepEditDisplayLen;
+                if ( iFepEditX < 0 ) {
+                    iFepEditX = 0;
+                    iFepEditDisplayLen = iCharWidth;
+                }
+            }
+        }
+        if ( iFepEditY >= iCharHeight ) {
+            iFepEditY = iCharHeight - 1;
+        }
     }
 }
 
@@ -147,8 +167,8 @@ void CTerminalControl::Clear() {
     TInt num = iCharWidth * iCharHeight;
     while ( num-- ) {
         *c++ = ' ';
-        a->iFgColor = iTermFG;
-        a->iBgColor = iTermBG;
+        a->iFgColor = KRgbBlack;
+        a->iBgColor = KRgbWhite;
         a->iBold = EFalse;
         a->iUnderline = EFalse;
         a++;
@@ -170,13 +190,6 @@ void CTerminalControl::DrawText(TInt aX, TInt aY, const TDesC &aText,
     if ( (aX < 0) || (aY < 0) || (aX >= iCharWidth) || (aY >= iCharHeight) ) {
         return;
     }
-
-    if (iIsTermWritten == EFalse) {
-	iTermFG = aForeground;
-	iTermBG = aBackground;
-	iIsTermWritten = ETrue;
-	Clear();
-	}
 
     // Write the text to our character and attribute buffers
     TInt numChars = aText.Length();
@@ -706,7 +719,11 @@ void CTerminalControl::UpdateFepInlineTextL(
     const TDesC& aNewInlineText,
     TInt aPositionOfInsertionPointInInlineText) {
 
-    assert(iFepEditActive);
+    if ( !iFepEditActive ) {
+        // The S60 T9 FEP can send spurious text updates even when an edit
+        // is not active when switching from numeric to alpha input.
+        return;
+    }
 
 #ifdef LOGFILE_ENABLED
     TBuf<128> buf;

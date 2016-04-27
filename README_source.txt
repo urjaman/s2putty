@@ -1,10 +1,10 @@
         PuTTY for Symbian OS
         --------------------
 
-Version 1.4 beta 1, 5 March 2006
+Version 1.5 beta 1, 4 March 2008
 
-Copyright 2002-2006 Petteri Kangaslampi
-Copyright 2003-2004 Sergei Khloupnov <sh@nasdoma.net>
+Copyright 2002-2008 Petteri Kangaslampi
+Portions copyright 2003-2004 Sergei Khloupnov.
 Based on PuTTY 0.56 beta, Copyright 1997-2004 Simon Tatham.
 See license.txt for full copyright and license information.
 
@@ -13,8 +13,8 @@ Introduction
 ------------
 
 This package contains the source code for the PuTTY SSH client for
-Symbian OS. It supports all Nokia S60, Series 80, and Series 90
-devices.
+Symbian OS. Only S60 third edition and Series 80 v2.0 support are
+actively maintained, other variants will not build successfully.
 
 This README file contains some minimal notes about the source code to
 help in exploring it. More documentation should be available later.
@@ -52,7 +52,8 @@ better. If you only modify the user interface, it should be enough to
 build the software once from the command line, and use the IDE
 afterwards.
 
-On S60 third edition PuTTY may only compile with GCCE at the moment.
+On S60 third edition PuTTY compiles at least with Carbide.c++ v1.2 and
+GCCE. RVCT and CodeWarrior have not been recently tested.
 
 
 Applications and executables
@@ -66,8 +67,6 @@ putty.rsc        Application resources
 putty.aif        Application information file (putty_reg.rsc on S60v3)
 
 puttyengine.dll  The PuTTY engine.
-
-recputty.mdl     Recognizer for configuration files (not in S60v3)
 
 
 Directories
@@ -107,5 +106,3 @@ ui               User interface implementation for different platforms
  ui/s80v1        UI files specific to S80 v1.0 (Nokia 9210)
  ui/s80v2        UI files specific to S80 v2.0 (Nokia 9500 etc)
  ui/s90          UI implemenattion for Series 90 (Nokia 7710)
-
-

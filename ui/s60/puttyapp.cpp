@@ -3,7 +3,7 @@
  * Putty UI Application class
  *
  * Copyright 2003 Sergei Khloupnov
- * Copyright 2002,2006 Petteri Kangaslampi
+ * Copyright 2002,2006,2007 Petteri Kangaslampi
  *
  * See license.txt for full copyright and license information.
 */
@@ -13,12 +13,9 @@
 #endif
 #include "puttyapp.h"
 #include "puttydoc.h"
+#include "puttyuids.hrh"
 
-#ifdef EKA2
-const TUid KUidPutty = { 0xf01f9075 };
-#else
-const TUid KUidPutty = { 0x101f9075 };
-#endif
+const TUid KUidPutty = { KUidPuttyAppDefine };
 
 #ifndef PUTTY_S60
 #error Symbol PUTTY_S60 not defined -- build environment is incorrect
