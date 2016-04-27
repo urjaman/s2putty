@@ -1,173 +1,145 @@
-------------------------------------------------------------------------
-r439 | pekangas | 2009-07-19 16:42:16 +0100 (Sun, 19 Jul 2009) | 1 line
-Changed paths:
-   M /s2putty/branches/branch-1.5/README.txt
-   M /s2putty/branches/branch-1.5/README_source.txt
-   M /s2putty/branches/branch-1.5/build/s60v3/installnote.txt
-   M /s2putty/branches/branch-1.5/build/s60v3/putty.pkg
-   M /s2putty/branches/branch-1.5/build/s80v2/installnote.txt
-   M /s2putty/branches/branch-1.5/build/s80v2/putty.pkg
-   M /s2putty/branches/branch-1.5/ui/s80/putty.rss
+2010-03-21  pekangas  <pekangas>
 
-Updated README files, version numbers, etc for a final 1.5.1 release.
-------------------------------------------------------------------------
-r438 | pekangas | 2009-07-19 16:32:30 +0100 (Sun, 19 Jul 2009) | 1 line
-Changed paths:
-   M /s2putty/branches/branch-1.5/putty_users_guide.odt
-   M /s2putty/branches/branch-1.5/putty_users_guide.pdf
+	* README.txt, build/s80v2/putty.pkg, putty_users_guide.odt,
+	putty_users_guide.pdf:
+	Updated the S80v2 package to use new keys which are valid until
+	2035.
+	[90dd035442f0] [tip]
 
-Updated the User's Guide for 1.5.1.
-------------------------------------------------------------------------
-r437 | pekangas | 2009-07-19 16:30:19 +0100 (Sun, 19 Jul 2009) | 1 line
-Changed paths:
-   M /s2putty/branches/branch-1.5/README_source.txt
-   M /s2putty/branches/branch-1.5/license.txt
+	* README.txt, README_source.txt, build/s60v3/installnote.txt,
+	build/s60v3/putty.pkg, build/s80v2/installnote.txt,
+	build/s80v2/putty.pkg, license.txt, ui/s80/putty.rss:
+	Updated README files, version numbers, etc for a final 1.5.1
+	release.
+	[eafab1ed98cd]
 
-Fixed README_source.txt and license.txt to use CRLF linefeeds.
-------------------------------------------------------------------------
-r436 | pekangas | 2009-07-16 21:02:06 +0100 (Thu, 16 Jul 2009) | 2 lines
-Changed paths:
-   M /s2putty/branches/branch-1.5/ui/s60/putty.rss
+2010-02-15  pekangas  <pekangas>
 
-Increased the password prompt length limit to 64 characters, the
-previous 32 caused problems with some one-time password generators.
-------------------------------------------------------------------------
-r435 | pekangas | 2009-07-11 22:04:32 +0100 (Sat, 11 Jul 2009) | 1 line
-Changed paths:
-   M /s2putty/branches/branch-1.5/README.txt
-   M /s2putty/branches/branch-1.5/README_source.txt
-   M /s2putty/branches/branch-1.5/build/s60v3/installnote.txt
-   M /s2putty/branches/branch-1.5/build/s60v3/putty.pkg
-   M /s2putty/branches/branch-1.5/build/s80v2/installnote.txt
-   M /s2putty/branches/branch-1.5/build/s80v2/putty.pkg
-   M /s2putty/branches/branch-1.5/ui/s80/putty.rss
+	* README.txt, README_source.txt, build/s60v3/installnote.txt,
+	build/s60v3/putty.pkg:
+	Updated README and package files for a new 1.5 snapshot release
+	[3bf5b35a475f]
 
-Updated files for 1.5.1 RC 1 release
-------------------------------------------------------------------------
-r434 | pekangas | 2009-07-11 21:51:39 +0100 (Sat, 11 Jul 2009) | 1 line
-Changed paths:
-   M /s2putty/branches/branch-1.5/ui/s60/profilelistview.cpp
-   M /s2putty/branches/branch-1.5/ui/s60/terminalview.cpp
+	* build/s60v3/puttyui.mmp, ui/s60/sendgrid.cpp:
+	Added Juha Sahakangas's Send Grid fix for Nokia E55 keyboards. This
+	should fix #2881316.
+	[07e4d93ac7e9]
 
-Merged in general bug fixes from Risto Avila's touch UI
-------------------------------------------------------------------------
-r433 | pekangas | 2009-07-11 21:36:33 +0100 (Sat, 11 Jul 2009) | 1 line
-Changed paths:
-   M /s2putty/branches/branch-1.5/ui/s80/putty.rss
-   M /s2putty/branches/branch-1.5/ui/s80/puttyui.hrh
-   M /s2putty/branches/branch-1.5/ui/s80/settingsdialog.cpp
+	* ui/s60/terminalview.cpp:
+	Don't show an error message when the user selects "Cancel" in the
+	access point list. This fixes #2539620.
+	[52fce708ae4e]
 
-Added the backspace setting to the S80 UI
-------------------------------------------------------------------------
-r432 | pekangas | 2009-07-11 21:22:27 +0100 (Sat, 11 Jul 2009) | 1 line
-Changed paths:
-   M /s2putty/branches/branch-1.5/README.txt
+	* build/s60v3/puttyui.mmp, ui/common/netconnect.cpp:
+	Added Risto Avila's access point fix to the 1.5 branch. This should
+	fix #2853147 on S60 3rd edition.
+	[7b0d9584adbf]
 
-Updated the list of changes in the README file
-------------------------------------------------------------------------
-r431 | pekangas | 2009-07-11 17:56:30 +0100 (Sat, 11 Jul 2009) | 3 lines
-Changed paths:
-   M /s2putty/branches/branch-1.5/ui/s60/sendgrid.cpp
+2009-07-19  pekangas  <pekangas>
 
-Changed the Send Grid to "loop" instead of "snake" when navigating
-using cursor keys. This should make it easier to send an Esc on phones
-where the asterisk key doesn't produce the expected keycodes.
-------------------------------------------------------------------------
-r430 | pekangas | 2009-07-11 17:45:37 +0100 (Sat, 11 Jul 2009) | 3 lines
-Changed paths:
-   M /s2putty/branches/branch-1.5/engine/puttysymbian/epocnet.cpp
+	* README.txt, README_source.txt, build/s60v3/installnote.txt,
+	build/s60v3/putty.pkg, build/s80v2/installnote.txt,
+	build/s80v2/putty.pkg, ui/s80/putty.rss:
+	Updated README files, version numbers, etc for a final 1.5.1
+	release.
+	[1aa600839f2e] [release-1.5.1]
 
-Don't bind the socket before connecting. This seems to fix at least
-some variants of the infamous KErrBadName error, and does not appear
-to have any side effects.
-------------------------------------------------------------------------
-r429 | pekangas | 2009-07-11 16:46:25 +0100 (Sat, 11 Jul 2009) | 1 line
-Changed paths:
-   M /s2putty/branches/branch-1.5/engine/putty/ssh.c
-   M /s2putty/branches/branch-1.5/engine/puttyengineimp.cpp
-   M /s2putty/branches/branch-1.5/engine/puttysymbian/epocnet.cpp
+	* putty_users_guide.odt, putty_users_guide.pdf:
+	Updated the User's Guide for 1.5.1.
+	[9bc45fb711e0]
 
-Fixed memory leaks when the socket connection fails
-------------------------------------------------------------------------
-r428 | pekangas | 2009-04-26 20:07:25 +0100 (Sun, 26 Apr 2009) | 2 lines
-Changed paths:
-   M /s2putty/branches/branch-1.5/engine/putty/ssh.c
-   M /s2putty/branches/branch-1.5/engine/puttysymbian/epocnet.cpp
+	* README_source.txt, license.txt:
+	Fixed README_source.txt and license.txt to use CRLF linefeeds.
+	[bee74b97d132]
 
-Fixed port forwarding at least for local ports. Thanks to Shai Ayal
-for the original fix. This fixes long-standing bug 918200.
-------------------------------------------------------------------------
-r427 | pekangas | 2009-04-26 19:09:02 +0100 (Sun, 26 Apr 2009) | 1 line
-Changed paths:
-   M /s2putty/branches/branch-1.5/ui/s60/profilelistview.cpp
-   M /s2putty/branches/branch-1.5/ui/s60/putty.rss
-   M /s2putty/branches/branch-1.5/ui/s60/puttyui.hrh
+2009-07-16  pekangas  <pekangas>
 
-Added profile import and export to the profile list view
-------------------------------------------------------------------------
-r426 | pekangas | 2009-03-02 20:22:31 +0000 (Mon, 02 Mar 2009) | 2 lines
-Changed paths:
-   M /s2putty/branches/branch-1.5/README.txt
-   M /s2putty/branches/branch-1.5/README_source.txt
-   M /s2putty/branches/branch-1.5/build/s60v3/installnote.txt
-   M /s2putty/branches/branch-1.5/build/s60v3/putty.pkg
+	* ui/s60/putty.rss:
+	Increased the password prompt length limit to 64 characters, the
+	previous 32 caused problems with some one-time password generators.
+	[5bcd64e9c4fc]
 
-Updated documents and package files for use with 1.5 development
-snapshots.
-------------------------------------------------------------------------
-r425 | pekangas | 2009-03-02 20:15:02 +0000 (Mon, 02 Mar 2009) | 4 lines
-Changed paths:
-   M /s2putty/branches/branch-1.5/ui/s60/terminalview.cpp
+2009-07-11  pekangas  <pekangas>
 
-Implemented very rudimentary support for the LockSize setting. The
-current implementation simply ignores all resize events, which makes
-the UI look corrupted, and therefore it is not accessible through the
-settings UI.
-------------------------------------------------------------------------
-r424 | pekangas | 2009-03-02 20:02:11 +0000 (Mon, 02 Mar 2009) | 2 lines
-Changed paths:
-   M /s2putty/branches/branch-1.5/ui/s60/terminalcontainer.cpp
+	* README.txt, README_source.txt, build/s60v3/installnote.txt,
+	build/s60v3/putty.pkg, build/s80v2/installnote.txt,
+	build/s80v2/putty.pkg, ui/s80/putty.rss:
+	Updated files for 1.5.1 RC 1 release
+	[3e00a88cf5fe]
 
-Integrated another patch from Damion Yates to force a 80x24 terminal
-on E90 when using a 10x14 font.
-------------------------------------------------------------------------
-r423 | pekangas | 2009-03-02 19:57:56 +0000 (Mon, 02 Mar 2009) | 2 lines
-Changed paths:
-   M /s2putty/branches/branch-1.5/README.txt
-   M /s2putty/branches/branch-1.5/README_source.txt
-   M /s2putty/branches/branch-1.5/build/s60v3/installnote.txt
-   M /s2putty/branches/branch-1.5/license.txt
+	* ui/s60/profilelistview.cpp, ui/s60/terminalview.cpp:
+	Merged in general bug fixes from Risto Avila's touch UI
+	[8ffad638e208]
 
-Updated copyright messages to account for Damion's and James'
-contributions.
-------------------------------------------------------------------------
-r422 | pekangas | 2009-03-02 19:54:12 +0000 (Mon, 02 Mar 2009) | 2 lines
-Changed paths:
-   M /s2putty/branches/branch-1.5/ui/s60/profileeditdisplaysettinglist.cpp
-   M /s2putty/branches/branch-1.5/ui/s60/profileeditdisplaysettinglist.h
-   M /s2putty/branches/branch-1.5/ui/s60/putty.rss
-   M /s2putty/branches/branch-1.5/ui/s60/puttyui.hrh
-   M /s2putty/branches/branch-1.5/ui/s60/terminalcontainer.h
+	* ui/s80/putty.rss, ui/s80/puttyui.hrh, ui/s80/settingsdialog.cpp:
+	Added the backspace setting to the S80 UI
+	[eeb115af6ae6]
 
-Integrated backspace setting (Ctrl-H vs Delete) patch from Damion Yates.
-Thanks Damion!
-------------------------------------------------------------------------
-r420 | pekangas | 2009-03-02 19:31:56 +0000 (Mon, 02 Mar 2009) | 1 line
-Changed paths:
-   A /s2putty/branches/branch-1.5 (from /s2putty/trunk:419)
+	* README.txt:
+	Updated the list of changes in the README file
+	[2507873daa7f]
 
-Branching off 1.5
-------------------------------------------------------------------------
-r419 | pekangas | 2009-01-25 18:06:09 +0000 (Sun, 25 Jan 2009) | 1 line
-Changed paths:
-   M /s2putty/trunk/README.txt
-   M /s2putty/trunk/README_source.txt
-   M /s2putty/trunk/build/s60v3/installnote.txt
-   M /s2putty/trunk/build/s60v3/putty.pkg
-   M /s2putty/trunk/build/s80v2/installnote.txt
-   M /s2putty/trunk/build/s80v2/putty.pkg
-   M /s2putty/trunk/putty_users_guide.odt
-   M /s2putty/trunk/putty_users_guide.pdf
-   M /s2putty/trunk/ui/s80/putty.rss
+	* ui/s60/sendgrid.cpp:
+	Changed the Send Grid to "loop" instead of "snake" when navigating
+	using cursor keys. This should make it easier to send an Esc on
+	phones where the asterisk key doesn't produce the expected keycodes.
+	[fda6975cdb2f]
 
-Update documentation, package files, and resources for the 1.5.0 release.
+	* engine/puttysymbian/epocnet.cpp:
+	Don't bind the socket before connecting. This seems to fix at least
+	some variants of the infamous KErrBadName error, and does not appear
+	to have any side effects.
+	[9b0db99b7de9]
+
+	* engine/putty/ssh.c, engine/puttyengineimp.cpp,
+	engine/puttysymbian/epocnet.cpp:
+	Fixed memory leaks when the socket connection fails
+	[973ca6f760a4]
+
+2009-04-26  pekangas  <pekangas>
+
+	* engine/putty/ssh.c, engine/puttysymbian/epocnet.cpp:
+	Fixed port forwarding at least for local ports. Thanks to Shai Ayal
+	for the original fix. This fixes long-standing bug 918200.
+	[164d79059240]
+
+	* ui/s60/profilelistview.cpp, ui/s60/putty.rss, ui/s60/puttyui.hrh:
+	Added profile import and export to the profile list view
+	[1c84daef8ebc]
+
+2009-03-02  pekangas  <pekangas>
+
+	* README.txt, README_source.txt, build/s60v3/installnote.txt,
+	build/s60v3/putty.pkg:
+	Updated documents and package files for use with 1.5 development
+	snapshots.
+	[2b0016b05ce0]
+
+	* ui/s60/terminalview.cpp:
+	Implemented very rudimentary support for the LockSize setting. The
+	current implementation simply ignores all resize events, which makes
+	the UI look corrupted, and therefore it is not accessible through
+	the settings UI.
+	[f6fc377a8878]
+
+	* ui/s60/terminalcontainer.cpp:
+	Integrated another patch from Damion Yates to force a 80x24 terminal
+	on E90 when using a 10x14 font.
+	[eca69a402915]
+
+	* README.txt, README_source.txt, build/s60v3/installnote.txt,
+	license.txt:
+	Updated copyright messages to account for Damion's and James'
+	contributions.
+	[28bcdb63b25e]
+
+	* ui/s60/profileeditdisplaysettinglist.cpp,
+	ui/s60/profileeditdisplaysettinglist.h, ui/s60/putty.rss,
+	ui/s60/puttyui.hrh, ui/s60/terminalcontainer.h:
+	Integrated backspace setting (Ctrl-H vs Delete) patch from Damion
+	Yates. Thanks Damion!
+	[c912274918d7]
+
+	* Branching off 1.5
+	[cc7f7a93fe0b]
+
