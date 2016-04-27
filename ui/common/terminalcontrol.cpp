@@ -52,6 +52,8 @@ CTerminalControl::CTerminalControl(MTerminalObserver &aObserver)
     iGrayed = EFalse;
     iCursorX = -1;
     iCursorY = -1;
+    iDefaultFg = KRgbBlack;
+    iDefaultBg = KRgbWhite;
 }
 
 
@@ -167,8 +169,8 @@ void CTerminalControl::Clear() {
     TInt num = iCharWidth * iCharHeight;
     while ( num-- ) {
         *c++ = ' ';
-        a->iFgColor = KRgbBlack;
-        a->iBgColor = KRgbWhite;
+        a->iFgColor = iDefaultFg;
+        a->iBgColor = iDefaultBg;
         a->iBold = EFalse;
         a->iUnderline = EFalse;
         a++;
@@ -246,8 +248,16 @@ void CTerminalControl::SetNextKeyModifiers(TUint aModifiers) {
 
 // Set select mode
 void CTerminalControl::SetSelectMode(TBool aSelectMode) {
+    
+    if ( iHaveSelection ) {
+        RemoveMark();
+    }
+    TBool oldSelectMode = iSelectMode;
     iSelectMode = aSelectMode;
-    iHaveSelection = EFalse;
+    if ( oldSelectMode ) {
+        UpdateDisplay(iSelectX, iSelectY, 1);
+    }
+    
     iSelectX = iCursorX;
     iSelectY = iCursorY;
     if ( iSelectX < 0 ) {
@@ -262,7 +272,7 @@ void CTerminalControl::SetSelectMode(TBool aSelectMode) {
     if ( iSelectY >= iCharHeight ) {
         iSelectY = iCharHeight - 1;
     }
-    DrawDeferred();
+    UpdateDisplay(iSelectX, iSelectY, 1);
 }
 
 
@@ -271,20 +281,42 @@ void CTerminalControl::SetMark() {
     if ( !iSelectMode ) {
         return;
     }
+    if ( iHaveSelection ) {
+        RemoveMark();
+    }
     iHaveSelection = ETrue;
     iMarkX = iSelectX;
     iMarkY = iSelectY;
-    DrawDeferred();
+    UpdateDisplay(iMarkX, iMarkY, 1);
 }
 
 
 // Remove selection
 void CTerminalControl::RemoveMark() {
     iHaveSelection = EFalse;
+    
+    // Update the area covered by the selection
+    TInt x1, y1, x2, y2;
+    GetSelectionInScanOrder(x1, y1, x2, y2);
+    if ( y1 == y2 ) {
+        if ( x2 > x1 ) {
+            UpdateDisplay(x1, y1, x2-x1);
+        }
+    } else {
+        UpdateDisplay(x1, y1, iCharWidth-x1);
+        for ( TInt y = y1; y < y2; y++ ) {
+            UpdateDisplay(0, y, iCharWidth);
+        }
+        if ( x2 > 0 ) {
+            UpdateDisplay(0, y2, x2);
+        }
+    }
+    
     if ( iSelectX >= iCharWidth ) {
         iSelectX = iCharWidth - 1;
     }
-    DrawDeferred();
+
+    UpdateDisplay(iSelectX, iSelectY, 1);
 }
 
 
@@ -396,6 +428,15 @@ void CTerminalControl::GetSelectionInScanOrder(
         aEndX = aStartX;
         aStartX = tmp;
     }
+}
+
+
+// Set default colors
+void CTerminalControl::SetDefaultColors(TRgb aForeground, TRgb aBackground) {
+    iDefaultFg = aForeground;
+    iDefaultBg = aBackground;
+    Clear();
+    DrawDeferred();
 }
 
 

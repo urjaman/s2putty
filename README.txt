@@ -1,9 +1,9 @@
         PuTTY for Symbian OS
         --------------------
 
-Version 1.5 Beta 2, 20 December 2008
+Version 1.5.0, 25 January 2009
 
-Copyright 2002-2008 Petteri Kangaslampi
+Copyright 2002-2009 Petteri Kangaslampi
 Portions copyright 2003-2004 Sergei Khloupnov.
 Based on PuTTY 0.60, Copyright 1997-2007 Simon Tatham.
 See license.txt for full copyright and license information.
@@ -12,28 +12,34 @@ See license.txt for full copyright and license information.
 Introduction
 ------------
 
-This package is a new beta release of PuTTY SSH client for Symbian OS
-based smartphones. Even though it is a beta release, it is expected to
-be stable and complete, and will most likely be used to build a final
-1.5 release in a few weeks.
+This package is the full final release for PuTTY SSH client for
+Symbian OS version 1.5.0. This is the first non-beta non-snapshot
+release since 1.3.2 was released in January 2005, and is a significant
+milestone in the development.
 
-The largest difference compared to 1.5 beta 1 is that the PuTTY core
-has been upgraded to version 0.60. Among other changes the new core
-has a better terminal update logic, which should improve battery life,
-and should also fix color problems reported in earlier
-versions. Additionally, this release adds much-requested clipboard
-support to S60. There have also been a number of other changes, see
-the "Changes" section below.
+The only change compared to 1.5RC1 is a small palette resource change,
+but the code itself has not been modified.
 
-Note that starting with 1.5 Beta 2 PuTTY can use full 256-bit keys
-with the AES encryption algorithm. This slows down key exchange
-considerably, and especially on slower handsets it may appear PuTTY
-hangs before it prompts you for the password. To avoid this, PuTTY now
-uses 128-bit Blowfish as the default cipher, which should reduce CPU
-use in other cases too. However, if you have a previous installation,
-existing profiles will continue to use 256-bit AES, and will therefore
-work more slowly. To update existing profiles to use Blowfish, change
-the preferred cipher on the SSH settings page.
+Compared to earlier releases, 1.5 brings significant enhancements:
+PuTTY for Symbian OS is based on an up-to-date release of the PuTTY
+core from the Windows version, it has a new friendlier settings system
+based on profiles, more settings including character set and color
+palette selection, and fixes and enhancements on the S60 platform.
+
+This release support all S60 third edition phones and the Series 80 v2
+Communicator products. Both versions have essentially identical
+features and will be fully supported through bug fixes. However, given
+that the user base for S60 is now orders of magnitude larger, new
+features may only be availble on S60 in the future. Earlier S60
+versions are not supported, and while this version contains some
+changes to enable very basic functionality on S60 5th edition, it is
+still considered unsupported too.
+
+If you are upgrading from releases earlier than 1.5 beta 2, note that
+PuTTY can now use full 256-bit keys with the AES encryption algorithm,
+which can slow it down considerably. New profiles will use a faster
+128-bit Blowfish algorithm, but existing profiles will need to ben
+changed from the SSH settings page to take advantage of this.
 
 PuTTY is distributed in two different packages, one for S60 third
 edition, and one for Series 80 phones. Make sure you use the correct
@@ -43,10 +49,7 @@ putty_s60v3_*   S60 third edition, supporting all current S60
                 smartphones. Includes Nokia E61, N80, N95 etc
 putty_s80v2_*   Series 80 v2.0. Nokia 9300, 9300i, 9500
 
-Note that only S60 third edition and Series 80 v2.0 are
-supported. PuTTY 1.4 beta 1 supported a wider range of phones, and
-users with earlier S60 phones, a Nokia 9200 series communicator, or a
-Nokia 7710 can try it. A separate UIQ v3.x port is available at
+A separate UIQ v3.x port is available at
         http://coredump.fi/putty
 
 PuTTY is free software, and available with full source code under a
@@ -64,12 +67,12 @@ self-signed certificate. To be able to verify the packages, you'll
 need to install the certificate to the device. The steps needed are:
 
 1. Fetch the certificate from
-   http://www.s2.org/~pekangas/petteri_s80_2008_der.zip and unzip it.
+   http://www.s2.org/~pekangas/petteri_s80_2009_der.zip and unzip it.
 
 2. Verify the certificate. Its MD5 sum is
-   652a37da35fb97cde1a31a6c8af040cf. A PGP signature is available at
-   http://www.s2.org/~pekangas/petteri_s80_2008_der.cer.asc, the key is
-   http://www.s2.org/~pekangas/petteri_pgp_2008.asc. The key is also
+   9559ec393f3fecb0c34ababfc0f9727f. A PGP signature is available at
+   http://www.s2.org/~pekangas/petteri_s80_2009_der.cer.asc, the key is
+   http://www.s2.org/~pekangas/petteri_pgp_2009.asc. The key is also
    available on OpenPGP key servers, ID E393AD7C.
 
 3. Copy the certificate to a file in the communicator.
@@ -118,6 +121,11 @@ from the e.g. the Messages Inbox or using the file manager.
 Changes
 -------
 
+Main changes since 1.5 beta 2:
+- Some fixes for S60 5th edition devices, the terminal is now visible
+  after one orientation change.
+- Added support for user-selectable color palettes
+
 Main changes since 1.5 beta 1:
 - Updated to PuTTY 0.60 core
 - Default cipher is now 128-bit Blowfish, and the cipher can be
@@ -149,9 +157,10 @@ See Changelog in the source distribution for more details.
 Future plans
 ------------
 
-Changes planned for 1.5 final:
-- Fix bugs
-- Any good ideas? Contact me, preferably with patches
+As a rule, PuTTY 1.5 is now considered stable, and should only receive
+bug fixes. Most new development should go into a new 1.6 branch which
+will open in the future, but 1.5 may receive minor enhancements such
+as new settings in addition to bug fixes.
 
 
 Contact information

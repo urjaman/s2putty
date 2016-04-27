@@ -16,6 +16,7 @@
 #include "dynamicenumtextsettingitem.h"
 #include "puttyengine.h"
 #include "stringutils.h"
+#include "palettes.h"
 #include "puttyuids.hrh"
 #include "puttyui.hrh"
 
@@ -47,6 +48,7 @@ CProfileEditDisplaySettingList::CProfileEditDisplaySettingList(
 // Second-phase constructor
 void CProfileEditDisplaySettingList::ConstructL() {
     iConfig = iPutty.GetConfig();
+    iPalettes = CPalettes::NewL(R_PUTTY_PALETTE_NAMES, R_PUTTY_PALETTES);
     ConstructFromResourceL(R_PUTTY_PROFILEEDIT_DISPLAY_SETTINGLIST);
     ActivateL();
 }
@@ -54,6 +56,7 @@ void CProfileEditDisplaySettingList::ConstructL() {
 
 // Destructor
 CProfileEditDisplaySettingList::~CProfileEditDisplaySettingList() {
+    delete iPalettes;
     delete iCharSets;
 }
 
@@ -82,6 +85,13 @@ CAknSettingItem *CProfileEditDisplaySettingList::CreateSettingItemL(
             iFullScreen = (iConfig->width == KFullScreenWidth);
             return new (ELeave) CAknBinaryPopupSettingItem(aIdentifier, 
                                                            iFullScreen);
+
+        case EPuttySettingDisplayPalette:
+            iPaletteValue = iPalettes->IdentifyPalette(
+                (const unsigned char*) iConfig->colours);
+            return new (ELeave) CDynamicEnumTextSettingItem(
+                aIdentifier, iPalettes->PaletteNames(), iPaletteValue);
+            break;            
 
         case EPuttySettingDisplayCharSet: {
             // Get character sets from the engine
@@ -132,6 +142,11 @@ void CProfileEditDisplaySettingList::EditItemL(TInt aIndex,
             }
             break;
         }
+
+        case EPuttySettingDisplayPalette:
+            iPalettes->GetPalette(iPaletteValue,
+                                  (unsigned char*) iConfig->colours);
+            break;
             
         case EPuttySettingDisplayCharSet: {
             DesToString((*iCharSets)[iCharSetValue], iConfig->line_codepage,

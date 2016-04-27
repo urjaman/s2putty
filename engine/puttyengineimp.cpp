@@ -2,7 +2,7 @@
  *
  * PuTTY engine implementation class
  *
- * Copyright 2002,2003,2005 Petteri Kangaslampi
+ * Copyright 2002,2003,2005,2009 Petteri Kangaslampi
  *
  * See license.txt for full copyright and license information.
 */
@@ -159,41 +159,13 @@ Config *CPuttyEngineImp::GetConfig() {
 // MPuttyEngine::Connect()
 TInt CPuttyEngineImp::Connect(RSocketServ &aSocketServ,
                               RConnection &aConnection) {
-    TInt c;
-
     assert(iState == EStateInitialized);
 
     // Initialize logging
-    iLogContext = log_init(this, &iConfig); 
+    iLogContext = log_init(this, &iConfig);
 
-    // Convert palette from the config to our internal palette
-    static const int paletteMap[22] = {
-	256, 257, 258, 259, 260, 261,
-	0, 8, 1, 9, 2, 10, 3, 11,
-	4, 12, 5, 13, 6, 14, 7, 15
-    };
-    for ( c = 0; c < KConfigColors; c++ ) {
-        TInt idx = paletteMap[c];
-        iDefaultPalette[idx].SetRed(iConfig.colours[c][0]);
-        iDefaultPalette[idx].SetGreen(iConfig.colours[c][1]);
-        iDefaultPalette[idx].SetBlue(iConfig.colours[c][2]);
-    }
-    for ( c = 0; c < KOtherColors; c++) {
-	if ( c < 216 ) {
-	    int r = c / 36, g = (c / 6) % 6, b = c % 6;
-	    iDefaultPalette[c+16].SetRed(r ? r * 40 + 55 : 0);
-	    iDefaultPalette[c+16].SetGreen(g ? g * 40 + 55 : 0);
-	    iDefaultPalette[c+16].SetBlue(b ? b * 40 + 55 : 0);
-	} else {
-	    int shade = c - 216;
-	    shade = shade * 10 + 8;
-            iDefaultPalette[c+16].SetRed(shade);
-            iDefaultPalette[c+16].SetGreen(shade);
-            iDefaultPalette[c+16].SetBlue(shade);
-	}
-    }
-    putty_palette_reset();
-    
+    ResetPalette();
+
     // Initialize charset conversion tables
     init_ucs(&iUnicodeData, iConfig.line_codepage, iConfig.vtmode);
 
@@ -415,6 +387,42 @@ CDesCArray *CPuttyEngineImp::SupportedCharacterSetsL() {
     }
     return arr;
 }
+
+
+// MPuttyEngine::ResetPalette
+void CPuttyEngineImp::ResetPalette() {
+    
+    // Convert palette from the config to our internal palette
+    static const int paletteMap[22] = {
+	256, 257, 258, 259, 260, 261,
+	0, 8, 1, 9, 2, 10, 3, 11,
+	4, 12, 5, 13, 6, 14, 7, 15
+    };
+    TInt c;
+    for ( c = 0; c < KConfigColors; c++ ) {
+        TInt idx = paletteMap[c];
+        iDefaultPalette[idx].SetRed(iConfig.colours[c][0]);
+        iDefaultPalette[idx].SetGreen(iConfig.colours[c][1]);
+        iDefaultPalette[idx].SetBlue(iConfig.colours[c][2]);
+    }
+    for ( c = 0; c < KOtherColors; c++) {
+	if ( c < 216 ) {
+	    int r = c / 36, g = (c / 6) % 6, b = c % 6;
+	    iDefaultPalette[c+16].SetRed(r ? r * 40 + 55 : 0);
+	    iDefaultPalette[c+16].SetGreen(g ? g * 40 + 55 : 0);
+	    iDefaultPalette[c+16].SetBlue(b ? b * 40 + 55 : 0);
+	} else {
+	    int shade = c - 216;
+	    shade = shade * 10 + 8;
+            iDefaultPalette[c+16].SetRed(shade);
+            iDefaultPalette[c+16].SetGreen(shade);
+            iDefaultPalette[c+16].SetBlue(shade);
+	}
+    }
+    putty_palette_reset();
+}
+    
+
 
 
 // MSocketWatcher::SocketOpened()

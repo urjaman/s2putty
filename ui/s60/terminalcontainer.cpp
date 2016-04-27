@@ -46,6 +46,8 @@ CTerminalContainer *CTerminalContainer::NewL(const TRect &aRect,
 // Constructor
 CTerminalContainer::CTerminalContainer(CTerminalView *aView) {
     iView = aView;
+    iDefaultFg = KRgbBlack;
+    iDefaultBg = KRgbWhite;
 }
 
 
@@ -85,16 +87,24 @@ void CTerminalContainer::SetFontL(const TDesC &aFontFile) {
 }
 
 
+// Set default colors
+void CTerminalContainer::SetDefaultColors(TRgb aForeground, TRgb aBackground) {
+    iDefaultFg = aForeground;
+    iDefaultBg = aBackground;
+    if ( iTerminal ) {
+        iTerminal->SetDefaultColors(aForeground, aBackground);
+    }
+}
+
+
 void CTerminalContainer::Draw(const TRect & /*aRect*/) const {
 
     CWindowGc &gc = SystemGc();
     gc.Reset();
     gc.SetClippingRect(Rect());
 
-    // Determine terminal window borders and draw a rectangle around it
+    // Determine terminal window borders
     TRect borderRect = iTermRect;
-    borderRect.Grow(1, 1);
-    gc.DrawRect(borderRect);
 
     // Clear everything outside the terminal
     TRegionFix<5> clearReg(Rect());
@@ -104,7 +114,7 @@ void CTerminalContainer::Draw(const TRect & /*aRect*/) const {
     TInt numRects = clearReg.Count();
     
     gc.SetBrushStyle(CGraphicsContext::ESolidBrush);
-    gc.SetBrushColor(KRgbWhite);
+    gc.SetBrushColor(iDefaultBg);
     gc.SetPenStyle(CGraphicsContext::ENullPen);
     while ( numRects-- ) {
         gc.DrawRect(*(rects++));

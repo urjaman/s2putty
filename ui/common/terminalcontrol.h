@@ -147,6 +147,15 @@ public:
      * @param aRect New terminal window size and position.
      */
 
+    /** 
+     * Sets the default colors used to clear the terminal and clears the
+     * terminal.
+     * 
+     * @param aForeground Default foreground color
+     * @param aBackground Default background color
+     */
+    virtual void SetDefaultColors(TRgb aForeground, TRgb aBackground);
+
     // CCoeControl methods
     virtual TKeyResponse OfferKeyEventL(const TKeyEvent &aKeyEvent,
                                         TEventCode aType);
@@ -276,6 +285,7 @@ protected:
     TInt iFepEditOrigX, iFepEditOrigY; // FEP edit reference pos
     TInt iFepEditX, iFepEditY; // Current FEP edit pos, -1 if invalid
     TInt iFepEditDisplayLen;
+    TRgb iDefaultFg, iDefaultBg;
 };
 
 

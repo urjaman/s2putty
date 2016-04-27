@@ -2,7 +2,7 @@
  *
  * Putty UI View class
  *
- * Copyright 2002 Petteri Kangaslampi
+ * Copyright 2002,2009 Petteri Kangaslampi
  *
  * See license.txt for full copyright and license information.
 */
@@ -44,6 +44,8 @@ CPuttyAppView::~CPuttyAppView() {
 void CPuttyAppView::ConstructL(const TRect &aRect) {
     CreateWindowL();
     SetRect(aRect);
+    iDefaultFg = KRgbBlack;
+    iDefaultBg = KRgbWhite;
 
     // Determine the correct size and position for the terminal. We'll aim
     // at a default size initially, instead of making it as big as possible
@@ -72,10 +74,16 @@ void CPuttyAppView::Draw(const TRect & /*aRect*/) const {
     gc.Reset();
     gc.SetClippingRect(Rect());
 
-    // Determine terminal window borders and draw a rectangle around it
+    // Determine terminal window borders. If we're using the small font in
+    // non full screen mode, draw a rectangle around it to mark the area since
+    // it is significantly smaller than the window. Otherwise we won't bother
+    // since the rectangle wouldn't look too good...
     TRect borderRect = iTermRect;
-    borderRect.Grow(1, 1);
-    gc.DrawRect(borderRect);
+    if ( (!iFullScreen) && (!iLargeFont) ) {
+        gc.SetPenColor(iDefaultFg);
+        borderRect.Grow(1, 1);
+        gc.DrawRect(borderRect);
+    }
 
     // Clear everything outside the terminal
     TRegionFix<5> clearReg(Rect());
@@ -85,7 +93,7 @@ void CPuttyAppView::Draw(const TRect & /*aRect*/) const {
     TInt numRects = clearReg.Count();
     
     gc.SetBrushStyle(CGraphicsContext::ESolidBrush);
-    gc.SetBrushColor(KRgbWhite);
+    gc.SetBrushColor(iDefaultBg);
     gc.SetPenStyle(CGraphicsContext::ENullPen);
     while ( numRects-- ) {
         gc.DrawRect(*(rects++));
@@ -215,6 +223,17 @@ void CPuttyAppView::SetFullScreenL(TBool aFullScreen) {
         SetRect(iAppUi->ClientRect());
     }
 
+    DrawDeferred();
+}
+
+
+// Set default colors
+void CPuttyAppView::SetDefaultColors(TRgb aForeground, TRgb aBackground) {
+    iDefaultFg = aForeground;
+    iDefaultBg = aBackground;
+    if ( iTerminal ) {
+        iTerminal->SetDefaultColors(aForeground, aBackground);
+    }
     DrawDeferred();
 }
 

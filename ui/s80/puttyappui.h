@@ -23,6 +23,7 @@ extern "C" {
 class CPuttyAppView;
 class CPuttyEngine;
 class CEikMenuPane;
+class CPalettes;
 
 
 /**
@@ -99,6 +100,7 @@ private:
     TBool iSelectMode;
     TBool iHaveMark;
     CIdle *iConnectIdle;
+    CPalettes *iPalettes;
 
     enum {
         EStateNone = 0,

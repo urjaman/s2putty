@@ -2,7 +2,7 @@
  *
  * Putty UI resource definitions
  *
- * Copyright 2002-2007 Petteri Kangaslampi
+ * Copyright 2002-2007,2009 Petteri Kangaslampi
  *
  * See license.txt for full copyright and license information.
 */
@@ -189,6 +189,10 @@ RESOURCE MENU_PANE r_putty_view_menu {
             command = ECmdFullScreen;
             txt = "Full Screen";
             flags = EEikMenuItemCheckBox;
+        },
+        MENU_ITEM {
+            cascade = r_putty_palette_menu;
+            txt = "Palette";
         }
     };
 }
@@ -292,6 +296,10 @@ RESOURCE MENU_PANE r_putty_send_function_key_menu {
             txt = "F10";
         }
     };
+}
+
+// Palette menu (populated at run time)
+RESOURCE MENU_PANE r_putty_palette_menu {
 }
 
 
@@ -501,6 +509,14 @@ RESOURCE ARRAY r_settings_display_page {
         },
         DLG_LINE {
             type = EEikCtChoiceList;
+            prompt = "Palette";
+            id = ESettingsPalette;
+            control = CHOICELIST {
+                array_id = r_settings_palettes;
+            };
+        },
+        DLG_LINE {
+            type = EEikCtChoiceList;
             prompt = "Character Set";
             id = ESettingsCharacterSet;
             control = CHOICELIST {
@@ -518,6 +534,12 @@ RESOURCE ARRAY r_settings_fonts {
 }
 
 RESOURCE ARRAY r_settings_character_sets {
+    items = {
+        LBUF { txt = "dummy"; }
+    };
+}
+
+RESOURCE ARRAY r_settings_palettes {
     items = {
         LBUF { txt = "dummy"; }
     };
@@ -692,6 +714,51 @@ RESOURCE DLG_BUTTONS r_profile_list_dlg_buttons {
 }
 
 
+// Palette names
+RESOURCE ARRAY r_putty_palette_names {
+    items = {
+        LBUF { txt = "Black on White"; },
+        LBUF { txt = "Gray on Black"; },
+        LBUF { txt = "White on Black"; }
+    };
+}
+
+// Palettes
+STRUCT PALETTE {
+    BYTE values[66]; // 22 RGB values
+}
+RESOURCE ARRAY r_putty_palettes {
+    items = {
+        PALETTE { // Black on white
+            values = {
+                0,0,0,  128,128,128,  255,255,255,  255,255,255,  0,0,0,
+                128,128,192,  0,0,0,  85,85,85,  187,0,0,  255,85,85,
+                0,187,0,  85,255,85,  187,187,0,  255,255,85,  0,0,187,
+                85,85,255,  187,0,187,  255,85,255,  0,187,187,
+                85,255,255,  187,187,187,  192,192,192
+            };
+        },
+        PALETTE { // Gray on black
+            values = {
+                187, 187, 187,  255,255,255,  0,0,0,  0,0,0,  0,0,0,
+                128,128,192,  0,0,0,  85,85,85,  187,0,0,  255,85,85,
+                0,187,0,  85,255,85,  187,187,0,  255,255,85,  0,0,187,
+                85,85,255,  187,0,187,  255,85,255,  0,187,187,
+                85,255,255,  187,187,187,  255,255,255
+            };
+        }, 
+        PALETTE { // White on black
+            values = {
+                255, 255, 255,  255,255,255,  0,0,0,  0,0,0,  0,0,0,
+                128,128,192,  0,0,0,  85,85,85,  187,0,0,  255,85,85,
+                0,187,0,  85,255,85,  187,187,0,  255,255,85,  0,0,187,
+                85,85,255,  187,0,187,  255,85,255,  0,187,187,
+                85,255,255,  187,187,187,  255,255,255
+            };
+        }
+    };
+}
+
 
 // Localizable strings
 
@@ -785,7 +852,7 @@ RESOURCE TBUF r_str_show_putty_config_files { buf = "Show PuTTY\nconfig files"; 
 RESOURCE TBUF r_str_about_title { buf = "About PuTTY"; }
 
 // ABout dialog contents (FIXME: Make more dynamic)
-RESOURCE TBUF r_str_about_text { buf = "PuTTY for Symbian OS\nVersion 1.5 Beta 2\nBased on PuTTY 0.60\nBuilt " __DATE__ ", " __TIME__; }
+RESOURCE TBUF r_str_about_text { buf = "PuTTY for Symbian OS\nVersion 1.5.0\nBased on PuTTY 0.60\nBuilt " __DATE__ ", " __TIME__; }
 
 // Delete profile confirmation title
 RESOURCE TBUF r_str_delete_profile_confirm_title { buf = "Delete profile?"; }

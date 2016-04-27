@@ -2,7 +2,7 @@
  *
  * Settings dialog
  *
- * Copyright 2003 Petteri Kangaslampi
+ * Copyright 2003,2009 Petteri Kangaslampi
  *
  * See license.txt for full copyright and license information.
 */
@@ -26,6 +26,7 @@ extern "C" {
 }
 #include "settingsdialog.h"
 #include "puttyengine.h"
+#include "palettes.h"
 
 _LIT(KAssertPanic, "settingsdialog.cpp");
 #define assert(x) __ASSERT_ALWAYS(x, User::Panic(KAssertPanic, __LINE__))
@@ -107,6 +108,12 @@ CSettingsDialog::CSettingsDialog(TDes &aProfileName, TBool aIsDefault,
 }
 
 
+// Destructor
+CSettingsDialog::~CSettingsDialog() {
+    delete iPalettes;
+}
+
+
 // Dialog init, populates the dialog with current configuration
 void CSettingsDialog::PreLayoutDynInitL() {
 
@@ -184,6 +191,18 @@ void CSettingsDialog::PreLayoutDynInitL() {
         }
     }
     ((CEikCheckBox*)Control(ESettingsFullScreen))->SetState(state);
+
+    // Palette
+    iPalettes = CPalettes::NewL(R_PUTTY_PALETTE_NAMES, R_PUTTY_PALETTES);
+    TInt curpal = iPalettes->IdentifyPalette(
+        (const unsigned char*) iConfig->colours);
+    CEikChoiceList *palList = ((CEikChoiceList*)Control(ESettingsPalette));
+    CDesCArrayFlat *arr = new (ELeave) CDesCArrayFlat(iPalettes->NumPalettes());
+    for ( TInt i = 0; i < iPalettes->NumPalettes(); i++ ) {
+        arr->AppendL(iPalettes->PaletteName(i));
+    }
+    palList->SetArrayL(arr);
+    palList->SetCurrentItem(curpal);
 
     // Character set
     // FIXME: This is the only thing we need the engine for -- consider another solution
@@ -332,6 +351,13 @@ TBool CSettingsDialog::OkToExitL(TInt aButtonId) {
             iConfig->height = KNormalSmallHeight;
         }
     }
+
+    // Palette
+    CEikChoiceList *palList = ((CEikChoiceList*)Control(ESettingsPalette));
+    iPalettes->GetPalette(palList->CurrentItem(),
+                          (unsigned char*) iConfig->colours);
+    delete iPalettes;
+    iPalettes = NULL;
 
     // Character set
     CEikChoiceList *csList = ((CEikChoiceList*)Control(ESettingsCharacterSet));

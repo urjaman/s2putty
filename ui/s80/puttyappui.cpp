@@ -2,7 +2,7 @@
  *
  * Putty UI Application UI class
  *
- * Copyright 2002,2003,2005,2007 Petteri Kangaslampi
+ * Copyright 2002,2003,2005,2007,2009 Petteri Kangaslampi
  *
  * See license.txt for full copyright and license information.
 */
@@ -32,6 +32,7 @@
 #include "settingsdialog.h"
 #include "authdialog.h"
 #include "profilelistdialog.h"
+#include "palettes.h"
 #include <putty.rsg>
 extern "C" {
 #include "putty.h"
@@ -95,6 +96,8 @@ void CPuttyAppUi::ConstructL() {
     AddToStackL(iAppView);
 
     iAppView->Terminal()->SetGrayed(ETrue);
+
+    iPalettes = CPalettes::NewL(R_PUTTY_PALETTE_NAMES, R_PUTTY_PALETTES);
 
     // Determine application installation path
     HBufC *appDll = HBufC::NewLC(KMaxFileName);
@@ -182,6 +185,7 @@ CPuttyAppUi::~CPuttyAppUi() {
     }
     delete iConnectIdle;
     delete iAppView;
+    delete iPalettes;
     delete iRecorder;
     delete iAudio;
     delete iEngine;
@@ -191,6 +195,24 @@ CPuttyAppUi::~CPuttyAppUi() {
 
 
 void CPuttyAppUi::HandleCommandL(TInt aCommand) {
+
+    if ( (aCommand >= ECmdPaletteStart) && (aCommand < ECmdPaletteEnd) ) {
+        // Palette change
+        if ( iEngine ) {
+            Config *cfg = iEngine->GetConfig();
+            iPalettes->GetPalette(aCommand - ECmdPaletteStart,
+                                  (unsigned char*) cfg->colours);
+            iAppView->SetDefaultColors(TRgb(cfg->colours[0][0],
+                                            cfg->colours[0][1],
+                                            cfg->colours[0][2]),
+                                       TRgb(cfg->colours[2][0],
+                                            cfg->colours[2][1],
+                                            cfg->colours[2][2]));
+            iEngine->ResetPalette();
+            iEngine->RePaintWindow();
+        }
+        return;
+    }
 
     switch (aCommand) {
 
@@ -448,6 +470,38 @@ void CPuttyAppUi::DynInitMenuPaneL(TInt aResourceId, CEikMenuPane *aMenuPane) {
         aMenuPane->SetItemDimmed(ECmdSendF9, dimmed);
         aMenuPane->SetItemDimmed(ECmdSendF10, dimmed);
     }
+
+    else if ( aResourceId == R_PUTTY_PALETTE_MENU ) {
+        if ( !iEngine ) {
+            return;
+        }        
+        Config *cfg = iEngine->GetConfig();
+        TInt pal = iPalettes->IdentifyPalette((const unsigned char*) cfg->colours);
+
+        // Add menu items for each available palette to the menu
+        for ( TInt i = 0; i < iPalettes->NumPalettes(); i++ ) {
+            CEikMenuPaneItem::SData data;
+            data.iCommandId = ECmdPaletteStart + i;
+            data.iCascadeId = 0;
+            if ( i == 0 ) {
+                data.iFlags = EEikMenuItemRadioStart;
+            } else if ( i == (iPalettes->NumPalettes()-1) ) {
+                data.iFlags = EEikMenuItemRadioEnd;
+            } else {
+                data.iFlags = EEikMenuItemRadioMiddle;                
+            }
+            if ( i == pal ) {
+                data.iFlags |= EEikMenuItemSymbolOn;
+            } else {
+                data.iFlags |= EEikMenuItemSymbolIndeterminate;
+            }
+            data.iText = iPalettes->PaletteName(i);
+            data.iExtraText.Zero();                
+            aMenuPane->AddMenuItemL(data);
+        }
+
+        aMenuPane->SetSelectedItem(ECmdPaletteStart + pal);
+    }
 }
 
 
@@ -478,6 +532,13 @@ void CPuttyAppUi::ReadUiSettingsL(Config *aConfig) {
         }
     }
     iAppView->SetFullScreenL(iFullScreen);
+
+    iAppView->SetDefaultColors(TRgb(aConfig->colours[0][0],
+                                    aConfig->colours[0][1],
+                                    aConfig->colours[0][2]),
+                               TRgb(aConfig->colours[2][0],
+                                    aConfig->colours[2][1],
+                                    aConfig->colours[2][2]));
 }
 
 

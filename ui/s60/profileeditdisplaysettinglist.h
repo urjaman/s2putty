@@ -20,6 +20,7 @@ extern "C" {
 // Forward declarations
 class CPuttyEngine;
 class CProfileEditView;
+class CPalettes;
 
 /**
  * Setting list for display settings.
@@ -64,7 +65,9 @@ private:
     TInt iFontValue;
     TBool iFullScreen;
     CDesCArray *iCharSets; // owned by the setting item
+    CPalettes *iPalettes;
     TInt iCharSetValue;
+    TInt iPaletteValue;
 };
 
 

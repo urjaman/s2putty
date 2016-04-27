@@ -2,17 +2,17 @@
 ;*
 ;* Package definition file for PuTTY for Series 80 v2.0
 ;*
-;* Copyright 2002-2008 Petteri Kangaslampi
+;* Copyright 2002-2009 Petteri Kangaslampi
 ;*
 ;* See license.txt for full copyright and license information.
 
-#{"PuTTY"},(0x101f9076),1,5,404,TYPE=SISAPP
+#{"PuTTY"},(0x101f9076),1,5,419,TYPE=SISAPP
 
 ; Compatibility: Series 80 2.0
 (0x101F8ED2), 0, 0, 0, {"Series80ProductID"}
 
 ; Signature
-*"c:\home\pekangas\keys\petteri_s80_2008.key","c:\home\pekangas\keys\petteri_s80_2008.cer"
+*"c:\home\pekangas\keys\petteri_s80_2009.key","c:\home\pekangas\keys\petteri_s80_2009.cer"
 
 ; Installation note
 "installnote.txt"-"",FT,TC

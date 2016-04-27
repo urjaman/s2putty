@@ -36,6 +36,7 @@ public:
 
     void SetFontL(TBool aLargeFont);
     void SetFullScreenL(TBool aFullScreen);
+    void SetDefaultColors(TRgb aDefaultFg, TRgb aDefaultBg);
 
 private:
     void Draw(const TRect &aRect) const;
@@ -51,6 +52,7 @@ private:
     TBool iFullScreen;
     TBool iChrDown;
     CPuttyAppUi *iAppUi;
+    TRgb iDefaultFg, iDefaultBg;
 };
 
 #endif

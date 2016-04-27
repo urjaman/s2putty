@@ -106,6 +106,7 @@ enum TCommands {
     EPuttyCmdSaveSettingsAsDefault,
     EPuttyCmdResetDefaultSettings,
     EPuttyCmdSend,
+    EPuttyCmdSetPalette,
     
     EPuttyCmdHostKeyAcceptAndSave,
     EPuttyCmdHostKeyAcceptOnce,
@@ -177,6 +178,7 @@ enum TSettingItems {
 
     EPuttySettingDisplayFont,
     EPuttySettingDisplayFullScreen,
+    EPuttySettingDisplayPalette,
     EPuttySettingDisplayCharSet,
 
     EPuttySettingLoggingType,

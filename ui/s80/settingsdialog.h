@@ -19,6 +19,7 @@ extern "C" {
 
 
 class CPuttyEngine;
+class CPalettes;
 
 
 /**
@@ -38,7 +39,8 @@ public:
      */
     CSettingsDialog(TDes &aProfileName, TBool aIsDefault, Config *aConfig,
                     CPuttyEngine *aPutty);
-    
+
+    ~CSettingsDialog();    
     void PreLayoutDynInitL();
     TBool OkToExitL(TInt aButtonId);
     void LineChangedL(TInt aControlId);
@@ -51,6 +53,7 @@ private:
     CDesCArray *iCharSets;
     TDes &iProfileName;
     TBool iIsDefault;
+    CPalettes *iPalettes;
 };
 
 

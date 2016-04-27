@@ -46,6 +46,7 @@ SOURCE		common\terminalcontrols2font.cpp
 SOURCE		common\termfepext1.cpp
 SOURCE		common\oneshottimer.cpp
 SOURCE		common\netconnect.cpp
+SOURCE		common\palettes.cpp
 SOURCE		s2font\s2font.cpp
 
 USERINCLUDE	..\..\ui\s60v2 ..\..\ui\s60 ..\..\ui\common ..\..\ui\s2font

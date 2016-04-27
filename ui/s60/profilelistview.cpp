@@ -18,6 +18,7 @@
 #include "profilelistview.h"
 #include "puttyappui.h"
 #include "puttyengine.h"
+#include "stringutils.h"
 #include "puttyuids.hrh"
 #include "puttyui.hrh"
 
@@ -32,6 +33,8 @@ _LIT(KUniqueProfileFormat, "%S (%d)");
 const TInt KDefaultProfileIndex = 0;
 
 const TInt KFatalErrorExit = -1;
+
+_LIT(KDefaultFont, "fixed6x13");
 
 
 // Factory
@@ -106,7 +109,12 @@ void CProfileListView::HandleCommandL(TInt aCommand) {
         case EPuttyCmdProfileListNew:
             if ( iListBox ) {
                 // New profile -- start with defaults, but with a new name
+                // Note that the engine does not set the font name since it's
+                // UI-specific
                 iPutty->SetDefaults();
+                Config *cfg = iPutty->GetConfig();
+                DesToString(KDefaultFont, cfg->font.name,
+                            sizeof(cfg->font.name));
                 iProfileEditName = KNewProfileName;
                 MakeNameUniqueL(iProfileEditName);
                 iPutty->WriteConfigFileL(

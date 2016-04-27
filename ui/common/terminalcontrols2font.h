@@ -89,8 +89,7 @@ protected:
     virtual void Clear();
     virtual void AllocateBuffersL();    
 
-    void UpdateWithGc(CBitmapContext &aGc, RWsSession &aWs, TInt aX,
-                      TInt aY, TInt aLength) const;
+    void RenderRow(TInt aX, TInt aY, TInt aLength) const;
     void StartUpdateTimer();
     void Update();
     static TInt UpdateCallBack(TAny *aPtr);
@@ -101,9 +100,9 @@ protected:
     TBool iTimerRunning;
     TInt *iDirtyLeft; // Dirty area start on each line
     TInt *iDirtyRight; // Dirty area end on each line
-    CFbsBitmap *iRowBitmap;
-    CFbsBitmapDevice *iRowBitmapDevice;
-    CFbsBitGc *iRowBitmapGc;
+    CFbsBitmap *iBitmap;
+    CFbsBitmapDevice *iBitmapDevice;
+    CFbsBitGc *iBitmapGc;
     HBufC *iRowTextBuf;
 };
 

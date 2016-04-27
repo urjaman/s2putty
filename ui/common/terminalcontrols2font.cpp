@@ -70,9 +70,9 @@ CTerminalControlS2Font::~CTerminalControlS2Font() {
     delete [] iDirtyLeft;
     delete [] iDirtyRight;
     delete iTimer;
-    delete iRowBitmapGc;
-    delete iRowBitmapDevice;
-    delete iRowBitmap;
+    delete iBitmapGc;
+    delete iBitmapDevice;
+    delete iBitmap;
     delete iRowTextBuf;
 }
 
@@ -93,25 +93,25 @@ void CTerminalControlS2Font::AllocateBuffersL() {
     iDirtyLeft = NULL;
     delete [] iDirtyRight;
     iDirtyRight = NULL;
-    delete iRowBitmapGc;
-    iRowBitmapGc = NULL;
-    delete iRowBitmapDevice;
-    iRowBitmapDevice = NULL;
-    delete iRowBitmap;
-    iRowBitmap = NULL;
+    delete iBitmapGc;
+    iBitmapGc = NULL;
+    delete iBitmapDevice;
+    iBitmapDevice = NULL;
+    delete iBitmap;
+    iBitmap = NULL;
     delete iRowTextBuf;
     iRowTextBuf = NULL;
 
-    iRowBitmap = new CFbsBitmap();
+    iBitmap = new CFbsBitmap();
     TDisplayMode displayMode = SystemGc().Device()->DisplayMode();
     if ( (displayMode != EColor4K) && (displayMode != EColor64K) ) {
         displayMode = EColor64K;
     }
-    User::LeaveIfError(iRowBitmap->Create(TSize(iCharWidth*iFontWidth,
-                                                iFontHeight),
-                                          displayMode));
-    iRowBitmapDevice = CFbsBitmapDevice::NewL(iRowBitmap);
-    iRowBitmapGc = CFbsBitGc::NewL();
+    User::LeaveIfError(iBitmap->Create(TSize(iCharWidth*iFontWidth,
+                                             iCharHeight*iFontHeight),
+                                       displayMode));
+    iBitmapDevice = CFbsBitmapDevice::NewL(iBitmap);
+    iBitmapGc = CFbsBitGc::NewL();
     iDirtyLeft = new (ELeave) TInt[iCharHeight];
     iDirtyRight = new (ELeave) TInt[iCharHeight];
     iRowTextBuf = HBufC::NewL(iCharWidth);
@@ -126,6 +126,14 @@ void CTerminalControlS2Font::Clear() {
         iDirtyLeft[y] = iCharWidth;
         iDirtyRight[y] = -1;
     }
+
+    // Clear the bitmap with the default background color
+    iBitmapGc->Activate(iBitmapDevice);
+    iBitmapGc->SetPenStyle(CGraphicsContext::ENullPen);
+    iBitmapGc->SetBrushStyle(CGraphicsContext::ESolidBrush);
+    iBitmapGc->SetBrushColor(iDefaultBg);
+    iBitmapGc->Clear();
+    
     CTerminalControl::Clear();
 }
 
@@ -148,24 +156,16 @@ void CTerminalControlS2Font::UpdateDisplay(TInt aX, TInt aY, TInt aLength) {
 }
 
 
-// Updates one more characters on a line to the display.
-// This method requires a valid graphics context and window server session
-void CTerminalControlS2Font::UpdateWithGc(CBitmapContext &aGc,
-                                          RWsSession &aWs,
-                                          TInt aX, TInt aY,
-                                          TInt aLength) const {
+// Renders one row of text to the bitmap
+void CTerminalControlS2Font::RenderRow(TInt aX, TInt aY, TInt aLength) const {
     
     assert((aX >= 0) && ((aX + aLength) <= iCharWidth));
     assert((aY >= 0) && (aY < iCharHeight));
 
     LFPRINT((_L("UpdateWithGc(gc, ws, %d, %d, %d)"), aX, aY, aLength));
 
-    TInt x0 = Rect().iTl.iX;
-    TInt y0 = Rect().iTl.iY;
-    
     // We'll first render all runs of identical updates at one go to the
-    // bitmap, render the cursor if necessary, and finally blit the bitmap
-    // to the screen    
+    // bitmap and then render the cursor if necessary
 
     TTerminalAttribute *attribs = &iAttributes[aY * iCharWidth + aX];
     TInt x = 0;
@@ -207,7 +207,8 @@ void CTerminalControlS2Font::UpdateWithGc(CBitmapContext &aGc,
             text.Append(c);
         }
 
-        iFont->RenderText(*iRowBitmap, text, (aX+x) * iFontWidth, 0, fg0, bg0);
+        iFont->RenderText(*iBitmap, text, (aX+x) * iFontWidth, aY*iFontHeight,
+                          fg0, bg0);
         x += num;
     }
     
@@ -215,22 +216,16 @@ void CTerminalControlS2Font::UpdateWithGc(CBitmapContext &aGc,
     if ( iSelectMode && ((iSelectY == aY) &&
                          (iSelectX >= aX) && (iSelectX < (aX + aLength))) ) {
 
-        iRowBitmapGc->Activate(iRowBitmapDevice);
-        iRowBitmapGc->Reset();
-        iRowBitmapGc->SetBrushStyle(CGraphicsContext::ENullBrush);
-        iRowBitmapGc->SetDrawMode(CGraphicsContext::EDrawModeXOR);
-        iRowBitmapGc->SetPenStyle(CGraphicsContext::ESolidPen);
-        iRowBitmapGc->SetPenColor(KSelectCursorXor);
-        iRowBitmapGc->DrawRect(TRect(TPoint(iSelectX * iFontWidth, 0),
-                                     TSize(iFontWidth, iFontHeight)));
+        iBitmapGc->Activate(iBitmapDevice);
+        iBitmapGc->Reset();
+        iBitmapGc->SetBrushStyle(CGraphicsContext::ENullBrush);
+        iBitmapGc->SetDrawMode(CGraphicsContext::EDrawModeXOR);
+        iBitmapGc->SetPenStyle(CGraphicsContext::ESolidPen);
+        iBitmapGc->SetPenColor(KSelectCursorXor);
+        iBitmapGc->DrawRect(TRect(TPoint(iSelectX * iFontWidth,
+                                         iSelectY * iFontHeight),
+                                  TSize(iFontWidth, iFontHeight)));
     }
-    
-    // Blit
-    aGc.BitBlt(TPoint(x0 + aX*iFontWidth, y0 + aY*iFontHeight),
-              iRowBitmap,
-              TRect(aX*iFontWidth, 0, (aX+aLength)*iFontWidth, iFontHeight));
-    aWs.Flush();
-    TRACE;
 }
 
 
@@ -239,7 +234,6 @@ void CTerminalControlS2Font::Draw(const TRect & /*aRect*/) const {
 
     CWindowGc &gc = SystemGc();
     gc.Reset();
-    RWsSession &ws = CCoeEnv::Static()->WsSession();    
 
     if ( iGrayed ) {
         gc.SetBrushStyle(CGraphicsContext::ESolidBrush);
@@ -248,12 +242,18 @@ void CTerminalControlS2Font::Draw(const TRect & /*aRect*/) const {
         gc.DrawRect(Rect());
     }
     else {
-        // Draw everything and mark all lines not dirty
+        // Render dirty rows to the bitmap and mark as not dirty
         for ( TInt y = 0; y < iCharHeight; y++ ) {
-            UpdateWithGc(gc, ws, 0, y, iCharWidth);
+            if ( (iDirtyRight[y] < iDirtyLeft[y]) ) {
+                continue;
+            }
+            RenderRow(iDirtyLeft[y], y, iDirtyRight[y]-iDirtyLeft[y]+1);
             iDirtyLeft[y] = iCharWidth;
             iDirtyRight[y] = -1;
         }
+
+        // Blit the bitmap
+        gc.BitBlt(Rect().iTl, iBitmap);
     }
 }
 
@@ -273,31 +273,51 @@ void CTerminalControlS2Font::StartUpdateTimer() {
 // Update all dirty areas on the screen
 void CTerminalControlS2Font::Update() {
 
+    // Overall dirty rect
+    TInt x0 = iCharWidth, y0 = iCharHeight, x1 = 0, y1 = 0;
+
     iTimerRunning = EFalse;
 
     CWindowGc &gc = SystemGc();
     gc.Activate(Window());
-    RWsSession &ws = CCoeEnv::Static()->WsSession();
     
-    // Go through each line, finding areas that need updating. On those lines
-    // we'll first render all runs of identical updates at one go to the
-    // bitmap, render the cursor if necessary, and finally blit the bitmap
-    // to the screen
+    // Go through each line, finding areas that need updating, and render
+    // them to the bitmap
     for ( TInt y = 0; y < iCharHeight; y++ ) {
-
+        
         // Skip lines that are fully up to date
         if ( (iDirtyRight[y] < iDirtyLeft[y]) ) {
             continue;
         }
 
         // Draw the line to the display
-        UpdateWithGc(gc, ws, iDirtyLeft[y], y, iDirtyRight[y]-iDirtyLeft[y]+1);
+        RenderRow(iDirtyLeft[y], y, iDirtyRight[y]-iDirtyLeft[y]+1);
+
+        // Update overall dirty rectangle
+        if ( x0 > iDirtyLeft[y] ) {
+            x0 = iDirtyLeft[y];
+        }
+        if ( x1 < iDirtyRight[y] ) {
+            x1 = iDirtyRight[y];
+        }
+        if ( y0 > y ) {
+            y0 = y;
+        }
+        y1 = y;
 
         // No longer dirty
         iDirtyLeft[y] = iCharWidth;
         iDirtyRight[y] = -1;
     }
 
+    // Blit the updated area of the terminal bitmap to the screen
+    if ( (x0 <= x1) && (y0 <= y1) ) {
+        gc.BitBlt(Rect().iTl + TSize(x0*iFontWidth, y0*iFontHeight),
+                  iBitmap,
+                  TRect(x0*iFontWidth, y0*iFontHeight,
+                        (x1+1)*iFontWidth, (y1+1)*iFontHeight));
+    }
+        
     gc.Deactivate();
 }
 

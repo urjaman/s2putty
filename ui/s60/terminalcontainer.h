@@ -63,6 +63,15 @@ public:
      */
     void SetFontL(const TDesC &aFontFile);
 
+    /** 
+     * Sets the default colors used to clear the terminal and clears the
+     * terminal.
+     * 
+     * @param aForeground Default foreground color
+     * @param aBackground Default background color
+     */
+    void SetDefaultColors(TRgb aForeground, TRgb aBackground);
+
 
 public: // From CCoeControl
     virtual TInt CountComponentControls() const;
@@ -91,6 +100,7 @@ private:
     TBool iFullScreen;
     CS2Font *iFont;
     CTerminalView *iView;
+    TRgb iDefaultFg, iDefaultBg;
 };
 
 #endif

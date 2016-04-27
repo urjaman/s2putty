@@ -2,7 +2,7 @@
  *
  * PuTTY engine implementation class
  *
- * Copyright 2002 Petteri Kangaslampi
+ * Copyright 2002,2009 Petteri Kangaslampi
  *
  * See license.txt for full copyright and license information.
 */
@@ -69,6 +69,7 @@ public:
     virtual void WriteConfigFileL(const TDesC &aFile);
     virtual void SetDefaults();
     virtual CDesCArray *SupportedCharacterSetsL();
+    virtual void ResetPalette();
 
     // MSocketWatcher methods
     virtual void SocketOpened();

@@ -1,4 +1,149 @@
 ------------------------------------------------------------------------
+r419 | pekangas | 2009-01-25 18:06:09 +0000 (Sun, 25 Jan 2009) | 1 line
+Changed paths:
+   M /s2putty/trunk/README.txt
+   M /s2putty/trunk/README_source.txt
+   M /s2putty/trunk/build/s60v3/installnote.txt
+   M /s2putty/trunk/build/s60v3/putty.pkg
+   M /s2putty/trunk/build/s80v2/installnote.txt
+   M /s2putty/trunk/build/s80v2/putty.pkg
+   M /s2putty/trunk/putty_users_guide.odt
+   M /s2putty/trunk/putty_users_guide.pdf
+   M /s2putty/trunk/ui/s80/putty.rss
+
+Update documentation, package files, and resources for the 1.5.0 release.
+------------------------------------------------------------------------
+r418 | pekangas | 2009-01-25 17:49:54 +0000 (Sun, 25 Jan 2009) | 1 line
+Changed paths:
+   M /s2putty/trunk/build/s80v2/putty.pkg
+
+Updated the S80 install package to use new keys
+------------------------------------------------------------------------
+r417 | pekangas | 2009-01-25 17:47:53 +0000 (Sun, 25 Jan 2009) | 2 lines
+Changed paths:
+   M /s2putty/trunk/ui/s60/putty.rss
+   M /s2putty/trunk/ui/s80/putty.rss
+
+Changed the bold white color in palettes with a black background to be
+more clearly different from the regular white. This fixes #2534209.
+------------------------------------------------------------------------
+r416 | pekangas | 2009-01-18 20:50:58 +0000 (Sun, 18 Jan 2009) | 2 lines
+Changed paths:
+   M /s2putty/trunk/README.txt
+   M /s2putty/trunk/README_source.txt
+   M /s2putty/trunk/build/s60v3/installnote.txt
+   M /s2putty/trunk/build/s60v3/putty.pkg
+   M /s2putty/trunk/build/s80v2/installnote.txt
+   M /s2putty/trunk/build/s80v2/putty.pkg
+   M /s2putty/trunk/license.txt
+
+Updated documentation and package files for 2009 and marked this
+version as 1.5 RC 1.
+------------------------------------------------------------------------
+r415 | pekangas | 2009-01-18 20:32:15 +0000 (Sun, 18 Jan 2009) | 2 lines
+Changed paths:
+   M /s2putty/trunk/build/s80v2/puttyui.mmp
+   M /s2putty/trunk/ui/s80/putty.rss
+   M /s2putty/trunk/ui/s80/puttyappui.cpp
+   M /s2putty/trunk/ui/s80/puttyappui.h
+   M /s2putty/trunk/ui/s80/puttyappview.cpp
+   M /s2putty/trunk/ui/s80/puttyappview.h
+   M /s2putty/trunk/ui/s80/puttyui.hrh
+   M /s2putty/trunk/ui/s80/settingsdialog.cpp
+   M /s2putty/trunk/ui/s80/settingsdialog.h
+
+Added palette selection (both settings dialog and runtime) to the
+Series 80 UI.
+------------------------------------------------------------------------
+r414 | pekangas | 2009-01-18 20:31:02 +0000 (Sun, 18 Jan 2009) | 2 lines
+Changed paths:
+   M /s2putty/trunk/ui/common/palettes.cpp
+   M /s2putty/trunk/ui/common/palettes.h
+
+Fixed CPalettes::PaletteName() to return a TPtrC object instead of a
+bad TDesC reference.
+------------------------------------------------------------------------
+r413 | pekangas | 2009-01-18 19:02:40 +0000 (Sun, 18 Jan 2009) | 3 lines
+Changed paths:
+   M /s2putty/trunk/ui/s60v3/putty.svg
+
+Scaled the PuTTY S60 icon down a bit by adjusting the viewBox
+attribute. This stops it from touching the edges of adjacent UI
+elements and brings it otherwise better in line with other S60 icons.
+------------------------------------------------------------------------
+r412 | pekangas | 2009-01-18 18:48:18 +0000 (Sun, 18 Jan 2009) | 4 lines
+Changed paths:
+   M /s2putty/trunk/ui/common/terminalcontrol.cpp
+
+Fixed the terminal control to properly update the affected areas when
+the selection and mark are modified. This not only fixes the display
+with the new S60 terminal control but also reduces unnecessary
+full-screen repaints.
+------------------------------------------------------------------------
+r411 | pekangas | 2009-01-18 18:27:25 +0000 (Sun, 18 Jan 2009) | 2 lines
+Changed paths:
+   M /s2putty/trunk/ui/s60/terminalview.cpp
+
+Updated the on-the-fly font selection dialog to select the current
+font by default.
+------------------------------------------------------------------------
+r410 | pekangas | 2009-01-18 18:26:50 +0000 (Sun, 18 Jan 2009) | 1 line
+Changed paths:
+   M /s2putty/trunk/ui/s60/profilelistview.cpp
+
+Fixed the profile list to add a valid default font to new profiles.
+------------------------------------------------------------------------
+r409 | pekangas | 2009-01-18 18:03:15 +0000 (Sun, 18 Jan 2009) | 1 line
+Changed paths:
+   M /s2putty/trunk/engine/puttyengineimp.cpp
+   M /s2putty/trunk/engine/puttyengineimp.h
+   M /s2putty/trunk/include/puttyengine.h
+   M /s2putty/trunk/ui/s60/putty.rss
+   M /s2putty/trunk/ui/s60/puttyui.hrh
+   M /s2putty/trunk/ui/s60/terminalview.cpp
+   M /s2putty/trunk/ui/s60/terminalview.h
+
+Implemented S60 support for changing the palette on the fly.
+------------------------------------------------------------------------
+r408 | pekangas | 2009-01-18 17:30:36 +0000 (Sun, 18 Jan 2009) | 1 line
+Changed paths:
+   M /s2putty/trunk/build/s60v3/puttyui.mmp
+   A /s2putty/trunk/ui/common/palettes.cpp
+   A /s2putty/trunk/ui/common/palettes.h
+   M /s2putty/trunk/ui/s60/profileeditdisplaysettinglist.cpp
+   M /s2putty/trunk/ui/s60/profileeditdisplaysettinglist.h
+   M /s2putty/trunk/ui/s60/putty.rss
+
+Refactored palette data and names to the resource file
+------------------------------------------------------------------------
+r407 | pekangas | 2009-01-11 20:37:56 +0000 (Sun, 11 Jan 2009) | 2 lines
+Changed paths:
+   A /s2putty/trunk/test/s60termtest/bld.inf
+   M /s2putty/trunk/ui/common/terminalcontrol.cpp
+   M /s2putty/trunk/ui/common/terminalcontrol.h
+   M /s2putty/trunk/ui/common/terminalcontrols2font.cpp
+   M /s2putty/trunk/ui/s60/profileeditdisplaysettinglist.cpp
+   M /s2putty/trunk/ui/s60/profileeditdisplaysettinglist.h
+   M /s2putty/trunk/ui/s60/putty.rss
+   M /s2putty/trunk/ui/s60/puttyui.hrh
+   M /s2putty/trunk/ui/s60/terminalcontainer.cpp
+   M /s2putty/trunk/ui/s60/terminalcontainer.h
+   M /s2putty/trunk/ui/s60/terminalview.cpp
+
+Christmas holiday changes part 1: Added support for user-selectable
+palettes to the S60 user interface.
+------------------------------------------------------------------------
+r406 | pekangas | 2009-01-11 20:17:08 +0000 (Sun, 11 Jan 2009) | 5 lines
+Changed paths:
+   M /s2putty/trunk/ui/common/terminalcontrols2font.cpp
+   M /s2putty/trunk/ui/common/terminalcontrols2font.h
+
+Christmas holiday changes part 1: Changed the s2font terminal control
+to use a full-screen bitmap for the whole terminal instead of reusing
+a single row bitmap for all rows. This fixes terminal display on S60
+5th edition devices, but issues still remain: 5th ed devices won't
+draw the terminal until the user flips device orientation once.
+------------------------------------------------------------------------
 r404 | pekangas | 2008-12-20 18:26:30 +0000 (Sat, 20 Dec 2008) | 1 line
 Changed paths:
    M /s2putty/trunk/README.txt

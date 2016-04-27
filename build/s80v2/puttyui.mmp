@@ -2,7 +2,7 @@
  *
  * Project definition file for PuTTY UI APP for S80 v2.
  *
- * Copyright 2002,2003,2006-2007 Petteri Kangaslampi
+ * Copyright 2002,2003,2006-2007,2009 Petteri Kangaslampi
  *
  * See license.txt for full copyright and license information.
 */
@@ -29,6 +29,7 @@ SOURCE		s80\profilelistdialog.cpp
 SOURCE		common\terminalcontrol.cpp
 SOURCE		common\terminalcontrolsystemfont.cpp
 SOURCE		common\netconnect.cpp
+SOURCE		common\palettes.cpp
 
 USERINCLUDE	..\..\ui\s80v2 ..\..\ui\s80 ..\..\ui\common ..\..\include 
 USERINCLUDE	..\..\engine\putty ..\..\engine\puttysymbian

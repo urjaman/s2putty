@@ -1,6 +1,6 @@
-PuTTY for Series 60 v3 - Version 1.5 Beta 2, 20 December 2008
+PuTTY for S60 3rd ed. - Version 1.5.0, 25 January 2009
 
-The PuTTY Symbian OS port is copyright 2002-2008 Petteri Kangaslampi.
+The PuTTY Symbian OS port is copyright 2002-2009 Petteri Kangaslampi.
 
 Copyright 2003-2004 Sergei Khloupnov
 

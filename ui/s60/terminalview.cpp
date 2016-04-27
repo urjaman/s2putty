@@ -2,7 +2,7 @@
  *
  * Putty terminal view
  *
- * Copyright 2007 Petteri Kangaslampi
+ * Copyright 2007,2009 Petteri Kangaslampi
  *
  * See license.txt for full copyright and license information.
 */
@@ -24,6 +24,7 @@
 #include "puttyuids.hrh"
 #include "puttyui.hrh"
 #include "stringutils.h"
+#include "palettes.h"
 
 _LIT(KAssertPanic, "termview");
 #define assert(x) __ASSERT_ALWAYS(x, User::Panic(KAssertPanic, __LINE__))
@@ -220,6 +221,11 @@ void CTerminalView::HandleCommandL(TInt aCommand) {
             break;
         }
 
+        case EPuttyCmdSetPalette: {
+            SetPaletteL();
+            break;
+        }
+
         case EPuttyCmdSelect:
             if ( iState == EStateConnected ) {
                 // activate selection (if not active)
@@ -401,6 +407,12 @@ void CTerminalView::DoActivateL(const TVwsViewId &aPrevViewId,
         }
         iContainer = CTerminalContainer::NewL(rect, this, this, iFontFile);
         iContainer->SetMopParent(this);
+        iContainer->SetDefaultColors(TRgb(cfg->colours[0][0],
+                                          cfg->colours[0][1],
+                                          cfg->colours[0][2]),
+                                     TRgb(cfg->colours[2][0],
+                                          cfg->colours[2][1],
+                                          cfg->colours[2][2]));
         iContainer->ActivateL();
     }
 
@@ -665,6 +677,8 @@ void CTerminalView::SetFontL() {
 
     // We'll show a popup list of fonts and let the user select one
 
+    Config *cfg = iPutty->GetConfig();
+    
     // Create a listbox and a popup to contain it
     CAknSinglePopupMenuStyleListBox *box =
         new (ELeave) CAknSinglePopupMenuStyleListBox;
@@ -683,6 +697,19 @@ void CTerminalView::SetFontL() {
     box->Model()->SetItemTextArray((MDesC16Array*)&fonts);
     box->Model()->SetOwnershipType(ELbmDoesNotOwnItemArray);
 
+    // Find current font from the list if possible and set it as the default
+    HBufC *cur = StringToBufLC(cfg->font.name);
+    if ( cur->Length() == 0 ) {
+        CleanupStack::PopAndDestroy();
+        cur = TPtrC(KDefaultFont).AllocLC();
+    }
+    TInt font;
+    if ( fonts.Find(*cur, font) != 0 ) {
+        font = 0;
+    }
+    CleanupStack::PopAndDestroy(); // cur
+    box->SetCurrentItemIndex(font);
+
     // Run selection
     TInt ok = popup->ExecuteLD();
     CleanupStack::Pop(); // popup
@@ -691,8 +718,63 @@ void CTerminalView::SetFontL() {
         iFontFile.Append(fonts[box->CurrentItemIndex()]);
         iFontFile.Append(KFontExtension);
         iContainer->SetFontL(iFontFile);                
+        DesToString(fonts[box->CurrentItemIndex()], cfg->font.name,
+                    sizeof(cfg->font.name));
     }
     CleanupStack::PopAndDestroy(); // box
+}
+
+
+// Change palette
+void CTerminalView::SetPaletteL() {
+
+    // We'll show a popup list of palettes and let the user select one
+
+    Config *cfg = iPutty->GetConfig();
+    
+    CPalettes *palettes = CPalettes::NewL(R_PUTTY_PALETTE_NAMES,
+                                          R_PUTTY_PALETTES);
+    CleanupStack::PushL(palettes);
+
+    // Create a listbox and a popup to contain it
+    CAknSinglePopupMenuStyleListBox *box =
+        new (ELeave) CAknSinglePopupMenuStyleListBox;
+    CleanupStack::PushL(box);
+    CAknPopupList *popup = CAknPopupList::NewL(box,
+                                               R_AVKON_SOFTKEYS_SELECT_CANCEL,
+                                               AknPopupLayouts::EMenuWindow);    
+    CleanupStack::PushL(popup);
+    box->ConstructL(popup, 0);
+    box->CreateScrollBarFrameL(ETrue);
+    box->ScrollBarFrame()->SetScrollBarVisibilityL(CEikScrollBarFrame::EAuto,
+                                                   CEikScrollBarFrame::EAuto);
+
+    // Add palettes to the listbox
+    const CDesCArray &names = palettes->PaletteNames();
+    box->Model()->SetItemTextArray((MDesC16Array*)&names);
+    box->Model()->SetOwnershipType(ELbmDoesNotOwnItemArray);
+    box->SetCurrentItemIndex(palettes->IdentifyPalette(
+                                 (const unsigned char*) cfg->colours));
+
+    // Run selection
+    TInt ok = popup->ExecuteLD();
+    CleanupStack::Pop(); // popup
+    if ( ok ) {
+        // Set the palette to the engine and use it for container default
+        // colors to make the background match
+        palettes->GetPalette(box->CurrentItemIndex(),
+                             (unsigned char*) cfg->colours);
+        iContainer->SetDefaultColors(TRgb(cfg->colours[0][0],
+                                          cfg->colours[0][1],
+                                          cfg->colours[0][2]),
+                                     TRgb(cfg->colours[2][0],
+                                          cfg->colours[2][1],
+                                          cfg->colours[2][2]));
+        iPutty->ResetPalette();
+        iPutty->RePaintWindow();
+        iContainer->DrawDeferred();
+    }
+    CleanupStack::PopAndDestroy(2); // palettes, box
 }
 
 

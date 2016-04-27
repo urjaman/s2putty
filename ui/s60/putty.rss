@@ -354,6 +354,12 @@ RESOURCE AVKON_SETTING_ITEM_LIST r_putty_profileedit_display_settinglist {
             name = "Full screen";
         },
         AVKON_SETTING_ITEM {
+            identifier = EPuttySettingDisplayPalette;
+            setting_page_resource = r_putty_profileedit_palette_page;
+            associated_resource = r_putty_profileedit_palette_texts;
+            name = "Palette";
+        },
+        AVKON_SETTING_ITEM {
             identifier = EPuttySettingDisplayCharSet;
             setting_page_resource = r_putty_profileedit_charset_page;
             associated_resource = r_putty_profileedit_charset_texts;
@@ -403,6 +409,28 @@ RESOURCE ARRAY r_putty_profileedit_fullscreen_popped_up_text_array {
     items = {
         LBUF { txt = "On"; },
         LBUF { txt = "Off"; }
+    };
+}
+
+// Palette edit page
+RESOURCE AVKON_SETTING_PAGE r_putty_profileedit_palette_page {
+    label= "Color palette";
+    type = EAknCtPopupSettingList;
+    editor_resource_id = r_putty_profileedit_palette_popup;
+}
+RESOURCE POPUP_SETTING_LIST r_putty_profileedit_palette_popup {
+    flags = 0;
+}
+RESOURCE AVKON_POPUP_SETTING_TEXTS r_putty_profileedit_palette_texts {
+    setting_texts_resource = r_putty_profileedit_palette_text_array;
+    popped_up_texts_resource = r_putty_profileedit_palette_popped_up_text_array;
+}
+RESOURCE ARRAY r_putty_profileedit_palette_text_array {
+    items = {
+    };
+}
+RESOURCE ARRAY r_putty_profileedit_palette_popped_up_text_array {
+    items = {
     };
 }
 
@@ -568,6 +596,7 @@ RESOURCE MENU_PANE r_putty_terminal_menu_pane {
 RESOURCE MENU_PANE r_putty_view_menu {
     items = {
         MENU_ITEM { command = EPuttyCmdSetFont; txt = "Screen font..."; },
+        MENU_ITEM { command = EPuttyCmdSetPalette; txt = "Palette..."; },
         MENU_ITEM { command = EPuttyCmdFullScreen; txt = "Toggle full screen"; }
     };
 }
@@ -862,6 +891,51 @@ RESOURCE DIALOG r_putty_info_message_dialog {
                 layout = ENoteWithImageLayout;
                 singular_label = "";
                 plural_label = "";
+            };
+        }
+    };
+}
+
+// Palette names
+RESOURCE ARRAY r_putty_palette_names {
+    items = {
+        LBUF { txt = "Black on White"; },
+        LBUF { txt = "Gray on Black"; },
+        LBUF { txt = "White on Black"; }
+    };
+}
+
+// Palettes
+STRUCT PALETTE {
+    BYTE values[66]; // 22 RGB values
+}
+RESOURCE ARRAY r_putty_palettes {
+    items = {
+        PALETTE { // Black on white
+            values = {
+                0,0,0,  128,128,128,  255,255,255,  255,255,255,  0,0,0,
+                128,128,192,  0,0,0,  85,85,85,  187,0,0,  255,85,85,
+                0,187,0,  85,255,85,  187,187,0,  255,255,85,  0,0,187,
+                85,85,255,  187,0,187,  255,85,255,  0,187,187,
+                85,255,255,  187,187,187,  192,192,192
+            };
+        },
+        PALETTE { // Gray on black
+            values = {
+                187, 187, 187,  255,255,255,  0,0,0,  0,0,0,  0,0,0,
+                128,128,192,  0,0,0,  85,85,85,  187,0,0,  255,85,85,
+                0,187,0,  85,255,85,  187,187,0,  255,255,85,  0,0,187,
+                85,85,255,  187,0,187,  255,85,255,  0,187,187,
+                85,255,255,  187,187,187,  255,255,255
+            };
+        }, 
+        PALETTE { // White on black
+            values = {
+                255, 255, 255,  255,255,255,  0,0,0,  0,0,0,  0,0,0,
+                128,128,192,  0,0,0,  85,85,85,  187,0,0,  255,85,85,
+                0,187,0,  85,255,85,  187,187,0,  255,255,85,  0,0,187,
+                85,85,255,  187,0,187,  255,85,255,  0,187,187,
+                85,255,255,  187,187,187,  255,255,255
             };
         }
     };

@@ -55,7 +55,10 @@ enum TCommands {
     ECmdProfileListConnect,
     ECmdProfileListEdit,
     ECmdProfileListNew,
-    ECmdProfileListClose
+    ECmdProfileListClose,
+
+    ECmdPaletteStart = 1000,
+    ECmdPaletteEnd = 1100
 };
 
 enum TDlgControls {
@@ -79,6 +82,7 @@ enum TDlgControls {
     ESettingsProfile,
     ESettingsFullScreen,
     ESettingsFont,
+    ESettingsPalette,
 
     EAuthPromptEditor,
 

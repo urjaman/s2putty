@@ -2,7 +2,7 @@
  *
  * PuTTY engine interface, provided by the engine DLL and used by the UI APP.
  *
- * Copyright 2002,2003 Petteri Kangaslampi
+ * Copyright 2002,2003,2009 Petteri Kangaslampi
  *
  * See license.txt for full copyright and license information.
 */
@@ -137,6 +137,12 @@ public:
      *         Array ownership is transferred to the client.
      */
     virtual CDesCArray *SupportedCharacterSetsL() = 0;
+
+    /** 
+     * Resets the display palette to the one stored in the config. Typically
+     * called when the user changes the palette during an active connection.
+     */
+    virtual void ResetPalette() = 0;
 
     
     CPuttyEngine() : CActive(EPriorityNormal) {};

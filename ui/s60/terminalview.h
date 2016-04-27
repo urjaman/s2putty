@@ -2,7 +2,7 @@
  *
  * Putty terminal view
  *
- * Copyright 2007 Petteri Kangaslampi
+ * Copyright 2007,2009 Petteri Kangaslampi
  *
  * See license.txt for full copyright and license information.
 */
@@ -111,6 +111,7 @@ private:
                          TUint aModifiers);
     void SetFullScreenL(TBool aFullScreen);
     void SetFontL();
+    void SetPaletteL();
 
 private:
     enum {
