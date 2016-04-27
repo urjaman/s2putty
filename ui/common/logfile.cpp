@@ -12,11 +12,11 @@
 #include <f32file.h>
 #include "logfile.h"
 
-#ifdef __WINS__
+//#ifdef __WINS__
 _LIT(KLogFileName, "c:\\puttylog.txt");
-#else
-_LIT(KLogFileName, "e:\\puttylog.txt");
-#endif
+//#else
+//_LIT(KLogFileName, "e:\\puttylog.txt");
+//#endif
 _LIT(KPanic, "LogFile");
 _LIT(KTimestampFormat, "%Y-%M-%D %H:%T:%S.%C - ");
 _LIT(KCRLF, "\r\n");

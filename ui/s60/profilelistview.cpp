@@ -28,7 +28,7 @@
 #include "stringutils.h"
 #include "puttyuids.hrh"
 #include "puttyui.hrh"
-
+#include "../common/logfile.h"
 
 _LIT(KListBoxFormat, "\t%S\t\t");
 const TInt KListBoxFormatAddLength = 3;
@@ -425,9 +425,12 @@ void CProfileListView::InitViewL() {
     iToolbar->SetToolbarVisibility(ETrue, EFalse);
     iToolbar->SetToolbarObserver(this);
 #endif
+    LFPRINT((_L("InitViewL")));
     
     iProfileFileArray = new (ELeave) CDesCArrayFlat(8);
     iProfileListArray = new (ELeave) CDesCArrayFlat(8);
+
+    LFPRINT((_L("InitViewL 1")));
 
     RFs &fs = CEikonEnv::Static()->FsSession();
 
@@ -436,8 +439,12 @@ void CProfileListView::InitViewL() {
     iProfileDirectory = ((CPuttyAppUi*)AppUi())->ProfileDirectory();
     iSettingsDirectory =  ((CPuttyAppUi*)AppUi())->SettingsDirectory();
 
+    LFPRINT((_L("InitViewL 2")));
+
     // Create an engine instance
     iPutty = CPuttyEngine::NewL(this, iDataDirectory);
+
+    LFPRINT((_L("InitViewL 3")));
 
     // Find all profile files from the profile directory and add them to the
     // list    
@@ -449,9 +456,11 @@ void CProfileListView::InitViewL() {
         AppendProfileL((*dir)[i].iName);
     }
     CleanupStack::PopAndDestroy(); //dir
+    LFPRINT((_L("InitViewL 4")));
 
     // If there are no profile files at all, create a default
     if ( iProfileFileArray->Count() == 0 ) {
+	LFPRINT((_L("Creating a default")));
         iPutty->SetDefaults();
         iPutty->WriteConfigFileL(*AbsoluteFileNameLC(KDefaultProfileName));
         CleanupStack::PopAndDestroy();
@@ -463,6 +472,7 @@ void CProfileListView::InitViewL() {
         CleanupStack::PopAndDestroy();
 #endif
     }
+<<<<<<< 479e2d2759d7b013bfaa6c8c332c69b1d9cc9edf
 
     // Create the listbox -- this is the only control this view uses, so no
     // separate container needed
@@ -483,6 +493,10 @@ void CProfileListView::InitViewL() {
     
     // Activate the UI control
     AppUi()->AddToStackL(iListBox);    
+=======
+    LFPRINT((_L("InitViewL done")));
+
+>>>>>>> fix up for s60v2 operation
 }
 
 

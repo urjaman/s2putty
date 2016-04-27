@@ -106,7 +106,7 @@ TUid CTerminalView::Id() const {
 void CTerminalView::HandleCommandL(TInt aCommand) {
 
     // Map from commands to simple keypresses
-    static struct {
+    const struct {
         TInt iCommand;
         TKeyCode iKeyCode;
         TUint iModifiers;
@@ -596,10 +596,12 @@ void CTerminalView::DoDeactivate() {
 // CAknView::DynInitMenuPaneL
 void CTerminalView::DynInitMenuPaneL(TInt aResourceId,
                                      CEikMenuPane *aMenuPane) {
+#ifndef PUTTY_S60V2
     if ( aResourceId == R_PUTTY_EDIT_MENU ) {
         aMenuPane->SetItemDimmed(EPuttyCmdMark, !iSelection);
         aMenuPane->SetItemDimmed(EPuttyCmdCopy, !(iSelection && iMark));
     }
+#endif
 }
 
 

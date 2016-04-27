@@ -15,7 +15,9 @@ NAME PTTY
 #include "puttyui.hrh"
 #include <avkon.rsg>
 #include <avkon.rh>
+#ifdef PUTTY_S60V3
 #include <appinfo.rh>
+#endif
 #include <commondialogs.hrh>
 #include <commondialogs.rh>
 #include "sendgrid.rh"
@@ -32,6 +34,7 @@ RESOURCE TBUF {
 RESOURCE EIK_APP_INFO {
 }
 
+#ifdef PUTTY_S60V3
 // Localisable app info -- icon and caption
 RESOURCE LOCALISABLE_APP_INFO r_putty_localisable_app_info {
     short_caption = "PuTTY";
@@ -41,7 +44,7 @@ RESOURCE LOCALISABLE_APP_INFO r_putty_localisable_app_info {
         icon_file = "\\resource\\apps\\putty_aif.mif";
     };
 }
-
+#endif
 
 /*********************
  *

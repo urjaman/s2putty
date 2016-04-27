@@ -176,10 +176,10 @@ private:
     TFileName iTerminalProfileFile;
     TFileName iTerminalSettingsFile;
 
-    TBuf<29> iProfileDirectory; // "x:\private\12345678\profiles\"
-    TBuf<29> iSettingsDirectory; // "x:\private\12345678\settings\"
-    TBuf<25> iDataDirectory; // "x:\private\12345678\data\"
-    TBuf<23> iFontDirectory; // "x:\resource\puttyfonts\"
+    TBuf<64> iProfileDirectory; // "x:\private\12345678\profiles\"
+    TBuf<64> iSettingsDirectory; // "x:\private\12345678\settings\"
+    TBuf<64> iDataDirectory; // "x:\private\12345678\data\"
+    TBuf<64> iFontDirectory; // "x:\resource\puttyfonts\"
 
     CDesCArray *iFonts;
     CAknNavigationControlContainer *iNaviPane;

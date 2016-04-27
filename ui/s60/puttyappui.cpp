@@ -16,19 +16,26 @@
 #include "profilelistview.h"
 #include "terminalview.h"
 #include "puttyuids.hrh"
+#include "../common/logfile.h"
 
+#ifdef PUTTY_S60V2
+_LIT(KFontDirFormat, "%c:\\system\\apps\\putty\\fonts\\");
+_LIT(KProfileDirFormat, "%c:\\system\\apps\\putty\\profiles\\");
+_LIT(KDataDirFormat,  "%c:\\system\\apps\\putty\\data\\");
+_LIT(KSettingsDirFormat, "%c:\\system\\apps\\putty\\settings\\");
 
+#else
+_LIT(KFontDirFormat, "%c:\\resource\\puttyfonts\\");
 _LIT(KProfileDirFormat, "%c:\\private\\%08x\\profiles\\");
 _LIT(KSettingsDirFormat, "%c:\\private\\%08x\\settings\\");
 _LIT(KDataDirFormat,  "%c:\\private\\%08x\\data\\");
-_LIT(KFontDirFormat, "%c:\\resource\\puttyfonts\\");
+#endif
 
 // Previous PuTTY versions kept setting and host key files at
 // "c:\system\apps\putty". We'll try to migrate them to the new locations.
 _LIT(KOldHostKeysFile, "c:\\system\\apps\\putty\\hostkeys.dat");
 _LIT(KNewDefaultProfileFile, "Default");
 _LIT(KNewHostKeysFile, "hostkeys.dat");
-
 
 // Second-phase constructor
 void CPuttyAppUi::ConstructL() {
@@ -54,6 +61,7 @@ void CPuttyAppUi::ConstructL() {
 
     // Font directory -- "<drv>:\resource\puttyfonts\"
     iFontDirectory.Format(KFontDirFormat, drive);
+    LFPRINT((_L("Hello\n")));
 
     // Fix drive for profiles and data
     if ( (drive == 'z') || (drive == 'Z') ) {
@@ -63,7 +71,15 @@ void CPuttyAppUi::ConstructL() {
     // Data directory -- "<drv>:\private\<SID>\data\"
     // If the data directory doesn't exist, create it and attempt to migrate
     // host keys from a previous installation
+#ifdef PUTTY_S60V2
+    iDataDirectory.Format(KDataDirFormat, drive);
+    iProfileDirectory.Format(KProfileDirFormat, drive);
+    iSettingsDirectory.Format(KSettingsDirFormat, drive);
+#else
     iDataDirectory.Format(KDataDirFormat, drive, RProcess().SecureId().iId);
+    iProfileDirectory.Format(KProfileDirFormat, drive, RProcess().SecureId().iId);
+    iSettingsDirectory.Format(KSettingsDirFormat, drive, RProcess().SecureId().iId);
+#endif
     RFs &fs = CEikonEnv::Static()->FsSession();
     if ( !BaflUtils::FolderExists(fs, iDataDirectory) ) {
         BaflUtils::EnsurePathExistsL(fs, iDataDirectory);
@@ -76,15 +92,11 @@ void CPuttyAppUi::ConstructL() {
 
     // Profile directory -- "<drv>:\private\<SID>\profiles\"
     // If the profile directory doesn't exist, create it.
-    iProfileDirectory.Format(KProfileDirFormat, drive,
-                             RProcess().SecureId().iId);
     BaflUtils::EnsurePathExistsL(fs, iProfileDirectory);
 
     // Settings directory -- "<drv>:\private\<SID>\settings\"
     // If the profile directory doesn't exist, create it and attempt to migrate
     // default settings from a previous installation
-    iSettingsDirectory.Format(KSettingsDirFormat, drive,
-                              RProcess().SecureId().iId);
     BaflUtils::EnsurePathExistsL(fs, iSettingsDirectory);
 
     // Create navi pane
@@ -104,17 +116,24 @@ void CPuttyAppUi::ConstructL() {
         iFonts->AppendL(parsa.Name());
     }
     CleanupStack::PopAndDestroy(); //dir    
+    LFPRINT((_L("Fonts parsed\n")));
 
     // Build views
     iProfileListView = CProfileListView::NewL();
     AddViewL(iProfileListView);
+    LFPRINT((_L("ProfileList\n")));
+
     iProfileEditView = CProfileEditView::NewL();
     AddViewL(iProfileEditView);
+    LFPRINT((_L("ProfileEdit\n")));
+
     iTerminalView = CTerminalView::NewL();
     AddViewL(iTerminalView);
+    LFPRINT((_L("TerminalView\n")));
 
     // Start from the profile list view.
     SetDefaultViewL(*iProfileListView);
+    LFPRINT((_L("Init doone\n")));
 }
 
 

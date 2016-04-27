@@ -15,7 +15,11 @@
 #include "puttydoc.h"
 #include "puttyuids.hrh"
 
+#ifdef EKA2
 const TUid KUidPutty = { KUidPuttyAppDefine };
+#else
+const TUid KUidPutty = { 0x101f9075 };
+#endif
 
 #ifndef PUTTY_S60
 #error Symbol PUTTY_S60 not defined -- build environment is incorrect

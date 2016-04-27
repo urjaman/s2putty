@@ -7,7 +7,7 @@
 //* See license.txt for full copyright and license information.
 
 PRJ_PLATFORMS 
-wins armi
+winscw armi
 
 PRJ_MMPFILES
 puttyengine.mmp

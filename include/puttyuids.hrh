@@ -13,8 +13,6 @@
 /** PuTTY S60v3 application */
 #ifdef EKA2
 #define KUidPuttyAppDefine 0xf01f9075
-#else
-#error EKA1 broken
 #endif
 
 /** Profile list view */

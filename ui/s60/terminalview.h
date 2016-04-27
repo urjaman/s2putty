@@ -158,8 +158,8 @@ private:
     
     CPuttyEngine *iPutty;
     CTerminalContainer *iContainer;
-    TBuf<25> iDataDirectory; // "x:\private\12345678\data\"
-    TBuf<23> iFontDirectory; // "x:\resource\puttyfonts\"
+    TBuf<64> iDataDirectory; // "x:\private\12345678\data\"
+    TBuf<64> iFontDirectory; // "x:\resource\puttyfonts\"
     TFileName iFontFile;
     CNetConnect *iNetConnect;
     CAknWaitDialog *iNetConnectWaitDialog;
