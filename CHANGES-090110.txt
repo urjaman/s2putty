@@ -1,0 +1,9 @@
+Changes By Urja Rannikko:
+* Fixed the full screen restore bug
+* Added ability to send the tab char (Send->Special char->Tab)
+* Set Default Font to be fixed4x6
+* Removed other fonts from the .pkg (=>.sis)
+* A cosmetic HACK to the terminalcontrol class to allow changing of background
+	and foreground colours from the putty config file.
+	First action == as currently, clear screen with fg=black,bg=white
+	When first text is written, clears the screen with that texts rgb values.

@@ -1,0 +1,11 @@
+#include <appinfo.rh>
+
+UID2 KUidAppRegistrationResourceFile
+UID3 0xf01f9075
+
+RESOURCE APP_REGISTRATION_INFO {
+    app_file = "putty";
+    embeddability = KAppNotEmbeddable;
+    newfile = KAppDoesNotSupportNewFile;
+}
+      

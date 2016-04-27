@@ -1,0 +1,38 @@
+;*    putty.pkg
+;*
+;* Package definition file for PuTTY for Series 60
+;*
+;* Copyright 2002,2003,2005 Petteri Kangaslampi
+;*
+;* See license.txt for full copyright and license information.
+
+#{"PuTTY"},(0xf01f9076),1,4,20060305
+
+; Supports Series 60 v3.0
+[0x101F7961], 0, 0, 0, {"Series60ProductID"}
+
+; Localised vendor name
+%{"Petteri Kangaslampi"}
+
+; Unique vendor name
+:"Petteri Kangaslampi"
+
+; Installation note
+"installnote.txt"-"",FT,TC
+
+; PuTTY UI application
+"..\..\..\epoc32\release\gcce\urel\putty.exe"-"c:\sys\bin\putty.exe"
+"..\..\..\epoc32\data\z\resource\apps\putty.rsc"-"c:\resource\apps\putty.rsc"
+"..\..\..\epoc32\data\z\private\10003a3f\apps\putty_reg.rsc"   -"c:\private\10003a3f\import\apps\putty_reg.rsc"
+
+; Putty engine
+"..\..\..\epoc32\release\gcce\urel\puttyengine.dll"-"c:\sys\bin\puttyengine.dll"
+
+; Recognizer
+;"..\..\..\epoc32\release\gcce\urel\recputty.mdl"-"c:\system\recogs\recputty.mdl"
+
+; Fonts
+"..\..\ui\s2font\fixed4x6.s2f"-"c:\system\apps\putty\fonts\fixed4x6.s2f"
+"..\..\ui\s2font\fixed5x7.s2f"-"c:\system\apps\putty\fonts\fixed5x7.s2f"
+"..\..\ui\s2font\fixed6x10.s2f"-"c:\system\apps\putty\fonts\fixed6x10.s2f"
+"..\..\ui\s2font\fixed6x12.s2f"-"c:\system\apps\putty\fonts\fixed6x12.s2f"

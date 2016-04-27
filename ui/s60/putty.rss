@@ -1,0 +1,693 @@
+/*    puttyui.rss
+ *
+ * Putty UI resource definitions
+ *
+ * Copyright 2003-2004 Sergei Khloupnov
+ * Copyright 2002-2004 Petteri Kangaslampi
+ *
+ * See license.txt for full copyright and license information.
+*/
+
+NAME PTTY
+
+#include <eikon.rh>
+#include "puttyui.hrh"
+#include <avkon.rsg>
+#include <avkon.rh>
+
+RESOURCE RSS_SIGNATURE {
+}
+
+RESOURCE TBUF {
+    buf = "";
+}
+
+// Application info
+RESOURCE EIK_APP_INFO {
+}
+
+// Terminal view
+RESOURCE AVKON_VIEW r_putty_terminal_view {
+    menubar = r_putty_menubar;
+    cba = R_AVKON_SOFTKEYS_OPTIONS_EXIT;
+}
+
+
+// Menu bar
+RESOURCE MENU_BAR r_putty_menubar {
+    titles = {
+        MENU_TITLE { menu_pane = r_putty_menu_pane; txt = ""; }
+    };
+}
+
+// Main menu
+RESOURCE MENU_PANE r_putty_menu_pane {
+    items = {
+        MENU_ITEM {
+            command = EPuttyCmdSend;
+            cascade = r_putty_send_menu;
+            txt = "Send...";
+        },
+        MENU_ITEM { cascade = r_putty_connection_menu; txt = "Connection..."; },
+        MENU_ITEM { cascade = r_putty_settings_menu; txt = "Settings and tools..."; },
+        MENU_ITEM { command = EEikCmdExit; txt = "Exit"; }
+    };
+}
+
+// Send menu
+RESOURCE MENU_PANE r_putty_send_menu {
+    items = {
+        MENU_ITEM { command = EPuttyCmdSendLine; txt = "Line<CR>..."; },
+        MENU_ITEM { command = EPuttyCmdSendText; txt = "Text..."; },
+        MENU_ITEM { cascade = r_putty_send_character_menu; txt = "Special char..."; },
+        MENU_ITEM { cascade = r_putty_send_special_key_menu; txt = "Special key..."; },
+        MENU_ITEM { cascade = r_putty_send_ctrl_menu; txt = "Control+..."; },
+        MENU_ITEM { cascade = r_putty_send_alt_menu; txt = "Alt+..."; },
+        MENU_ITEM { cascade = r_send_function_key; txt = "F1-F10..."; }
+    };
+}
+
+// Settings menu
+RESOURCE MENU_PANE r_putty_settings_menu {
+    items = {
+        MENU_ITEM {
+            command = EPuttyCmdSettingsConnection;
+            cascade = r_putty_settings_connection;
+            txt = "Connection...";
+        },
+        MENU_ITEM {
+            command = EPuttyCmdSettingsAuthentication;
+            cascade = r_putty_settings_authentication;
+            txt = "Authentication";
+        },
+        MENU_ITEM {
+            command = EPuttyCmdSettingsLogging;
+            cascade = r_putty_settings_logging; txt = "Log parameters";
+        },
+        MENU_ITEM { cascade = r_putty_settings_font; txt = "Screen font"; },
+        MENU_ITEM { command = EPuttyCmdFullScreen; txt = "Toggle full screen"; },
+//        MENU_ITEM { command = EPuttyCmdReverseScreen; txt = "Toggle inverse screen"; },
+        MENU_ITEM { command = EPuttyCmdLoadSettings; txt = "Load settings..."; },
+        MENU_ITEM { command = EPuttyCmdSaveSettings; txt = "Save settings..."; },
+        MENU_ITEM { command = EPuttyCmdSaveSettingsAsDefault; txt = "Save as default"; },
+        MENU_ITEM { command = EPuttyCmdResetDefaultSettings; txt = "Reset to defaults"; }
+#ifndef PUTTY_NO_AUDIORECORDER
+        ,
+        MENU_ITEM { command = EPuttyCmdInitRandomGenerator; txt = "Initialize random generator"; }
+#endif
+    };
+}
+
+// Connection menu
+RESOURCE MENU_PANE r_putty_connection_menu {
+    items = {
+        MENU_ITEM { command = EPuttyCmdConnectionConnect; txt = "Connect"; },
+        MENU_ITEM { command = EPuttyCmdConnectionClose; txt = "Close"; },
+        MENU_ITEM { command = EPuttyCmdConnectionDisconnect; txt = "Disconnect"; }
+    };
+}
+
+// Settings/Connection menu
+RESOURCE MENU_PANE r_putty_settings_connection {
+    items = {
+        MENU_ITEM { command = EPuttyCmdSettingsConnectionHostPort; txt = "Host:port..."; },
+        MENU_ITEM { command = EPuttyCmdSettingsConnectionVersion; txt = "Protocol version..."; }
+    };
+}
+
+// Settings/Authentication menu
+RESOURCE MENU_PANE r_putty_settings_authentication {
+    items = {
+        MENU_ITEM { command = EPuttyCmdSettingsAuthenticationUsername; txt = "Username..."; },
+        MENU_ITEM { command = EPuttyCmdSettingsAuthenticationKeyfile; txt = "Private key file..."; }
+    };
+}
+
+// Settings/Logging menu
+RESOURCE MENU_PANE r_putty_settings_logging {
+    items = {
+        MENU_ITEM { command = EPuttyCmdSettingsLoggingType; txt = "Log type..."; },
+        MENU_ITEM { command = EPuttyCmdSettingsLoggingFile; txt = "Log file..."; }
+    };
+}
+
+// Font selection
+RESOURCE MENU_PANE r_putty_settings_font {
+    items = {
+//        MENU_ITEM { command = EPuttyCmdNoFixedFonts; txt = "Install fixed font";}
+    };
+}
+
+// Send character menu pane
+RESOURCE MENU_PANE r_putty_send_character_menu {
+    items = {
+	MENU_ITEM { command = EPuttyCmdSendTab; txt = "Tab"; },
+        MENU_ITEM { command = EPuttyCmdSendEsc; txt = "Escape"; },
+        MENU_ITEM { command = EPuttyCmdSendPipe; txt = "Pipe |"; },
+        MENU_ITEM { command = EPuttyCmdSendBackquote; txt = "Backquote `"; },
+        MENU_ITEM { command = EPuttyCmdSendCR; txt = "Enter <CR>"; },
+        MENU_ITEM { command = EPuttyCmdSendSpace; txt = "Space"; }
+    };
+}
+
+// Send special key menu
+RESOURCE MENU_PANE r_putty_send_special_key_menu {
+    items = {
+        MENU_ITEM { command = EPuttyCmdSendPageUp; txt = "Page Up"; },
+        MENU_ITEM { command = EPuttyCmdSendPageDown; txt = "Page Down"; },
+        MENU_ITEM { command = EPuttyCmdSendHome; txt = "Home"; },
+        MENU_ITEM { command = EPuttyCmdSendEnd; txt = "End"; },
+        MENU_ITEM { command = EPuttyCmdSendInsert; txt = "Insert"; },
+        MENU_ITEM { command = EPuttyCmdSendDelete; txt = "Delete"; }
+    };
+}
+
+// Send Alt + key
+RESOURCE MENU_PANE r_putty_send_alt_menu {
+    items = {
+        MENU_ITEM { command = EPuttyCmdSendAltKeys; txt = "Alt+Keys..."; },
+        MENU_ITEM { command = EPuttyCmdSendAlt1; txt = "Alt-1"; },
+        MENU_ITEM { command = EPuttyCmdSendAlt2; txt = "Alt-2"; },
+        MENU_ITEM { command = EPuttyCmdSendAlt3; txt = "Alt-3"; },
+        MENU_ITEM { command = EPuttyCmdSendAlt4; txt = "Alt-4"; },
+        MENU_ITEM { command = EPuttyCmdSendAlt5; txt = "Alt-5"; },
+        MENU_ITEM { command = EPuttyCmdSendAlt6; txt = "Alt-6"; },
+        MENU_ITEM { command = EPuttyCmdSendAlt7; txt = "Alt-7"; },
+        MENU_ITEM { command = EPuttyCmdSendAlt8; txt = "Alt-8"; },
+        MENU_ITEM { command = EPuttyCmdSendAlt9; txt = "Alt-9"; },
+        MENU_ITEM { command = EPuttyCmdSendAlt0; txt = "Alt-0"; }
+    };
+}
+
+// Send Control + key
+RESOURCE MENU_PANE r_putty_send_ctrl_menu {
+    items = {
+        MENU_ITEM { command = EPuttyCmdSendCtrlKeys; txt = "Ctrl+Keys..."; },
+        MENU_ITEM { command = EPuttyCmdSendCtrlAD; txt = "Ctrl-A,D"; },
+        MENU_ITEM { command = EPuttyCmdSendCtrlBrkt; txt = "Ctrl-]"; },
+        MENU_ITEM { command = EPuttyCmdSendCtrlC; txt = "Ctrl-C"; },
+        MENU_ITEM { command = EPuttyCmdSendCtrlD; txt = "Ctrl-D"; },
+        MENU_ITEM { command = EPuttyCmdSendCtrlZ; txt = "Ctrl-Z"; }
+    };
+}
+
+// Send function key menu pane
+RESOURCE MENU_PANE r_send_function_key {
+    items = {
+        MENU_ITEM { command = EPuttyCmdSendF1; txt = "F1"; },
+        MENU_ITEM { command = EPuttyCmdSendF2; txt = "F2"; },
+        MENU_ITEM { command = EPuttyCmdSendF3; txt = "F3"; },
+        MENU_ITEM { command = EPuttyCmdSendF4; txt = "F4"; },
+        MENU_ITEM { command = EPuttyCmdSendF5; txt = "F5"; },
+        MENU_ITEM { command = EPuttyCmdSendF6; txt = "F6"; },
+        MENU_ITEM { command = EPuttyCmdSendF7; txt = "F7"; },
+        MENU_ITEM { command = EPuttyCmdSendF8; txt = "F8"; },
+        MENU_ITEM { command = EPuttyCmdSendF9; txt = "F9"; },
+        MENU_ITEM { command = EPuttyCmdSendF10;txt = "F10";}
+    };
+}
+
+// Authentication prompt for non-secret data (such as the username)
+RESOURCE DIALOG r_auth_dlg_not_secret {
+    flags = EGeneralQueryFlags;
+    buttons = R_AVKON_SOFTKEYS_OK_CANCEL;
+    items = {
+        DLG_LINE {
+            type = EAknCtQuery;
+            id = EGeneralQuery;
+            control = AVKON_DATA_QUERY {
+                layout = EDataLayout;
+                label = "";
+                control = EDWIN {
+                    default_case = EAknEditorLowerCase;
+                    avkon_flags = EAknEditorFlagNoT9;
+                };
+            };
+        }
+    };
+}
+
+// Authentication prompt for secret data (such as a password)
+RESOURCE DIALOG r_auth_dlg_secret {
+    flags = EGeneralQueryFlags;
+    buttons = R_AVKON_SOFTKEYS_OK_CANCEL;
+    items = {
+        DLG_LINE {
+            type = EAknCtQuery;
+            id = EGeneralQuery;
+            control = AVKON_DATA_QUERY {
+                layout = ECodeLayout;
+                label = "";
+                control = SECRETED {
+                    num_letters = 32;                    
+                };
+            };
+        }
+    };
+}
+
+// Send text dialog
+RESOURCE DIALOG r_send_text_dlg {
+    flags = EGeneralQueryFlags;
+    buttons = R_AVKON_SOFTKEYS_OK_CANCEL;
+    items = {
+        DLG_LINE {
+            type = EAknCtQuery;
+            id = EGeneralQuery;
+            control = AVKON_DATA_QUERY {
+                layout = EDataLayout;
+                label = "";
+                control = EDWIN {
+                    default_case = EAknEditorLowerCase;
+                };
+            };
+        }
+    };
+}
+
+// Hostname/port dialog
+RESOURCE DIALOG r_settings_host_port_entry {
+    flags = EGeneralQueryFlags;
+    buttons = R_AVKON_SOFTKEYS_OK_CANCEL;
+    items = {
+        DLG_LINE {
+            type = EAknCtMultilineQuery;
+            id = EEnterHost;
+            control = AVKON_DATA_QUERY {
+                layout = EMultiDataFirstEdwin;
+                label = "Host";
+                control = EDWIN {
+                    flags = EEikEdwinNoHorizScrolling | EEikEdwinResizable;
+                    width = 5;
+                    maxlength = 128;
+                    max_view_height_in_lines = 5;
+                    base_line_delta = 21;
+                    // [Petteri] Default to lower case, no T9
+                    default_case = EAknEditorLowerCase;
+                    avkon_flags = EAknEditorFlagNoT9;
+                };
+            };
+        },
+        DLG_LINE {
+            type = EAknCtMultilineQuery;
+            id = EEnterPort;
+            control = AVKON_DATA_QUERY {
+                layout = EMultiDataSecondNumEd;
+                label = "Port";
+                control = AVKON_INTEGER_EDWIN {
+                    min = 1;
+                    max = 65535;
+                };
+            };
+        }
+    };
+}
+
+// SSH version dialog
+RESOURCE DIALOG r_settings_protocol {
+    flags = EGeneralQueryFlags;
+    buttons = R_AVKON_SOFTKEYS_OK_CANCEL;
+    items = {
+        DLG_LINE {
+            type = EAknCtListQueryControl;
+            id = ESelectProtocol;
+            control = AVKON_LIST_QUERY_CONTROL {
+                listtype = EAknCtSinglePopupMenuListBox;
+                listbox = AVKON_LIST_QUERY_LIST {
+                    flags = EAknListBoxMenuList;
+                    height = 3;
+                    width = 3;
+                    array_id = r_settings_protocols_list;
+                };
+                heading = "SSH protocol";
+            };
+        }
+    };
+}
+
+RESOURCE ARRAY r_settings_protocols_list {
+    items = {
+        LBUF { txt = "1 only"; },
+        LBUF { txt = "1 preferred"; },
+        LBUF { txt = "2 preferred"; },
+        LBUF { txt = "2 only"; }
+    };
+}
+
+// Generic string entry dialog for settings
+RESOURCE DIALOG r_settings_string_entry {
+    flags = EGeneralQueryFlags;
+    buttons = R_AVKON_SOFTKEYS_OK_CANCEL;
+    items = {
+        DLG_LINE {
+            type = EAknCtQuery;
+            id = EEnterString;
+            control = AVKON_DATA_QUERY {
+                layout = EDataLayout;
+                label = "A String";
+                control = EDWIN {
+                    flags = EEikEdwinNoHorizScrolling | EEikEdwinResizable;
+                    width = 5;
+                    maxlength = 128;
+                    max_view_height_in_lines = 5;
+                    base_line_delta = 21;
+                    // [Petteri] Default to lower case, no T9
+                    default_case = EAknEditorLowerCase;
+                    avkon_flags = EAknEditorFlagNoT9;
+                };
+            };
+        }
+    };
+}
+
+// Log type setting dialog
+RESOURCE DIALOG r_settings_log_type {
+    flags = EGeneralQueryFlags;
+    buttons = R_AVKON_SOFTKEYS_OK_CANCEL;
+    items = {
+        DLG_LINE {
+            type = EAknCtListQueryControl;
+            id = ESelectLogType;
+            control = AVKON_LIST_QUERY_CONTROL {
+                listtype = EAknCtSinglePopupMenuListBox;
+                listbox = AVKON_LIST_QUERY_LIST {
+                    flags = EAknListBoxMenuList;
+                    height = 3;
+                    width = 3;
+                    array_id = r_settings_log_types_list;
+                };
+                heading = "Log type";
+            };
+        }
+    };
+}
+
+RESOURCE ARRAY r_settings_log_types_list {
+    items = {
+        LBUF { txt = "No logging"; },
+        LBUF { txt = "Text only"; },
+        LBUF { txt = "All traffic"; },
+        LBUF { txt = "SSH data & debug"; }
+    };
+}
+
+// Accept weak cipher prompt dialog
+RESOURCE DIALOG r_accept_weak_cipher {
+    flags = EGeneralQueryFlags;
+    buttons = R_AVKON_SOFTKEYS_OK_CANCEL;
+    items = {
+        DLG_LINE {
+            type = EAknCtQuery;
+            id = EAcceptWeakCipher;
+            control = AVKON_CONFIRMATION_QUERY {
+                layout = EConfirmationQueryLayout;
+                label = "Server supports only weak ciphers\nAccept ?";
+            };
+        }
+    };
+}
+
+// Audio device in use prompt dialog
+RESOURCE DIALOG r_recorder_in_use {
+    flags = EGeneralQueryFlags;
+    buttons = R_AVKON_SOFTKEYS_OK_CANCEL;
+    items = {
+        DLG_LINE {
+            type = EAknCtQuery;
+            id = ERecorderInUse;
+            control = AVKON_CONFIRMATION_QUERY {
+                layout = EConfirmationQueryLayout;
+                label = "Audio device busy.\nTry again?";
+            };
+        }
+    };
+}
+
+// Random number generation initialization prompt
+RESOURCE DIALOG r_record_confirmation {
+    flags = EGeneralQueryFlags;
+    buttons = R_AVKON_SOFTKEYS_OK_CANCEL;
+    items = {
+        DLG_LINE {
+            type = EAknCtQuery;
+            id = ERecordConfirmation;
+            control = AVKON_CONFIRMATION_QUERY {
+                layout = EConfirmationQueryLayout;
+                label = "Random generator will be initialized by recording from microphone";
+            };
+        }
+    };
+}
+
+// "Really exit?" prompt
+RESOURCE DIALOG r_really_exit {
+    flags = EGeneralQueryFlags;
+    buttons = R_AVKON_SOFTKEYS_OK_CANCEL;
+    items = {
+        DLG_LINE {
+            type = EAknCtQuery;
+            id = EReallyExit;
+            control = AVKON_CONFIRMATION_QUERY {
+                layout = EConfirmationQueryLayout;
+                label = "Are you sure you want to close this session";
+            };
+        }
+    };
+}
+
+// File selection dialog
+RESOURCE DIALOG r_file_selection_dialog {
+    flags = EGeneralQueryFlags;
+    buttons = R_AVKON_SOFTKEYS_OK_CANCEL;
+    items = {
+        DLG_LINE {
+            type = EAknCtListQueryControl;
+            id = ESelectExistingFileDialog;
+            control = AVKON_LIST_QUERY_CONTROL {
+                listtype = EAknCtSinglePopupMenuListBox;
+                listbox = AVKON_LIST_QUERY_LIST {
+                    flags = EAknListBoxMenuList;
+                    height = 3;
+                    width = 3;
+                    array_id = r_empty_array;
+                };
+                heading = "Choose file:";
+            };
+        }
+    };
+}
+
+RESOURCE ARRAY r_empty_array {
+    items = {
+        LBUF { txt = ""; }
+    };
+}
+
+// New file name prompt dialog
+RESOURCE DIALOG r_new_file_dialog {
+    flags = EGeneralQueryFlags;
+    buttons = R_AVKON_SOFTKEYS_OK_CANCEL;
+    items = {
+        DLG_LINE {
+            type = EAknCtQuery;
+            id = EGeneralQuery;
+            control = AVKON_DATA_QUERY {
+                layout = EDataLayout;
+                label = "";
+                control = EDWIN {
+                    default_case = EAknEditorLowerCase;
+                    avkon_flags = EAknEditorFlagNoT9;
+                };
+            };
+        }
+    };
+}
+
+// Generic info message dilaog
+RESOURCE DIALOG r_info_message {
+    flags = EAknDialogGenericQueryFlags;
+    buttons = R_AVKON_SOFTKEYS_OK_EMPTY;
+    items = {
+        DLG_LINE {
+            type = EAknCtNote;
+            id = EInfoMessage;
+            control = AVKON_NOTE {
+                layout = ENoteWithImageLayout;
+                singular_label = "";
+                plural_label = "";
+            };
+        }
+    };
+}
+
+// Connection setup termination confirmation
+RESOURCE DIALOG r_dialer_termination_dialog {
+    flags = EGeneralQueryFlags;
+    buttons = R_AVKON_SOFTKEYS_YES_NO;
+    items = {
+        DLG_LINE {
+            type = EAknCtQuery;
+            id = EGeneralQuery;
+            control = AVKON_CONFIRMATION_QUERY {
+                layout = EConfirmationQueryLayout;
+                label = "Are you sure that you want to terminate active connection? ";
+            };
+        }
+    };
+}
+
+// Connection setup wait dialog
+RESOURCE DIALOG r_dialer_wait_dialog {
+    flags = EAknWaitNoteFlags;
+    buttons = R_AVKON_SOFTKEYS_CANCEL;
+    items = {
+        DLG_LINE {
+            type = EAknCtNote;
+            id = EDialerDialog;
+            control = AVKON_NOTE {
+                layout = EWaitLayout;
+                animation = R_QGN_GRAF_WAIT_BAR_ANIM;
+                singular_label = "Connecting to network...";
+            };
+        }
+    };
+}
+
+// Confirmation query for initial random number generator init
+RESOURCE DIALOG r_initial_rng_init_confirmation {
+    flags = EGeneralQueryFlags;
+    buttons = R_AVKON_SOFTKEYS_OK_CANCEL;
+    items = {
+        DLG_LINE {
+            type = EAknCtQuery;
+            id = EGeneralQuery;
+            control = AVKON_CONFIRMATION_QUERY {
+                layout = EConfirmationQueryLayout;
+                label = "Running for the first time.\nInitialize random generator?\n(Recommended)";
+            };
+        }
+    };
+}
+
+// Audio recording wait dialog
+RESOURCE DIALOG r_recording_wait_dialog {
+    flags = EAknWaitNoteFlags;
+    buttons = R_AVKON_SOFTKEYS_EMPTY_WITH_IDS;
+    items = {
+        DLG_LINE {
+            type = EAknCtNote;
+            id = ERecordingDialog;
+            control = AVKON_NOTE {
+                layout = EWaitLayout;
+                animation = R_QGN_GRAF_WAIT_BAR_ANIM;
+                singular_label = "Recording...";
+            };
+        }
+    };
+}
+
+// Host key query dialog
+RESOURCE DIALOG r_hostkey_query {
+    flags = EGeneralQueryFlags;
+    buttons = R_AVKON_SOFTKEYS_YES_NO;
+    items = {
+        DLG_LINE {
+            type = EAknCtQuery;
+            id = EGeneralQuery;
+            control = AVKON_CONFIRMATION_QUERY {
+                layout = EConfirmationQueryLayout;
+            };
+        }
+    };
+}
+
+// Localizable strings
+
+// Fatal error panic name
+RESOURCE TBUF r_str_fatal_error { buf = "Fatal error"; }
+
+// Connection closed info message (connection closed normally)
+RESOURCE TBUF r_str_connection_closed { buf = "Connection closed"; }
+
+RESOURCE TBUF r_str_connection_in_progress { buf = "Connection in progress"; }
+RESOURCE TBUF r_str_recording_in_progress { buf = "Recordind in progress"; }
+RESOURCE TBUF r_str_not_connected { buf = "Not connected"; }
+
+// Unknown host key dialog contents format string. %S = key fingerprint
+RESOURCE TBUF r_str_unknown_host_key_dlg_fmt {
+    buf = "Unknown host key:\n%S\nAccept and store?";
+}
+
+// Different host key dialog contents format string. %S = key fingerprint
+RESOURCE TBUF r_str_different_host_key_dlg_fmt {
+    buf = "WARNING! Host key changed:\n%S\nAccept and store?";
+}
+
+// Accept cipher dialog contents format string. First %S = cipher, second
+// the direction
+RESOURCE TBUF r_str_accept_cipher_dlg_fmt {
+    buf = "SECURITY WARNING!\nThe server supports only weak ciphers.\nAccept cipher %S for\ncommunication %S?";
+}
+
+// Cipher communication directions: Both, client-to-server, server-to-client
+RESOURCE TBUF r_str_accept_cipher_dir_both { buf = "in both directions"; }
+RESOURCE TBUF r_str_accept_cipher_client_to_server { buf = "from client to server"; }
+RESOURCE TBUF r_str_accept_cipher_server_to_client { buf = "from server to client"; }
+
+// Dialing busy message
+RESOURCE TBUF r_str_dialing { buf = "Dialing"; }
+
+// Connecting busy message
+RESOURCE TBUF r_str_connecting { buf = "Connecting"; }
+
+// Connection failed error message. %S = error message
+RESOURCE TBUF r_str_connection_failed { buf = "Connection failed.\n%S (%d)\n"; }
+
+// Randomized info messages
+RESOURCE TBUF r_str_randomized { buf = "Initialized"; }
+
+// OK confirm dialog button
+RESOURCE TBUF r_str_ok_confirm { buf = "OK"; }
+
+// Recording failed error message. %S = error message
+RESOURCE TBUF r_str_record_failed { buf = "Audio recording failed.\n%S\n"; }
+
+// Username prompt
+RESOURCE TBUF r_string_username { buf = "Username"; }
+
+// Hosgname prompt
+RESOURCE TBUF r_string_host { buf = "Host"; }
+
+// Send text dialog prompt for a line (with CR)
+RESOURCE TBUF r_string_line { buf = "Line"; }
+
+// Send text dialog prompt for text (without CR)
+RESOURCE TBUF r_string_text { buf = "Text"; }
+
+// Send text dialog prompt for Ctrl+keys
+RESOURCE TBUF r_string_ctrl { buf = "Ctrl+..."; }
+
+// Send text dialog prompt for Alt+keys
+RESOURCE TBUF r_string_alt { buf = "Alt+..."; }
+
+// Not implemented
+RESOURCE TBUF r_not_implemented { buf = "Not implemented"; }
+
+// Debug key event printout
+RESOURCE TBUF r_key_event { buf = "Scancode 0x%x\nType 0x%x"; }
+
+// Connecting to host info message
+RESOURCE TBUF r_str_connecting_to_host { buf = "Connecting to server..."; }
+
+// File list entry: New file
+RESOURCE TBUF r_str_file_list_new_file { buf = "<New file...>"; }
+
+// File list entry: Phone memory
+RESOURCE TBUF r_str_file_list_phone_memory { buf = "<Phone memory>"; }
+
+// File list entry: Memory card
+RESOURCE TBUF r_str_file_list_memory_card { buf = "<Memory card>"; }
+
+// File dialog: New file name prompt
+RESOURCE TBUF r_str_new_file_name { buf = "New file name:"; }
+

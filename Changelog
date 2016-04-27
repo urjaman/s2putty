@@ -1,0 +1,1063 @@
+------------------------------------------------------------------------
+r260 | pekangas | 2006-03-05 20:03:18 +0200 (Sun, 05 Mar 2006) | 1 line
+Changed paths:
+   M /s2putty/trunk/build/s60v1/installnote.txt
+   M /s2putty/trunk/build/s60v2/installnote.txt
+   M /s2putty/trunk/build/s60v3/installnote.txt
+   M /s2putty/trunk/build/s80v1/installnote.txt
+
+Fixed various installation notes to use CRLF linefeeds.
+------------------------------------------------------------------------
+r259 | pekangas | 2006-03-05 19:59:28 +0200 (Sun, 05 Mar 2006) | 1 line
+Changed paths:
+   M /s2putty/trunk/build/s80v1/putty.pkg
+
+Fixed S80v1 package file
+------------------------------------------------------------------------
+r257 | pekangas | 2006-03-05 19:39:06 +0200 (Sun, 05 Mar 2006) | 1 line
+Changed paths:
+   M /s2putty/trunk/README.txt
+   M /s2putty/trunk/README_source.txt
+   D /s2putty/trunk/build/s60v1/README.txt
+   M /s2putty/trunk/build/s60v1/installnote.txt
+   M /s2putty/trunk/build/s60v1/putty.pkg
+   D /s2putty/trunk/build/s60v2/README.txt
+   M /s2putty/trunk/build/s60v2/installnote.txt
+   M /s2putty/trunk/build/s60v2/putty.pkg
+   D /s2putty/trunk/build/s60v3/README.txt
+   M /s2putty/trunk/build/s60v3/installnote.txt
+   M /s2putty/trunk/build/s60v3/putty.pkg
+   M /s2putty/trunk/build/s80v1/installnote.txt
+   M /s2putty/trunk/build/s80v1/putty.pkg
+   M /s2putty/trunk/build/s80v2/installnote.txt
+   M /s2putty/trunk/build/s80v2/putty.pkg
+   M /s2putty/trunk/build/s90/installnote.txt
+   M /s2putty/trunk/build/s90/putty.pkg
+   M /s2putty/trunk/ui/s80/putty.rss
+
+Updated for 1.4 beta 1 release.
+------------------------------------------------------------------------
+r256 | pekangas | 2006-03-05 18:41:42 +0200 (Sun, 05 Mar 2006) | 2 lines
+Changed paths:
+   M /s2putty/trunk/ui/common/terminalcontrol.cpp
+
+Fixed selection highlight not to include the selection cursor position
+since it's not a part of the selection.
+------------------------------------------------------------------------
+r255 | pekangas | 2006-03-05 18:37:44 +0200 (Sun, 05 Mar 2006) | 2 lines
+Changed paths:
+   M /s2putty/trunk/ui/s80/putty.rss
+   M /s2putty/trunk/ui/s80/puttyui.hrh
+   M /s2putty/trunk/ui/s80/settingsdialog.cpp
+
+Added compresion and SSH keepalive controls to the S80 settings
+dialog. This implements feature request 1013724.
+------------------------------------------------------------------------
+r254 | pekangas | 2006-03-05 18:15:31 +0200 (Sun, 05 Mar 2006) | 2 lines
+Changed paths:
+   M /s2putty/trunk/ui/s80/putty.rss
+   M /s2putty/trunk/ui/s80/puttyappui.cpp
+   M /s2putty/trunk/ui/s80/puttyui.hrh
+
+Added commands for sending "less than" and "greater than" characters
+from the menu. This closes feature request 1245456.
+------------------------------------------------------------------------
+r253 | pekangas | 2006-03-05 18:04:28 +0200 (Sun, 05 Mar 2006) | 3 lines
+Changed paths:
+   M /s2putty/trunk/engine/puttysymbian/epocunicode.cpp
+
+Use ISO 8859-1 as a default codepage when we encounter an undefined
+codepage instead of failing completely. Hopefully fixes errors
+#1345605 and #1012146.
+------------------------------------------------------------------------
+r252 | pekangas | 2006-03-05 14:56:49 +0200 (Sun, 05 Mar 2006) | 4 lines
+Changed paths:
+   M /s2putty/trunk/ui/s60/putty.rss
+   M /s2putty/trunk/ui/s60/puttyappui.cpp
+   M /s2putty/trunk/ui/s60/puttyappui.h
+
+S60 UI cleanup: Removed port number from normal hostname query, made
+hostkey prompt cleaner, changed "Connected" note to "Connecting to
+server" and removed inverse screen from the menu since it's broken.
+
+------------------------------------------------------------------------
+r251 | pekangas | 2006-03-05 14:55:22 +0200 (Sun, 05 Mar 2006) | 3 lines
+Changed paths:
+   M /s2putty/trunk/ui/common/terminalcontrol.cpp
+   M /s2putty/trunk/ui/common/terminalcontrol.h
+
+Made Ctrl behave like a prefix key similar to Shift. This improves
+usability in general and enables Ctrl+key input on all keys on an E61.
+
+------------------------------------------------------------------------
+r250 | pekangas | 2006-02-28 22:18:25 +0200 (Tue, 28 Feb 2006) | 1 line
+Changed paths:
+   A /s2putty/trunk/test/s60termtest/test_reg.rss
+   A /s2putty/trunk/test/s60termtest/test_s60v3.mmp
+   M /s2putty/trunk/test/s60termtest/testapp.cpp
+
+Added S60v3 support for the S60 terminal test app
+------------------------------------------------------------------------
+r249 | pekangas | 2006-02-28 21:37:47 +0200 (Tue, 28 Feb 2006) | 5 lines
+Changed paths:
+   M /s2putty/trunk/ui/common/termfepext1.cpp
+
+Disabled T9 and text case from S60 terminal text input. It seems next
+to impossible to get useful T9 FEP behavior with a control that is
+fundamentally not an editor, so this ensures that at least multitap
+input works. T9 can still be used by selecting "Send text" from the
+menu.
+------------------------------------------------------------------------
+r248 | pekangas | 2006-02-28 20:34:12 +0200 (Tue, 28 Feb 2006) | 1 line
+Changed paths:
+   M /s2putty/trunk/test/s60termtest/test.mmp
+
+Updated S60 terminal test for the new directory structure
+------------------------------------------------------------------------
+r247 | pekangas | 2006-02-26 22:28:42 +0200 (Sun, 26 Feb 2006) | 3 lines
+Changed paths:
+   M /s2putty/trunk/build/common/puttyengine.mmh
+   A /s2putty/trunk/build/eabi
+   A /s2putty/trunk/build/eabi/puttyengineu.def
+   A /s2putty/trunk/build/s60v3 (from /s2putty/trunk/build/s60v2:244)
+   M /s2putty/trunk/build/s60v3/bld.inf
+   M /s2putty/trunk/build/s60v3/installnote.txt
+   M /s2putty/trunk/build/s60v3/putty.pkg
+   M /s2putty/trunk/build/s60v3/puttyengine.mmp
+   M /s2putty/trunk/build/s60v3/puttyui.mmp
+   M /s2putty/trunk/engine/puttyengineimp.cpp
+   M /s2putty/trunk/engine/puttysymbian/epocmisc.cpp
+   M /s2putty/trunk/engine/puttysymbian/epocnoise.cpp
+   M /s2putty/trunk/ui/s60/filelistdialog.cpp
+   M /s2putty/trunk/ui/s60/puttyapp.cpp
+   M /s2putty/trunk/ui/s60/puttyappui.cpp
+   M /s2putty/trunk/ui/s60/puttyappui.h
+   A /s2putty/trunk/ui/s60v3 (from /s2putty/trunk/ui/s60v2:244)
+   D /s2putty/trunk/ui/s60v3/audiorecorder.cpp
+   D /s2putty/trunk/ui/s60v3/audiorecorder.h
+   A /s2putty/trunk/ui/s60v3/putty_reg.rss
+
+Added initial support for S60 v3. Tested using the public SDK with
+GCCE and Nokia E61. RVCT and CodeWarrior/Carbide may need further
+changes.
+------------------------------------------------------------------------
+r246 | pekangas | 2006-02-26 22:26:16 +0200 (Sun, 26 Feb 2006) | 2 lines
+Changed paths:
+   M /s2putty/trunk/ui/common/terminalcontrols2font.cpp
+
+Added support for 32-bit display modes by using a 16bpp bitmap when
+the mode is otherwise unsupported.
+------------------------------------------------------------------------
+r245 | pekangas | 2006-02-26 22:25:11 +0200 (Sun, 26 Feb 2006) | 3 lines
+Changed paths:
+   M /s2putty/trunk/ui/common/terminalcontrol.cpp
+   M /s2putty/trunk/ui/common/terminalcontrol.h
+
+Handle pointer events in S90 only (InformFepOfPenDownEvent() etc are
+not available in S60)
+
+------------------------------------------------------------------------
+r244 | pekangas | 2006-02-25 19:24:05 +0200 (Sat, 25 Feb 2006) | 2 lines
+Changed paths:
+   A /s2putty/trunk/build/s90 (from /s2putty/trunk/s90/group:242)
+   A /s2putty/trunk/build/s90/README.txt (from /s2putty/trunk/s90/README.txt:242)
+   M /s2putty/trunk/build/s90/bld.inf
+   A /s2putty/trunk/build/s90/emulatorfonts.cmd (from /s2putty/trunk/build/s60v2/emulatorfonts.cmd:243)
+   M /s2putty/trunk/build/s90/putty.pkg
+   A /s2putty/trunk/build/s90/puttyengine.mmp (from /s2putty/trunk/build/s80v2/puttyengine.mmp:242)
+   M /s2putty/trunk/build/s90/puttyui.mmp
+   D /s2putty/trunk/s90
+   M /s2putty/trunk/ui/common/terminalcontrol.cpp
+   M /s2putty/trunk/ui/common/terminalcontrol.h
+   A /s2putty/trunk/ui/s90 (from /s2putty/trunk/s90/ui:242)
+   M /s2putty/trunk/ui/s90/puttyappui.cpp
+   M /s2putty/trunk/ui/s90/puttyappui.h
+   M /s2putty/trunk/ui/s90/puttyappview.cpp
+   M /s2putty/trunk/ui/s90/puttyappview.h
+   D /s2putty/trunk/ui/s90/terminalcontrol.cpp
+   D /s2putty/trunk/ui/s90/terminalcontrol.h
+
+Changed the S90 version to use the new directory structure and fixed
+it to compile and work again.
+------------------------------------------------------------------------
+r243 | pekangas | 2006-02-25 13:12:57 +0200 (Sat, 25 Feb 2006) | 3 lines
+Changed paths:
+   A /s2putty/trunk/build/s60v1/emulatorfonts.cmd
+   A /s2putty/trunk/build/s60v2/emulatorfonts.cmd
+
+Added a script to copy font files to the correct directory for
+emulator use.
+
+------------------------------------------------------------------------
+r242 | pekangas | 2006-02-25 11:42:28 +0200 (Sat, 25 Feb 2006) | 3 lines
+Changed paths:
+   M /s2putty/trunk/build/s60v1/puttyui.mmp
+   A /s2putty/trunk/build/s60v2 (from /s2putty/trunk/build/s60v1:240)
+   M /s2putty/trunk/build/s60v2/bld.inf
+   M /s2putty/trunk/build/s60v2/installnote.txt
+   M /s2putty/trunk/build/s60v2/putty.pkg
+   A /s2putty/trunk/build/s60v2/puttyengine.mmp (from /s2putty/trunk/build/s60v1/puttyengine.mmp:241)
+   M /s2putty/trunk/build/s60v2/puttyui.mmp
+   D /s2putty/trunk/ui/s60/audiorecorder.cpp
+   D /s2putty/trunk/ui/s60/audiorecorder.h
+   D /s2putty/trunk/ui/s60/dialer.cpp
+   D /s2putty/trunk/ui/s60/dialer.h
+   A /s2putty/trunk/ui/s60v1/audiorecorder.cpp (from /s2putty/trunk/ui/s60/audiorecorder.cpp:241)
+   A /s2putty/trunk/ui/s60v1/audiorecorder.h (from /s2putty/trunk/ui/s60/audiorecorder.h:241)
+   A /s2putty/trunk/ui/s60v1/dialer.cpp (from /s2putty/trunk/ui/s60/dialer.cpp:241)
+   A /s2putty/trunk/ui/s60v1/dialer.h (from /s2putty/trunk/ui/s60/dialer.h:241)
+   A /s2putty/trunk/ui/s60v2
+   A /s2putty/trunk/ui/s60v2/audiorecorder.cpp
+   A /s2putty/trunk/ui/s60v2/audiorecorder.h
+   A /s2putty/trunk/ui/s60v2/dialer.cpp
+   A /s2putty/trunk/ui/s60v2/dialer.h
+
+Added S60v2 support to the same directory tree, using the new
+directory structure. Separated S60 version specific files to their own
+directories.
+------------------------------------------------------------------------
+r241 | pekangas | 2006-02-25 11:06:55 +0200 (Sat, 25 Feb 2006) | 1 line
+Changed paths:
+   A /s2putty/trunk/build/s60v1/puttyengine.mmp
+
+Added missing puttyengine.mmp to S60v1 build files
+------------------------------------------------------------------------
+r240 | pekangas | 2006-02-24 23:11:19 +0200 (Fri, 24 Feb 2006) | 1 line
+Changed paths:
+   A /s2putty/trunk/build/s60v1 (from /s2putty/trunk/s60/group:238)
+   A /s2putty/trunk/build/s60v1/README.txt (from /s2putty/trunk/s60/README.txt:238)
+   M /s2putty/trunk/build/s60v1/bld.inf
+   D /s2putty/trunk/build/s60v1/buildall.cmd
+   D /s2putty/trunk/build/s60v1/putty.doxygen
+   M /s2putty/trunk/build/s60v1/puttyui.mmp
+   D /s2putty/trunk/s60
+   D /s2putty/trunk/ui/fonts
+   A /s2putty/trunk/ui/s2font (from /s2putty/trunk/ui/fonts:238)
+   A /s2putty/trunk/ui/s60 (from /s2putty/trunk/s60/ui:238)
+   A /s2putty/trunk/ui/s60v1
+
+Changed S60v1 to use the new directory structure. Some S60v1 cleanup.
+------------------------------------------------------------------------
+r239 | pekangas | 2006-02-24 23:08:53 +0200 (Fri, 24 Feb 2006) | 1 line
+Changed paths:
+   M /s2putty/trunk/ui/common/terminalcontrol.cpp
+
+Using "const TChar" accidentally added writable static data. Fixed.
+------------------------------------------------------------------------
+r238 | pekangas | 2006-02-24 22:25:20 +0200 (Fri, 24 Feb 2006) | 3 lines
+Changed paths:
+   D /s2putty/trunk/9200
+   A /s2putty/trunk/build/common/puttyengine.mmh (from /s2putty/trunk/build/common/puttyengine.mmp:237)
+   D /s2putty/trunk/build/common/puttyengine.mmp
+   A /s2putty/trunk/build/s80v1 (from /s2putty/trunk/9200/group:237)
+   M /s2putty/trunk/build/s80v1/bld.inf
+   A /s2putty/trunk/build/s80v1/puttyengine.mmp
+   M /s2putty/trunk/build/s80v1/puttyui.mmp
+   M /s2putty/trunk/build/s80v2/bld.inf
+   A /s2putty/trunk/build/s80v2/puttyengine.mmp
+   M /s2putty/trunk/engine/puttysymbian/epocnet.cpp
+   M /s2putty/trunk/ui/common/terminalcontrol.cpp
+   D /s2putty/trunk/ui/s80/audiorecorder.cpp
+   D /s2putty/trunk/ui/s80/audiorecorder.h
+   A /s2putty/trunk/ui/s80v1 (from /s2putty/trunk/9200/ui:237)
+   A /s2putty/trunk/ui/s80v1/audiorecorder.cpp (from /s2putty/trunk/ui/s80/audiorecorder.cpp:237)
+   A /s2putty/trunk/ui/s80v1/audiorecorder.h (from /s2putty/trunk/ui/s80/audiorecorder.h:237)
+
+Further directory structure updates: Changed S80v1 support to
+work with the new structure.
+Fixed the code to compile for S80v1 and Symbian OS v6.x again.
+------------------------------------------------------------------------
+r237 | pekangas | 2006-02-24 21:47:48 +0200 (Fri, 24 Feb 2006) | 2 lines
+Changed paths:
+   M /s2putty/trunk/build/common/puttyengine.mmp
+   M /s2putty/trunk/build/s80v2/puttyui.mmp
+   D /s2putty/trunk/common
+   A /s2putty/trunk/engine/putty (from /s2putty/trunk/putty:235)
+   A /s2putty/trunk/engine/puttysymbian (from /s2putty/trunk/puttysymbian:235)
+   D /s2putty/trunk/putty
+   D /s2putty/trunk/puttysymbian
+
+Second directory structure update step: Moved PuTTY core and
+Symbian OS specific files under engine.
+------------------------------------------------------------------------
+r236 | pekangas | 2006-02-24 21:39:24 +0200 (Fri, 24 Feb 2006) | 4 lines
+Changed paths:
+   A /s2putty/trunk/build
+   A /s2putty/trunk/build/bmarm (from /s2putty/trunk/common/bmarm:235)
+   A /s2putty/trunk/build/bwins (from /s2putty/trunk/common/bwins:235)
+   A /s2putty/trunk/build/common (from /s2putty/trunk/common/group:235)
+   A /s2putty/trunk/build/s80v2 (from /s2putty/trunk/s80/group:235)
+   M /s2putty/trunk/build/s80v2/bld.inf
+   M /s2putty/trunk/build/s80v2/puttyui.mmp
+   D /s2putty/trunk/common/bmarm
+   D /s2putty/trunk/common/bwins
+   D /s2putty/trunk/common/group
+   D /s2putty/trunk/crystalui
+   D /s2putty/trunk/s80
+   A /s2putty/trunk/ui/s80 (from /s2putty/trunk/crystalui:235)
+   A /s2putty/trunk/ui/s80v2 (from /s2putty/trunk/s80/ui:235)
+
+Moving towards a more maintainable directory structure:
+- User interface code under ui
+- Build scripts under build
+First step: S80v2 (9500 etc) code uses the new directories.
+------------------------------------------------------------------------
+r235 | pekangas | 2006-02-23 21:06:48 +0200 (Thu, 23 Feb 2006) | 1 line
+Changed paths:
+   M /s2putty/trunk/s80/group/installnote.txt
+
+Updated for 2006
+------------------------------------------------------------------------
+r234 | pekangas | 2006-02-23 21:06:28 +0200 (Thu, 23 Feb 2006) | 1 line
+Changed paths:
+   M /s2putty/trunk/s80/group/putty.pkg
+
+Updated keys
+------------------------------------------------------------------------
+r233 | pekangas | 2006-02-23 21:05:54 +0200 (Thu, 23 Feb 2006) | 2 lines
+Changed paths:
+   M /s2putty/trunk/crystalui/puttyappview.cpp
+   M /s2putty/trunk/crystalui/puttyappview.h
+   M /s2putty/trunk/s80/group/puttyui.mmp
+   M /s2putty/trunk/ui/common/terminalcontrolsystemfont.cpp
+   M /s2putty/trunk/ui/common/terminalcontrolsystemfont.h
+
+Added FEP support to the system font terminal control implementation
+and the S80 PuTTY UI.
+------------------------------------------------------------------------
+r232 | pekangas | 2006-01-08 20:21:15 +0200 (Sun, 08 Jan 2006) | 1 line
+Changed paths:
+   M /s2putty/trunk/s60/ui/puttyapp.cpp
+
+Added a sanity check that PUTTY_S60 is defined.
+------------------------------------------------------------------------
+r231 | pekangas | 2006-01-08 20:20:42 +0200 (Sun, 08 Jan 2006) | 2 lines
+Changed paths:
+   M /s2putty/trunk/s60/group/puttyui.mmp
+   M /s2putty/trunk/s60/ui/puttyappui.cpp
+   M /s2putty/trunk/s60/ui/puttyterminalcontainer.cpp
+   M /s2putty/trunk/s60/ui/puttyterminalcontainer.h
+   M /s2putty/trunk/s60/ui/puttyterminalview.cpp
+   M /s2putty/trunk/s60/ui/puttyterminalview.h
+
+Updated the S60 UI to work with the new FEP-aware terminal control.
+
+------------------------------------------------------------------------
+r230 | pekangas | 2006-01-08 20:19:44 +0200 (Sun, 08 Jan 2006) | 8 lines
+Changed paths:
+   A /s2putty/trunk/ui/common/logfile.cpp
+   A /s2putty/trunk/ui/common/logfile.h
+   A /s2putty/trunk/ui/common/termfepext1.cpp
+   A /s2putty/trunk/ui/common/termfepext1.h
+   M /s2putty/trunk/ui/common/terminalcontrol.cpp
+   M /s2putty/trunk/ui/common/terminalcontrol.h
+   M /s2putty/trunk/ui/common/terminalcontrols2font.cpp
+   M /s2putty/trunk/ui/common/terminalcontrols2font.h
+
+Made the common terminal control base class FEP-aware. There are still
+some bugs left: On S60 v1 the case is wrong (text case is enabled by
+force and works incorrectly), and on S60 S60 v2.0 text case doesn't
+work right. Also on S60 v2.0 it isn't possible to send Enter by
+pressing '0' three times. On S60 v2.6 everything works perfectly
+however.
+Note that there is also some debug logging code left that should be
+removed later. It is compiled out by default though.
+------------------------------------------------------------------------
+r229 | pekangas | 2006-01-08 20:10:54 +0200 (Sun, 08 Jan 2006) | 3 lines
+Changed paths:
+   M /s2putty/trunk/ui/fonts/s2font.cpp
+
+Fixed a fatal bug where trying to draw a non-existing character that
+has the same high-order byte as an existing character would crash.
+
+------------------------------------------------------------------------
+r228 | pekangas | 2006-01-08 20:09:03 +0200 (Sun, 08 Jan 2006) | 1 line
+Changed paths:
+   A /s2putty/trunk/test/s60termtest
+   A /s2putty/trunk/test/s60termtest/test.mmp
+   A /s2putty/trunk/test/s60termtest/test.pkg
+   A /s2putty/trunk/test/s60termtest/test.rss
+   A /s2putty/trunk/test/s60termtest/testapp.cpp
+   A /s2putty/trunk/test/s60termtest/testapp.h
+   A /s2putty/trunk/test/s60termtest/testappui.cpp
+   A /s2putty/trunk/test/s60termtest/testappui.h
+   A /s2putty/trunk/test/s60termtest/testappview.cpp
+   A /s2putty/trunk/test/s60termtest/testappview.h
+   A /s2putty/trunk/test/s60termtest/testdoc.cpp
+   A /s2putty/trunk/test/s60termtest/testdoc.h
+   A /s2putty/trunk/test/s60termtest/testui.hrh
+
+Added an S60 terminal control test application
+------------------------------------------------------------------------
+r227 | pekangas | 2005-11-20 14:21:24 +0200 (Sun, 20 Nov 2005) | 1 line
+Changed paths:
+   M /s2putty/trunk/s60/group/putty.pkg
+   M /s2putty/trunk/s60/ui/puttyappui.cpp
+   M /s2putty/trunk/s60/ui/puttyappui.h
+   M /s2putty/trunk/s60/ui/puttyterminalcontainer.cpp
+   M /s2putty/trunk/s60/ui/puttyterminalcontainer.h
+   M /s2putty/trunk/s60/ui/puttyterminalview.cpp
+   M /s2putty/trunk/s60/ui/puttyterminalview.h
+   A /s2putty/trunk/ui/fonts/fixed4x6.bdf (from /s2putty/trunk/s60/fixedfont/fixed4x6.bdf:226)
+   A /s2putty/trunk/ui/fonts/fixed4x6.s2f
+   A /s2putty/trunk/ui/fonts/fixed5x7.bdf
+   A /s2putty/trunk/ui/fonts/fixed5x7.s2f
+   A /s2putty/trunk/ui/fonts/fixed6x10.bdf (from /s2putty/trunk/s60/fixedfont/fixed6x10.bdf:226)
+   A /s2putty/trunk/ui/fonts/fixed6x10.s2f
+
+Reimplemented font selection for the S60 UI.
+------------------------------------------------------------------------
+r226 | pekangas | 2005-11-19 23:00:51 +0200 (Sat, 19 Nov 2005) | 5 lines
+Changed paths:
+   M /s2putty/trunk/s60/group/installnote.txt
+   M /s2putty/trunk/s60/group/putty.pkg
+   M /s2putty/trunk/s60/group/puttyui.mmp
+   M /s2putty/trunk/s60/ui/puttyappui.cpp
+   M /s2putty/trunk/s60/ui/puttyappui.h
+   M /s2putty/trunk/s60/ui/puttyterminalcontainer.cpp
+   M /s2putty/trunk/s60/ui/puttyterminalcontainer.h
+   M /s2putty/trunk/s60/ui/puttyterminalview.cpp
+   M /s2putty/trunk/s60/ui/puttyterminalview.h
+   D /s2putty/trunk/s60/ui/terminalcontrol.cpp
+   D /s2putty/trunk/s60/ui/terminalcontrol.h
+   D /s2putty/trunk/s90/fonts
+   A /s2putty/trunk/ui/common/oneshottimer.cpp (from /s2putty/trunk/s90/ui/oneshottimer.cpp:225)
+   A /s2putty/trunk/ui/common/oneshottimer.h (from /s2putty/trunk/s90/ui/oneshottimer.h:225)
+   M /s2putty/trunk/ui/common/terminalcontrol.h
+   A /s2putty/trunk/ui/common/terminalcontrols2font.cpp
+   A /s2putty/trunk/ui/common/terminalcontrols2font.h
+   M /s2putty/trunk/ui/common/terminalcontrolsystemfont.cpp
+   M /s2putty/trunk/ui/common/terminalcontrolsystemfont.h
+   A /s2putty/trunk/ui/fonts (from /s2putty/trunk/s90/fonts:225)
+
+Implemented a new terminal control class using S2Font bitmap fonts,
+and preliminarily changed the S60 version to use it. Much font-related
+functionality is still missing in the S60 UI, and the font file in use
+is hardcoded, but basic functionality seems OK.
+
+------------------------------------------------------------------------
+r225 | pekangas | 2005-10-15 13:44:34 +0300 (Sat, 15 Oct 2005) | 3 lines
+Changed paths:
+   M /s2putty/trunk/ui/common/terminalcontrol.cpp
+   M /s2putty/trunk/ui/common/terminalcontrol.h
+   M /s2putty/trunk/ui/common/terminalcontrolsystemfont.cpp
+   M /s2putty/trunk/ui/common/terminalcontrolsystemfont.h
+
+Moved most text color logic to the terminal control base class. This
+simplifies concrete terminal control implementations and reduces code
+size, but has a small performance cost.
+------------------------------------------------------------------------
+r224 | pekangas | 2005-08-21 19:41:35 +0300 (Sun, 21 Aug 2005) | 3 lines
+Changed paths:
+   M /s2putty/trunk/crystalui/puttyappview.cpp
+   M /s2putty/trunk/crystalui/puttyappview.h
+   D /s2putty/trunk/crystalui/terminalcontrol.cpp
+   D /s2putty/trunk/crystalui/terminalcontrol.h
+   M /s2putty/trunk/s80/group/puttyui.mmp
+   A /s2putty/trunk/ui
+   A /s2putty/trunk/ui/common
+   A /s2putty/trunk/ui/common/terminalcontrol.cpp
+   A /s2putty/trunk/ui/common/terminalcontrol.h
+   A /s2putty/trunk/ui/common/terminalcontrolsystemfont.cpp
+   A /s2putty/trunk/ui/common/terminalcontrolsystemfont.h
+
+Refactored the terminal control into a common base class and
+implementation classes for different font rendering solutions and
+implemented a system font terminal class for the S80 version.
+------------------------------------------------------------------------
+r223 | pekangas | 2005-08-16 21:01:08 +0300 (Tue, 16 Aug 2005) | 3 lines
+Changed paths:
+   M /s2putty/trunk/crystalui/puttyappui.cpp
+   M /s2putty/trunk/crystalui/puttyappui.h
+   M /s2putty/trunk/crystalui/puttyappview.cpp
+
+Small copy/paste usability enhancements: The selection key on a 9500
+can now be used to mark and copy in select mode, and copy terminates
+select mode.
+------------------------------------------------------------------------
+r222 | pekangas | 2005-08-16 20:32:43 +0300 (Tue, 16 Aug 2005) | 2 lines
+Changed paths:
+   M /s2putty/trunk/crystalui/terminalcontrol.cpp
+
+Fixed several small terminal control bugs introduced with the
+clipboard changes.
+------------------------------------------------------------------------
+r221 | pekangas | 2005-08-15 23:07:01 +0300 (Mon, 15 Aug 2005) | 5 lines
+Changed paths:
+   M /s2putty/trunk/crystalui/putty.rss
+   M /s2putty/trunk/crystalui/puttyappui.cpp
+   M /s2putty/trunk/crystalui/puttyappui.h
+   M /s2putty/trunk/crystalui/puttyui.hrh
+   M /s2putty/trunk/crystalui/terminalcontrol.cpp
+   M /s2putty/trunk/crystalui/terminalcontrol.h
+   M /s2putty/trunk/s80/group/puttyui.mmp
+
+Implemented clipboard support, thanks to Adam Boardman for the
+original clipboard code. Note that there is at least one remaining bug
+in the whitespace optimization logic in the terminal control that
+occasionally corrupts parts of the display.
+
+------------------------------------------------------------------------
+r220 | pekangas | 2005-08-14 21:21:29 +0300 (Sun, 14 Aug 2005) | 3 lines
+Changed paths:
+   M /s2putty/trunk/crystalui/terminalcontrol.cpp
+
+Added an optimization: Leading and trailing whitespace is now drawn as
+a solid rectangle instead of a sequence of space characters. This
+speeds up display updates considerably.
+------------------------------------------------------------------------
+r219 | pekangas | 2005-08-14 20:51:12 +0300 (Sun, 14 Aug 2005) | 5 lines
+Changed paths:
+   M /s2putty/trunk/crystalui/puttyappui.cpp
+   M /s2putty/trunk/crystalui/puttyappui.h
+   M /s2putty/trunk/crystalui/terminalcontrol.cpp
+   M /s2putty/trunk/crystalui/terminalcontrol.h
+   M /s2putty/trunk/engine/puttyengineimp.cpp
+   M /s2putty/trunk/include/puttyclient.h
+
+Rewrote cursor handling and terminal control. The terminal control is
+now responsible for drawing the cursor, and maintains a copy of the
+terminal contents. This enables display refreshes without calls to the
+engine and acts as a basis for copy/paste support.
+This change breaks S60 and S90 until they are updated.
+------------------------------------------------------------------------
+r218 | pekangas | 2005-03-16 21:07:46 +0200 (Wed, 16 Mar 2005) | 2 lines
+Changed paths:
+   A /s2putty/trunk/s90/README.txt
+   M /s2putty/trunk/s90/group/installnote.txt
+   M /s2putty/trunk/s90/group/putty.pkg
+
+Prepared for the first S90 snapshot release
+
+------------------------------------------------------------------------
+r217 | pekangas | 2005-03-16 21:01:01 +0200 (Wed, 16 Mar 2005) | 2 lines
+Changed paths:
+   M /s2putty/trunk/s90/ui/puttyappview.cpp
+   M /s2putty/trunk/s90/ui/puttyappview.h
+
+Undo bad accidental commit in r215
+
+------------------------------------------------------------------------
+r216 | pekangas | 2005-03-16 20:53:57 +0200 (Wed, 16 Mar 2005) | 3 lines
+Changed paths:
+   M /s2putty/trunk/s90/fonts/bdftos2font.awk
+
+Fixed error messages and improved compatibility with off-the-shelf BDF
+fonts
+
+------------------------------------------------------------------------
+r215 | pekangas | 2005-03-16 20:53:02 +0200 (Wed, 16 Mar 2005) | 3 lines
+Changed paths:
+   M /s2putty/trunk/s90/ui/puttyappview.cpp
+   M /s2putty/trunk/s90/ui/puttyappview.h
+
+Fixed error messages and improved compatibility with off-the-shelf BDF
+fonts
+
+------------------------------------------------------------------------
+r214 | pekangas | 2005-03-16 20:37:52 +0200 (Wed, 16 Mar 2005) | 1 line
+Changed paths:
+   M /s2putty/trunk/s90/ui/putty.rss
+   M /s2putty/trunk/s90/ui/puttyappview.cpp
+   M /s2putty/trunk/s90/ui/puttyappview.h
+   M /s2putty/trunk/s90/ui/terminalcontrol.cpp
+   M /s2putty/trunk/s90/ui/terminalcontrol.h
+
+The "A" key (upper right device key) now acts as a Ctrl prefix
+------------------------------------------------------------------------
+r213 | pekangas | 2005-03-16 19:38:52 +0200 (Wed, 16 Mar 2005) | 1 line
+Changed paths:
+   M /s2putty/trunk/s90/ui/terminalcontrol.cpp
+
+Fixed memory corruption when the terminal was resized
+------------------------------------------------------------------------
+r212 | pekangas | 2005-03-11 19:14:56 +0200 (Fri, 11 Mar 2005) | 3 lines
+Changed paths:
+   M /s2putty/trunk/test/fonts/fonttest.cpp
+
+Small enhancements to the font test application to make it more useful
+with S90.
+
+------------------------------------------------------------------------
+r211 | pekangas | 2005-03-11 19:14:01 +0200 (Fri, 11 Mar 2005) | 8 lines
+Changed paths:
+   A /s2putty/trunk/s90/fonts
+   A /s2putty/trunk/s90/fonts/bdftos2font.awk
+   A /s2putty/trunk/s90/fonts/fixed6x12.bdf
+   A /s2putty/trunk/s90/fonts/fixed6x12.s2f
+   A /s2putty/trunk/s90/fonts/s2font.cpp
+   A /s2putty/trunk/s90/fonts/s2font.h
+   A /s2putty/trunk/s90/fonts/s2font.txt
+   M /s2putty/trunk/s90/group/putty.pkg
+   M /s2putty/trunk/s90/group/puttyui.mmp
+   A /s2putty/trunk/s90/ui/oneshottimer.cpp
+   A /s2putty/trunk/s90/ui/oneshottimer.h
+   M /s2putty/trunk/s90/ui/puttyappui.cpp
+   M /s2putty/trunk/s90/ui/puttyappui.h
+   M /s2putty/trunk/s90/ui/puttyappview.cpp
+   M /s2putty/trunk/s90/ui/puttyappview.h
+   M /s2putty/trunk/s90/ui/terminalcontrol.cpp
+   M /s2putty/trunk/s90/ui/terminalcontrol.h
+
+Changed to use an X11 Unicode font with custom bitmap rendering
+routines instead of system fonts.  The 7710 only has a single
+monospaced font, NewCourier, which doesn't behave too well. The fonts
+are X11 fixed fonts by by Markus Kuhn and others. See
+http://www.cl.cam.ac.uk/~mgk25/ucs-fonts.html. Text rendering routines
+were originally written for Nethack for Symbian OS, but the license
+was intentionally the same as PuTTY uses so the code can be copied
+directly.
+------------------------------------------------------------------------
+r210 | pekangas | 2005-03-10 21:20:36 +0200 (Thu, 10 Mar 2005) | 3 lines
+Changed paths:
+   M /s2putty/trunk/s90/ui/terminalcontrol.cpp
+   M /s2putty/trunk/s90/ui/terminalcontrol.h
+
+Added code to send key events to the FEP. This enables text input!
+Thanks to Antti Jarvinen for his initial S90 code.
+
+------------------------------------------------------------------------
+r209 | pekangas | 2005-03-09 21:57:04 +0200 (Wed, 09 Mar 2005) | 3 lines
+Changed paths:
+   A /s2putty/trunk/s90 (from /s2putty/trunk/s80:208)
+   M /s2putty/trunk/s90/group/putty.pkg
+   M /s2putty/trunk/s90/group/puttyui.mmp
+   A /s2putty/trunk/s90/ui/authdialog.cpp (from /s2putty/trunk/crystalui/authdialog.cpp:208)
+   A /s2putty/trunk/s90/ui/authdialog.h (from /s2putty/trunk/crystalui/authdialog.h:208)
+   A /s2putty/trunk/s90/ui/connectiondialog.cpp (from /s2putty/trunk/crystalui/connectiondialog.cpp:208)
+   A /s2putty/trunk/s90/ui/connectiondialog.h (from /s2putty/trunk/crystalui/connectiondialog.h:208)
+   A /s2putty/trunk/s90/ui/iconlarge.bmp (from /s2putty/trunk/crystalui/iconlarge.bmp:208)
+   A /s2putty/trunk/s90/ui/iconlargemask.bmp (from /s2putty/trunk/crystalui/iconlargemask.bmp:208)
+   A /s2putty/trunk/s90/ui/iconsmall.bmp (from /s2putty/trunk/crystalui/iconsmall.bmp:208)
+   A /s2putty/trunk/s90/ui/iconsmallmask.bmp (from /s2putty/trunk/crystalui/iconsmallmask.bmp:208)
+   A /s2putty/trunk/s90/ui/putty.rss (from /s2putty/trunk/crystalui/putty.rss:208)
+   A /s2putty/trunk/s90/ui/puttyapp.cpp (from /s2putty/trunk/crystalui/puttyapp.cpp:208)
+   A /s2putty/trunk/s90/ui/puttyapp.h (from /s2putty/trunk/crystalui/puttyapp.h:208)
+   A /s2putty/trunk/s90/ui/puttyappui.cpp (from /s2putty/trunk/crystalui/puttyappui.cpp:208)
+   A /s2putty/trunk/s90/ui/puttyappui.h (from /s2putty/trunk/crystalui/puttyappui.h:208)
+   A /s2putty/trunk/s90/ui/puttyappview.cpp (from /s2putty/trunk/crystalui/puttyappview.cpp:208)
+   A /s2putty/trunk/s90/ui/puttyappview.h (from /s2putty/trunk/crystalui/puttyappview.h:208)
+   A /s2putty/trunk/s90/ui/puttydoc.cpp (from /s2putty/trunk/crystalui/puttydoc.cpp:208)
+   A /s2putty/trunk/s90/ui/puttydoc.h (from /s2putty/trunk/crystalui/puttydoc.h:208)
+   A /s2putty/trunk/s90/ui/puttyui.hrh (from /s2putty/trunk/crystalui/puttyui.hrh:208)
+   A /s2putty/trunk/s90/ui/puttyuiaif.rss (from /s2putty/trunk/crystalui/puttyuiaif.rss:208)
+   A /s2putty/trunk/s90/ui/settingsdialog.cpp (from /s2putty/trunk/crystalui/settingsdialog.cpp:208)
+   A /s2putty/trunk/s90/ui/settingsdialog.h (from /s2putty/trunk/crystalui/settingsdialog.h:208)
+   A /s2putty/trunk/s90/ui/terminalcontrol.cpp (from /s2putty/trunk/crystalui/terminalcontrol.cpp:208)
+   A /s2putty/trunk/s90/ui/terminalcontrol.h (from /s2putty/trunk/crystalui/terminalcontrol.h:208)
+
+Implemented initial Series 90 (Nokia 7710) support. Most features seem to work
+except entering text to the terminal, making the software currently useless.
+
+------------------------------------------------------------------------
+r208 | pekangas | 2005-03-08 20:08:08 +0200 (Tue, 08 Mar 2005) | 3 lines
+Changed paths:
+   M /s2putty/trunk/puttysymbian/epocnet.cpp
+
+Small fixes to sk_nonamelookup() and sk_getaddr() to fix proxy
+support.
+
+------------------------------------------------------------------------
+r207 | pekangas | 2005-03-08 18:46:38 +0200 (Tue, 08 Mar 2005) | 1 line
+Changed paths:
+   M /s2putty/trunk/README.txt
+   M /s2putty/trunk/s80/group/installnote.txt
+
+Updated and cleaned up for 1.4 development snapshot releases.
+------------------------------------------------------------------------
+r206 | pekangas | 2005-03-06 18:57:19 +0200 (Sun, 06 Mar 2005) | 4 lines
+Changed paths:
+   M /s2putty/trunk/engine/puttyengineimp.cpp
+   M /s2putty/trunk/putty/logging.c
+
+Flush the log file when the program terminates.
+Added a hack to the logging code to close/open the log file when it's
+flushed. This seems to be the only reliable way to force all changes
+to the disk under Symbian OS.
+------------------------------------------------------------------------
+r205 | pekangas | 2005-03-06 18:56:10 +0200 (Sun, 06 Mar 2005) | 1 line
+Changed paths:
+   M /s2putty/trunk/puttysymbian/epocnet.cpp
+
+Implemented IPv6 support
+------------------------------------------------------------------------
+r204 | pekangas | 2005-02-20 21:02:53 +0200 (Sun, 20 Feb 2005) | 1 line
+Changed paths:
+   M /s2putty/trunk/crystalui/putty.rss
+
+Misc lost updates, updated about text
+------------------------------------------------------------------------
+r203 | pekangas | 2005-02-20 20:51:05 +0200 (Sun, 20 Feb 2005) | 1 line
+Changed paths:
+   M /s2putty/trunk/common/group/puttyengine.mmp
+
+Fixed to compile after 1.3.2 merge
+------------------------------------------------------------------------
+r202 | pekangas | 2005-02-20 20:50:48 +0200 (Sun, 20 Feb 2005) | 1 line
+Changed paths:
+   M /s2putty/trunk/s80/group/putty.pkg
+
+Added Series80 Product ID and updated certificate
+------------------------------------------------------------------------
+r201 | pekangas | 2005-02-20 20:27:59 +0200 (Sun, 20 Feb 2005) | 1 line
+Changed paths:
+   M /s2putty/trunk/README.txt
+   M /s2putty/trunk/README_source.txt
+   M /s2putty/trunk/engine/puttyengineimp.cpp
+   M /s2putty/trunk/engine/puttyengineimp.h
+   M /s2putty/trunk/license.txt
+   M /s2putty/trunk/putty/cmdline.c
+   M /s2putty/trunk/putty/config.c
+   A /s2putty/trunk/putty/cproxy.c (from /s2putty/tags/release_1_3_2/putty/cproxy.c:200)
+   M /s2putty/trunk/putty/doc/blurb.but
+   M /s2putty/trunk/putty/doc/config.but
+   M /s2putty/trunk/putty/doc/errors.but
+   M /s2putty/trunk/putty/doc/faq.but
+   M /s2putty/trunk/putty/doc/feedback.but
+   M /s2putty/trunk/putty/doc/gs.but
+   M /s2putty/trunk/putty/doc/index.but
+   M /s2putty/trunk/putty/doc/intro.but
+   M /s2putty/trunk/putty/doc/licence.but
+   M /s2putty/trunk/putty/doc/man-pl.but
+   M /s2putty/trunk/putty/doc/pageant.but
+   M /s2putty/trunk/putty/doc/plink.but
+   M /s2putty/trunk/putty/doc/pscp.but
+   M /s2putty/trunk/putty/doc/psftp.but
+   M /s2putty/trunk/putty/doc/pubkey.but
+   M /s2putty/trunk/putty/doc/using.but
+   M /s2putty/trunk/putty/ldisc.c
+   M /s2putty/trunk/putty/licence
+   M /s2putty/trunk/putty/logging.c
+   M /s2putty/trunk/putty/mac/mac_res.r
+   M /s2putty/trunk/putty/mac/macterm.c
+   M /s2putty/trunk/putty/mac/makefile.mpw
+   M /s2putty/trunk/putty/mac/version.r
+   M /s2putty/trunk/putty/makefile.bor
+   M /s2putty/trunk/putty/makefile.cyg
+   M /s2putty/trunk/putty/makefile.lcc
+   M /s2putty/trunk/putty/makefile.vc
+   A /s2putty/trunk/putty/minibidi.c (from /s2putty/tags/release_1_3_2/putty/minibidi.c:200)
+   A /s2putty/trunk/putty/minibidi.h (from /s2putty/tags/release_1_3_2/putty/minibidi.h:200)
+   M /s2putty/trunk/putty/misc.c
+   M /s2putty/trunk/putty/mkunxarc.sh
+   M /s2putty/trunk/putty/msvc/plink/plink.dsp
+   M /s2putty/trunk/putty/msvc/pscp/pscp.dsp
+   M /s2putty/trunk/putty/msvc/psftp/psftp.dsp
+   M /s2putty/trunk/putty/msvc/putty/putty.dsp
+   M /s2putty/trunk/putty/msvc/puttytel/puttytel.dsp
+   A /s2putty/trunk/putty/nocproxy.c (from /s2putty/tags/release_1_3_2/putty/nocproxy.c:200)
+   M /s2putty/trunk/putty/pageant.c
+   M /s2putty/trunk/putty/pageant.mft
+   M /s2putty/trunk/putty/pageant.rc
+   M /s2putty/trunk/putty/plink.c
+   M /s2putty/trunk/putty/proxy.c
+   M /s2putty/trunk/putty/proxy.h
+   M /s2putty/trunk/putty/psftp.c
+   M /s2putty/trunk/putty/putty.h
+   M /s2putty/trunk/putty/putty.iss
+   M /s2putty/trunk/putty/putty.mft
+   M /s2putty/trunk/putty/puttygen.c
+   M /s2putty/trunk/putty/puttygen.mft
+   M /s2putty/trunk/putty/puttygen.rc
+   M /s2putty/trunk/putty/readme
+   M /s2putty/trunk/putty/recipe
+   M /s2putty/trunk/putty/scp.c
+   M /s2putty/trunk/putty/settings.c
+   M /s2putty/trunk/putty/ssh.c
+   M /s2putty/trunk/putty/ssh.h
+   M /s2putty/trunk/putty/sshmd5.c
+   M /s2putty/trunk/putty/sshrsa.c
+   M /s2putty/trunk/putty/sshsha.c
+   M /s2putty/trunk/putty/sshzlib.c
+   M /s2putty/trunk/putty/telnet.c
+   M /s2putty/trunk/putty/terminal.c
+   M /s2putty/trunk/putty/terminal.h
+   M /s2putty/trunk/putty/unicode.c
+   M /s2putty/trunk/putty/unix/gtkdlg.c
+   M /s2putty/trunk/putty/unix/makefile.gtk
+   M /s2putty/trunk/putty/unix/pterm.c
+   M /s2putty/trunk/putty/unix/pty.c
+   M /s2putty/trunk/putty/unix/unix.h
+   M /s2putty/trunk/putty/unix/ux_x11.c
+   M /s2putty/trunk/putty/unix/uxcfg.c
+   M /s2putty/trunk/putty/unix/uxcons.c
+   M /s2putty/trunk/putty/unix/uxplink.c
+   M /s2putty/trunk/putty/unix/uxputty.c
+   M /s2putty/trunk/putty/unix/uxsftp.c
+   M /s2putty/trunk/putty/unix/uxucs.c
+   M /s2putty/trunk/putty/win_res.rc
+   M /s2putty/trunk/putty/windlg.c
+   M /s2putty/trunk/putty/window.c
+   M /s2putty/trunk/putty/winhelp.h
+   M /s2putty/trunk/putty/winmisc.c
+   M /s2putty/trunk/putty/winsftp.c
+   M /s2putty/trunk/putty/x11fwd.c
+   M /s2putty/trunk/puttysymbian/epocmisc.cpp
+   M /s2putty/trunk/s60/README.txt
+   M /s2putty/trunk/s60/group/installnote.txt
+   M /s2putty/trunk/s60/group/putty.pkg
+
+Merged in changes from 1.3.2
+------------------------------------------------------------------------
+r196 | pekangas | 2005-01-09 17:52:54 +0200 (Sun, 09 Jan 2005) | 4 lines
+Changed paths:
+   M /s2putty/trunk/s60/group/puttyui.mmp
+   M /s2putty/trunk/s60/ui/putty.rss
+   M /s2putty/trunk/s60/ui/puttyappui.cpp
+   M /s2putty/trunk/s60/ui/puttyappui.h
+   D /s2putty/trunk/s60/ui/puttyappview.cpp
+   D /s2putty/trunk/s60/ui/puttyappview.h
+   A /s2putty/trunk/s60/ui/puttyterminalcontainer.cpp
+   A /s2putty/trunk/s60/ui/puttyterminalcontainer.h
+   A /s2putty/trunk/s60/ui/puttyterminalview.cpp
+   A /s2putty/trunk/s60/ui/puttyterminalview.h
+   M /s2putty/trunk/s60/ui/terminalcontrol.cpp
+   M /s2putty/trunk/s60/ui/terminalcontrol.h
+
+Changed the S60 UI to use S60 multi-view architecture. This enables
+implementing a proper settings UI to replace the current menu-based
+solution.
+
+------------------------------------------------------------------------
+r195 | pekangas | 2005-01-09 17:33:23 +0200 (Sun, 09 Jan 2005) | 2 lines
+Changed paths:
+   M /s2putty/trunk/s60/fixedfont/fixedfont.pkg
+   M /s2putty/trunk/s60/group/putty.pkg
+
+Fixed to use CRLF line terminators, makesis only supports those
+
+------------------------------------------------------------------------
+r194 | pekangas | 2004-10-10 14:59:24 +0300 (Sun, 10 Oct 2004) | 2 lines
+Changed paths:
+   A /s2putty/trunk/test/s60testapp
+   A /s2putty/trunk/test/s60testapp/test.mmp
+   A /s2putty/trunk/test/s60testapp/test.rss
+   A /s2putty/trunk/test/s60testapp/testapp.cpp
+   A /s2putty/trunk/test/s60testapp/testapp.h
+   A /s2putty/trunk/test/s60testapp/testappui.cpp
+   A /s2putty/trunk/test/s60testapp/testappui.h
+   A /s2putty/trunk/test/s60testapp/testappview.cpp
+   A /s2putty/trunk/test/s60testapp/testappview.h
+   A /s2putty/trunk/test/s60testapp/testdoc.cpp
+   A /s2putty/trunk/test/s60testapp/testdoc.h
+   A /s2putty/trunk/test/s60testapp/testui.hrh
+
+Added a basic S60 test application skeleton
+
+------------------------------------------------------------------------
+r193 | pekangas | 2004-10-07 20:41:36 +0300 (Thu, 07 Oct 2004) | 1 line
+Changed paths:
+   M /s2putty/trunk/README_source.txt
+
+Added a note that compiling from the IDE sometimes doesn't work
+------------------------------------------------------------------------
+r192 | pekangas | 2004-09-13 21:23:42 +0300 (Mon, 13 Sep 2004) | 4 lines
+Changed paths:
+   M /s2putty/trunk/crystalui/authdialog.cpp
+   M /s2putty/trunk/crystalui/connectiondialog.cpp
+   M /s2putty/trunk/crystalui/settingsdialog.cpp
+
+Thanks to Adam Boardman, the authentication, connection, and settings
+dialogs now set the default CBA button correctly. Enter works on a
+9500!
+
+------------------------------------------------------------------------
+r191 | pekangas | 2004-09-13 20:41:28 +0300 (Mon, 13 Sep 2004) | 2 lines
+Changed paths:
+   M /s2putty/trunk/s60/group/bld.inf
+   D /s2putty/trunk/s60/group/configrecog.mmp
+   D /s2putty/trunk/s60/group/puttyengine.mmp
+
+Fixed the Series 60 version to compile again
+
+------------------------------------------------------------------------
+r190 | pekangas | 2004-09-13 20:31:13 +0300 (Mon, 13 Sep 2004) | 2 lines
+Changed paths:
+   M /s2putty/trunk/9200/group/bld.inf
+   M /s2putty/trunk/9200/group/puttyui.mmp
+
+Fixed the 9210 version to compile again
+
+------------------------------------------------------------------------
+r189 | pekangas | 2004-08-22 20:51:28 +0300 (Sun, 22 Aug 2004) | 3 lines
+Changed paths:
+   M /s2putty/trunk/9200/group/installnote.txt
+   M /s2putty/trunk/9200/group/putty.pkg
+   M /s2putty/trunk/README.txt
+   M /s2putty/trunk/README_source.txt
+   M /s2putty/trunk/engine/puttyengineimp.cpp
+   M /s2putty/trunk/putty/charset/macenc.c
+   M /s2putty/trunk/putty/cmdgen.c
+   M /s2putty/trunk/putty/cmdline.c
+   M /s2putty/trunk/putty/config.c
+   M /s2putty/trunk/putty/console.c
+   M /s2putty/trunk/putty/doc/blurb.but
+   M /s2putty/trunk/putty/doc/config.but
+   M /s2putty/trunk/putty/doc/errors.but
+   M /s2putty/trunk/putty/doc/faq.but
+   M /s2putty/trunk/putty/doc/feedback.but
+   M /s2putty/trunk/putty/doc/gs.but
+   A /s2putty/trunk/putty/doc/index.but (from /s2putty/tags/release_1_3_1/putty/doc/index.but:188)
+   M /s2putty/trunk/putty/doc/intro.but
+   M /s2putty/trunk/putty/doc/makefile
+   A /s2putty/trunk/putty/doc/man-pg.but (from /s2putty/tags/release_1_3_1/putty/doc/man-pg.but:188)
+   A /s2putty/trunk/putty/doc/man-pl.but (from /s2putty/tags/release_1_3_1/putty/doc/man-pl.but:188)
+   A /s2putty/trunk/putty/doc/man-pscp.but (from /s2putty/tags/release_1_3_1/putty/doc/man-pscp.but:188)
+   A /s2putty/trunk/putty/doc/man-psft.but (from /s2putty/tags/release_1_3_1/putty/doc/man-psft.but:188)
+   A /s2putty/trunk/putty/doc/man-ptel.but (from /s2putty/tags/release_1_3_1/putty/doc/man-ptel.but:188)
+   A /s2putty/trunk/putty/doc/man-pter.but (from /s2putty/tags/release_1_3_1/putty/doc/man-pter.but:188)
+   A /s2putty/trunk/putty/doc/man-putt.but (from /s2putty/tags/release_1_3_1/putty/doc/man-putt.but:188)
+   A /s2putty/trunk/putty/doc/mancfg.but (from /s2putty/tags/release_1_3_1/putty/doc/mancfg.but:188)
+   A /s2putty/trunk/putty/doc/manpages.but (from /s2putty/tags/release_1_3_1/putty/doc/manpages.but:188)
+   M /s2putty/trunk/putty/doc/pageant.but
+   M /s2putty/trunk/putty/doc/plink.but
+   M /s2putty/trunk/putty/doc/pscp.but
+   M /s2putty/trunk/putty/doc/psftp.but
+   M /s2putty/trunk/putty/doc/pubkey.but
+   M /s2putty/trunk/putty/doc/using.but
+   M /s2putty/trunk/putty/mac/mac.c
+   M /s2putty/trunk/putty/mac/macabout.c
+   M /s2putty/trunk/putty/mac/macctrls.c
+   M /s2putty/trunk/putty/mac/macdlg.c
+   M /s2putty/trunk/putty/mac/macevlog.c
+   M /s2putty/trunk/putty/mac/macmisc.c
+   M /s2putty/trunk/putty/mac/macnet.c
+   M /s2putty/trunk/putty/mac/macpgen.c
+   M /s2putty/trunk/putty/mac/macpgen.r
+   M /s2putty/trunk/putty/mac/macpgkey.c
+   M /s2putty/trunk/putty/mac/macpgrid.h
+   M /s2putty/trunk/putty/mac/macresid.h
+   M /s2putty/trunk/putty/mac/macstore.c
+   M /s2putty/trunk/putty/mac/macterm.c
+   M /s2putty/trunk/putty/mac/macucs.c
+   M /s2putty/trunk/putty/mac/makefile.mpw
+   M /s2putty/trunk/putty/mac/mkputty.mpw
+   M /s2putty/trunk/putty/mac/mtcpnet.c
+   M /s2putty/trunk/putty/mac/otnet.c
+   M /s2putty/trunk/putty/mac/readme.mac
+   M /s2putty/trunk/putty/mac/version.r
+   M /s2putty/trunk/putty/makefile.bor
+   M /s2putty/trunk/putty/makefile.cyg
+   M /s2putty/trunk/putty/makefile.lcc
+   M /s2putty/trunk/putty/makefile.vc
+   M /s2putty/trunk/putty/misc.c
+   M /s2putty/trunk/putty/mkfiles.pl
+   M /s2putty/trunk/putty/mkunxarc.sh
+   M /s2putty/trunk/putty/msvc/pageant/pageant.dsp
+   M /s2putty/trunk/putty/msvc/plink/plink.dsp
+   M /s2putty/trunk/putty/msvc/pscp/pscp.dsp
+   M /s2putty/trunk/putty/msvc/psftp/psftp.dsp
+   M /s2putty/trunk/putty/msvc/putty/putty.dsp
+   M /s2putty/trunk/putty/msvc/puttygen/puttygen.dsp
+   M /s2putty/trunk/putty/msvc/puttytel/puttytel.dsp
+   M /s2putty/trunk/putty/network.h
+   M /s2putty/trunk/putty/noise.c
+   M /s2putty/trunk/putty/pageant.c
+   M /s2putty/trunk/putty/plink.c
+   M /s2putty/trunk/putty/portfwd.c
+   M /s2putty/trunk/putty/pproxy.c
+   M /s2putty/trunk/putty/proxy.c
+   M /s2putty/trunk/putty/psftp.c
+   M /s2putty/trunk/putty/putty.h
+   M /s2putty/trunk/putty/putty.iss
+   M /s2putty/trunk/putty/puttygen.c
+   M /s2putty/trunk/putty/raw.c
+   M /s2putty/trunk/putty/readme
+   M /s2putty/trunk/putty/recipe
+   M /s2putty/trunk/putty/rlogin.c
+   M /s2putty/trunk/putty/scp.c
+   M /s2putty/trunk/putty/settings.c
+   M /s2putty/trunk/putty/ssh.c
+   M /s2putty/trunk/putty/ssh.h
+   M /s2putty/trunk/putty/sshbn.c
+   M /s2putty/trunk/putty/sshdh.c
+   M /s2putty/trunk/putty/sshpubk.c
+   M /s2putty/trunk/putty/sshrsa.c
+   M /s2putty/trunk/putty/telnet.c
+   M /s2putty/trunk/putty/terminal.c
+   M /s2putty/trunk/putty/testback.c
+   M /s2putty/trunk/putty/unix/makefile.gtk
+   D /s2putty/trunk/putty/unix/plink.1
+   D /s2putty/trunk/putty/unix/pterm.1
+   M /s2putty/trunk/putty/unix/pterm.c
+   M /s2putty/trunk/putty/unix/pty.c
+   D /s2putty/trunk/putty/unix/putty.1
+   D /s2putty/trunk/putty/unix/puttygen.1
+   D /s2putty/trunk/putty/unix/puttytel.1
+   M /s2putty/trunk/putty/unix/ux_x11.c
+   M /s2putty/trunk/putty/unix/uxnet.c
+   M /s2putty/trunk/putty/unix/uxplink.c
+   M /s2putty/trunk/putty/unix/uxproxy.c
+   M /s2putty/trunk/putty/unix/uxsftp.c
+   M /s2putty/trunk/putty/wildcard.c
+   M /s2putty/trunk/putty/window.c
+   M /s2putty/trunk/putty/winhelp.h
+   M /s2putty/trunk/putty/winmisc.c
+   M /s2putty/trunk/putty/winnet.c
+   M /s2putty/trunk/putty/winutils.c
+   M /s2putty/trunk/putty/x11fwd.c
+   M /s2putty/trunk/puttysymbian/epocmisc.cpp
+   M /s2putty/trunk/puttysymbian/epocnet.cpp
+   M /s2putty/trunk/s60/README.txt
+   M /s2putty/trunk/s60/group/installnote.txt
+   M /s2putty/trunk/s60/group/putty.pkg
+
+Merged changes between the 1.3.0 and 1.3.1 release to the trunk.
+This includes the new PuTTY core v0.55 and the related security fixes.
+
+------------------------------------------------------------------------
+r184 | pekangas | 2004-06-20 21:35:45 +0300 (Sun, 20 Jun 2004) | 5 lines
+Changed paths:
+   A /s2putty/trunk/9200
+   A /s2putty/trunk/9200/group (from /s2putty/trunk/group:183)
+   D /s2putty/trunk/9200/group/configrecog.mmp
+   D /s2putty/trunk/9200/group/puttyengine.mmp
+   A /s2putty/trunk/9200/ui
+   A /s2putty/trunk/9200/ui/dialler.cpp (from /s2putty/trunk/crystalui/dialler.cpp:183)
+   A /s2putty/trunk/9200/ui/dialler.h (from /s2putty/trunk/crystalui/dialler.h:183)
+   D /s2putty/trunk/bmarm
+   D /s2putty/trunk/bwins
+   A /s2putty/trunk/common
+   A /s2putty/trunk/common/bmarm (from /s2putty/trunk/bmarm:183)
+   A /s2putty/trunk/common/bwins (from /s2putty/trunk/bwins:183)
+   A /s2putty/trunk/common/group
+   A /s2putty/trunk/common/group/configrecog.mmp (from /s2putty/trunk/group/configrecog.mmp:183)
+   A /s2putty/trunk/common/group/puttyengine.mmp (from /s2putty/trunk/group/puttyengine.mmp:183)
+   D /s2putty/trunk/crystalui/dialler.cpp
+   D /s2putty/trunk/crystalui/dialler.h
+   M /s2putty/trunk/crystalui/putty.rss
+   M /s2putty/trunk/crystalui/puttyappui.cpp
+   D /s2putty/trunk/group
+   A /s2putty/trunk/s80
+   A /s2putty/trunk/s80/group
+   A /s2putty/trunk/s80/group/bld.inf
+   A /s2putty/trunk/s80/group/installnote.txt
+   A /s2putty/trunk/s80/group/putty.pkg
+   A /s2putty/trunk/s80/group/puttyui.mmp (from /s2putty/trunk/group/puttyui.mmp:183)
+   A /s2putty/trunk/s80/ui
+   A /s2putty/trunk/s80/ui/audiorecorder.cpp (from /s2putty/trunk/crystalui/audiorecorder.cpp:183)
+   A /s2putty/trunk/s80/ui/audiorecorder.h (from /s2putty/trunk/crystalui/audiorecorder.h:183)
+   A /s2putty/trunk/s80/ui/dialler.cpp (from /s2putty/trunk/crystalui/dialler.cpp:183)
+   A /s2putty/trunk/s80/ui/dialler.h (from /s2putty/trunk/crystalui/dialler.h:183)
+
+Incorporated Series 80 2.0 (Nokia 9500 Communicator) support to the
+main source tree. The S80 2.0 version is still very basic, and is
+missing network connection establishment code and narrow indicator
+support. This update also breaks 9200 support.
+
+------------------------------------------------------------------------
+r183 | pekangas | 2004-05-22 23:52:10 +0300 (Sat, 22 May 2004) | 1 line
+Changed paths:
+   M /s2putty/trunk/crystalui/putty.rss
+   M /s2putty/trunk/crystalui/puttyappui.cpp
+   M /s2putty/trunk/crystalui/puttyui.hrh
+
+Added a Help/About dialog.
+------------------------------------------------------------------------
+r182 | pekangas | 2004-05-22 23:32:34 +0300 (Sat, 22 May 2004) | 1 line
+Changed paths:
+   A /s2putty/trunk (from /trunk:181)
+   D /trunk
+
+Fix repository layout after cvs2svn
+------------------------------------------------------------------------
