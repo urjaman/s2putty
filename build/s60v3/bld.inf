@@ -10,5 +10,6 @@ PRJ_PLATFORMS
 winscw gcce
 
 PRJ_MMPFILES
+gnumakefile puttyicons.mk
 puttyengine.mmp
 puttyui.mmp

@@ -18,7 +18,11 @@
 _LIT(KAssertPanic, "testappview.cpp");
 #define assert(x) __ASSERT_ALWAYS(x, User::Panic(KAssertPanic, __LINE__))
 
+#if defined(__WINS__) || defined(__WINSCW__)
 _LIT(KFontFile, "z:\\resource\\puttyfonts\\fixed6x13.s2f");
+#else
+_LIT(KFontFile, "c:\\resource\\puttyfonts\\fixed6x13.s2f");
+#endif
 
 
 

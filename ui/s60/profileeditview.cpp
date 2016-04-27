@@ -120,7 +120,15 @@ void CProfileEditView::HandleCommandL(TInt aCommand) {
             if ( iView > EViewGeneral ) {
                 SetViewL((TView)(iView - 1));
             }
-            break;            
+            break;
+
+        case EPuttyCmdProfileEditClear:
+            if ( (iView == EViewSsh) && iControl  ) {
+                CProfileEditSshSettingList *list =
+                    (CProfileEditSshSettingList*) iControl;
+                list->ClearPrivateKey();
+            }            
+            break;
         
         default:
             break;
@@ -194,6 +202,19 @@ void CProfileEditView::DynInitMenuPaneL(TInt aResourceId,
                     EPuttyCmdProfileEditOpen,
                     R_PUTTY_STR_PROFILEEDIT_SETTINGLIST_EDIT);
             }
+            if ( iView == EViewSsh && iControl ) {
+                CAknSettingItemList *list = (CAknSettingItemList*) iControl;
+                TInt idx = list->ListBox()->CurrentItemIndex();
+                TInt id = (*(list->SettingItemArray()))[idx]->Identifier();
+                if ( id == EPuttySettingSshPrivateKey ) {
+                    aMenuPane->SetItemDimmed(EPuttyCmdProfileEditClear, EFalse);
+                } else {
+                aMenuPane->SetItemDimmed(EPuttyCmdProfileEditClear, ETrue);
+                }
+            } else {
+                aMenuPane->SetItemDimmed(EPuttyCmdProfileEditClear, ETrue);
+            }
+            
             break;
     }
 }

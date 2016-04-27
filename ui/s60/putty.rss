@@ -14,6 +14,7 @@ NAME PTTY
 #include "puttyui.hrh"
 #include <avkon.rsg>
 #include <avkon.rh>
+#include <appinfo.rh>
 #include <commondialogs.hrh>
 #include <commondialogs.rh>
 #include "sendgrid.rh"
@@ -28,6 +29,16 @@ RESOURCE TBUF {
 
 // Application info
 RESOURCE EIK_APP_INFO {
+}
+
+// Localisable app info -- icon and caption
+RESOURCE LOCALISABLE_APP_INFO r_putty_localisable_app_info {
+    short_caption = "PuTTY";
+    caption_and_icon = CAPTION_AND_ICON_INFO {
+        caption = "PuTTY";
+        number_of_icons = 1;
+        icon_file = "\\resource\\apps\\putty_aif.mif";
+    };
 }
 
 
@@ -85,6 +96,7 @@ RESOURCE MENU_BAR r_putty_profileedit_menubar {
 RESOURCE MENU_PANE r_putty_profileedit_menu_pane {
     items = {
         MENU_ITEM { command = EPuttyCmdProfileEditOpen; txt = "Open"; },
+        MENU_ITEM { command = EPuttyCmdProfileEditClear; txt = "Clear"; },
         MENU_ITEM { command = EAknSoftkeyBack; txt = "Back"; }
     };
 }
@@ -196,6 +208,12 @@ RESOURCE AVKON_SETTING_ITEM_LIST r_putty_profileedit_ssh_settinglist {
             name = "Compression";
         },
         AVKON_SETTING_ITEM {
+            identifier = EPuttySettingSshCipher;
+            setting_page_resource = r_putty_profileedit_cipher_page;
+            associated_resource = r_putty_profileedit_cipher_texts;
+            name = "Preferred cipher";
+        },
+        AVKON_SETTING_ITEM {
             identifier = EPuttySettingSshKeepalive;
             setting_page_resource = r_putty_profileedit_keepalive_page;
             name = "Keepalive interval";
@@ -276,6 +294,33 @@ RESOURCE ARRAY r_putty_profileedit_compression_popped_up_text_array {
     items = {
         LBUF { txt = "On"; },
         LBUF { txt = "Off"; }
+    };
+}
+
+
+// SSH Version edit page
+RESOURCE AVKON_SETTING_PAGE r_putty_profileedit_cipher_page {
+    label= "Preferred cipher";
+    type = EAknCtPopupSettingList;
+    editor_resource_id = r_putty_profileedit_cipher_popup;
+}
+RESOURCE POPUP_SETTING_LIST r_putty_profileedit_cipher_popup {
+    flags = 0;
+}
+RESOURCE AVKON_POPUP_SETTING_TEXTS r_putty_profileedit_cipher_texts {
+    setting_texts_resource = r_putty_profileedit_cipher_text_array;
+    popped_up_texts_resource = r_putty_profileedit_cipher_popped_up_text_array;
+}
+RESOURCE ARRAY r_putty_profileedit_cipher_text_array {
+    items = {
+        AVKON_ENUMERATED_TEXT { value = 0; text = "Blowfish-128"; },
+        AVKON_ENUMERATED_TEXT { value = 1; text = "AES-256"; }
+    };
+}
+RESOURCE ARRAY r_putty_profileedit_cipher_popped_up_text_array {
+    items = {
+        LBUF { txt = "Blowfish-128"; },
+        LBUF { txt = "AES-256"; }
     };
 }
 
@@ -514,6 +559,7 @@ RESOURCE MENU_PANE r_putty_terminal_menu_pane {
     items = {
         MENU_ITEM { command = EPuttyCmdSend; txt = "Send..."; },
         MENU_ITEM { cascade = r_putty_view_menu; txt = "View"; },
+        MENU_ITEM { cascade = r_putty_edit_menu; txt = "Edit"; },
         MENU_ITEM { command = EPuttyCmdDisconnect; txt = "Disconnect"; }
     };
 }
@@ -523,6 +569,16 @@ RESOURCE MENU_PANE r_putty_view_menu {
     items = {
         MENU_ITEM { command = EPuttyCmdSetFont; txt = "Screen font..."; },
         MENU_ITEM { command = EPuttyCmdFullScreen; txt = "Toggle full screen"; }
+    };
+}
+
+// Edit menu
+RESOURCE MENU_PANE r_putty_edit_menu {
+    items = {
+        MENU_ITEM { command = EPuttyCmdSelect; txt = "Select"; },
+        MENU_ITEM { command = EPuttyCmdMark; txt = "Mark"; },
+        MENU_ITEM { command = EPuttyCmdCopy; txt = "Copy"; },
+        MENU_ITEM { command = EPuttyCmdPaste; txt = "Paste"; }
     };
 }
 
@@ -655,16 +711,15 @@ RESOURCE DIALOG r_putty_hostkey_query_dialog {
 }
 
 // Accept weak cipher prompt dialog
-RESOURCE DIALOG r_putty_accept_weak_cipher_dialog {
+RESOURCE DIALOG r_putty_cipher_query_dialog {
     flags = EGeneralQueryFlags;
-    buttons = R_AVKON_SOFTKEYS_OK_CANCEL;
+    buttons = R_AVKON_SOFTKEYS_YES_NO;
     items = {
         DLG_LINE {
             type = EAknCtQuery;
-            id = EAcceptWeakCipher;
+            id = EGeneralQuery;
             control = AVKON_CONFIRMATION_QUERY {
                 layout = EConfirmationQueryLayout;
-                label = "Server supports only weak ciphers\nAccept ?";
             };
         }
     };
@@ -862,13 +917,8 @@ RESOURCE TBUF r_putty_str_different_host_key_dlg_fmt {
 // Accept cipher dialog contents format string. First %S = cipher, second
 // the direction
 RESOURCE TBUF r_putty_str_accept_cipher_dlg_fmt {
-    buf = "SECURITY WARNING!\nThe server supports only weak ciphers.\nAccept cipher %S for\ncommunication %S?";
+    buf = "Accept WEAK\n%S %S?";
 }
-
-// Cipher communication directions: Both, client-to-server, server-to-client
-RESOURCE TBUF r_putty_str_accept_cipher_dir_both { buf = "in both directions"; }
-RESOURCE TBUF r_putty_str_accept_cipher_client_to_server { buf = "from client to server"; }
-RESOURCE TBUF r_putty_str_accept_cipher_server_to_client { buf = "from server to client"; }
 
 // Send text dialog prompt for a line (with CR)
 RESOURCE TBUF r_putty_str_line { buf = "Line"; }

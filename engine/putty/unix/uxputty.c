@@ -13,6 +13,12 @@
 #include "storage.h"
 
 /*
+ * Stubs to avoid uxpty.c needing to be linked in.
+ */
+const int use_pty_argv = FALSE;
+char **pty_argv;		       /* never used */
+
+/*
  * Clean up and exit.
  */
 void cleanup_exit(int code)
@@ -40,14 +46,14 @@ Backend *select_backend(Config *cfg)
 
 int cfgbox(Config *cfg)
 {
-    return do_config_box("PuTTY Configuration", cfg, 0);
+    return do_config_box("PuTTY Configuration", cfg, 0, 0);
 }
 
 static int got_host = 0;
 
 const int use_event_log = 1, new_session = 1, saved_sessions = 1;
 
-int process_nonoption_arg(char *arg, Config *cfg)
+int process_nonoption_arg(char *arg, Config *cfg, int *allow_launch)
 {
     char *p, *q = arg;
 
@@ -98,6 +104,8 @@ int process_nonoption_arg(char *arg, Config *cfg)
         cfg->host[sizeof(cfg->host) - 1] = '\0';
         got_host = 1;
     }
+    if (got_host)
+	*allow_launch = TRUE;
     return 1;
 }
 

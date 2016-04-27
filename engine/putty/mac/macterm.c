@@ -1,4 +1,4 @@
-/* $Id: macterm.c,v 1.1.1.1.6.2 2004/12/29 11:32:21 pekangas Exp $ */
+/* $Id: macterm.c 6555 2006-02-13 22:18:17Z owen $ */
 /*
  * Copyright (c) 1999 Simon Tatham
  * Copyright (c) 1999, 2002 Ben Harris
@@ -63,14 +63,12 @@
 #include "mac.h"
 #include "terminal.h"
 
-#define NCOLOURS (lenof(((Config *)0)->colours))
-
-#define DEFAULT_FG	16
-#define DEFAULT_FG_BOLD	17
-#define DEFAULT_BG	18
-#define DEFAULT_BG_BOLD	19
-#define CURSOR_FG	20
-#define CURSOR_BG	21
+#define DEFAULT_FG	256
+#define DEFAULT_FG_BOLD	257
+#define DEFAULT_BG	258
+#define DEFAULT_BG_BOLD	259
+#define CURSOR_FG	260
+#define CURSOR_BG	261
 
 #define PTOCC(x) ((x) < 0 ? -(-(x - s->font_width - 1) / s->font_width) : \
 			    (x) / s->font_width)
@@ -89,6 +87,8 @@ static void mac_drawgrowicon(Session *s);
 static pascal void mac_growtermdraghook(void);
 static pascal void mac_scrolltracker(ControlHandle, short);
 static pascal void do_text_for_device(short, short, GDHandle, long);
+static void do_text_internal(Context, int, int, wchar_t *, int,
+			     unsigned long, int);
 static void text_click(Session *, EventRecord *);
 static void mac_activateterm(WindowPtr, EventRecord *);
 static void mac_adjusttermcursor(WindowPtr, Point, RgnHandle);
@@ -307,19 +307,6 @@ static pascal OSStatus uni_to_font_fallback(UniChar *ucp,
 }
 
 /*
- * Called every time round the event loop.
- */
-void mac_pollterm(void)
-{
-    Session *s;
-
-    for (s = sesslist; s != NULL; s = s->next) {
-	term_out(s->term);
-	term_update(s->term);
-    }
-}
-
-/*
  * To be called whenever the window size changes.
  * rows and cols should be desired values.
  * It's assumed the terminal emulator will be informed, and will set rows
@@ -327,14 +314,18 @@ void mac_pollterm(void)
  */
 static void mac_adjustsize(Session *s, int newrows, int newcols) {
     int winwidth, winheight;
+    int extraforscroll;
 
-    winwidth = newcols * s->font_width + 15;
+    extraforscroll=s->cfg.scrollbar ? 15 : 0;
+    winwidth = newcols * s->font_width + extraforscroll;
     winheight = newrows * s->font_height;
     SizeWindow(s->window, winwidth, winheight, true);
-    HideControl(s->scrollbar);
-    MoveControl(s->scrollbar, winwidth - 15, -1);
-    SizeControl(s->scrollbar, 16, winheight - 13);
-    ShowControl(s->scrollbar);
+    if (s->cfg.scrollbar) {
+        HideControl(s->scrollbar);
+        MoveControl(s->scrollbar, winwidth - extraforscroll, -1);
+        SizeControl(s->scrollbar, extraforscroll + 1, winheight - 13);
+        ShowControl(s->scrollbar);
+    }
     mac_drawgrowicon(s);
 }
 
@@ -351,7 +342,7 @@ static void mac_initpalette(Session *s)
 #define PM_NORMAL 	( pmTolerant | pmInhibitC2 |			\
 			  pmInhibitG2 | pmInhibitG4 | pmInhibitG8 )
 #define PM_TOLERANCE	0x2000
-    s->palette = NewPalette(22, NULL, PM_NORMAL, PM_TOLERANCE);
+    s->palette = NewPalette(262, NULL, PM_NORMAL, PM_TOLERANCE);
     if (s->palette == NULL)
 	fatalbox("Unable to create palette");
     /* In 2bpp, these are the colours we want most. */
@@ -469,6 +460,7 @@ static void mac_adjusttermmenus(WindowPtr window)
     menu = GetMenuHandle(mFile);
     DisableItem(menu, iSave); /* XXX enable if modified */
     EnableItem(menu, iSaveAs);
+    EnableItem(menu, iChange);
     EnableItem(menu, iDuplicate);
     menu = GetMenuHandle(mEdit);
     EnableItem(menu, 0);
@@ -603,7 +595,7 @@ static void text_click(Session *s, EventRecord *event)
     lastwhen = TickCount();
 }
 
-void write_clip(void *cookie, wchar_t *data, int len, int must_deselect)
+void write_clip(void *cookie, wchar_t *data, int *attr, int len, int must_deselect)
 {
 #if !TARGET_API_MAC_CARBON
     Session *s = cookie;
@@ -983,6 +975,8 @@ static void mac_growterm(WindowPtr window, EventRecord *event)
 	newcols = (LoWord(grow_result) - 15) / s->font_width;
 	mac_adjustsize(s, newrows, newcols);
 	term_size(s->term, newrows, newcols, s->cfg.savelines);
+	s->cfg.height=s->term->rows;
+	s->cfg.width=s->term->cols;
     }
 }
 
@@ -1018,14 +1012,26 @@ static pascal void mac_growtermdraghook(void)
 
 void mac_closeterm(WindowPtr window)
 {
+    int alertret;
     Session *s = mac_windowsession(window);
 
-    /* XXX warn on close */
+    if (s->cfg.warn_on_close && !s->session_closed) {
+	ParamText("\pAre you sure you want to close this session?",
+		  NULL, NULL, NULL);
+	alertret=CautionAlert(wQuestion, NULL);
+	if (alertret == 2) {
+	    /* Cancel */
+	    return;
+	}
+    }
+
     HideWindow(s->window);
     *s->prev = s->next;
     s->next->prev = s->prev;
-    ldisc_free(s->ldisc);
-    s->back->free(s->backhandle);
+    if (s->ldisc)
+	ldisc_free(s->ldisc);
+    if (s->back)
+	s->back->free(s->backhandle);
     log_free(s->logctx);
     if (s->uni_to_font != NULL)
 	DisposeUnicodeToTextInfo(&s->uni_to_font);
@@ -1043,9 +1049,9 @@ static void mac_activateterm(WindowPtr window, EventRecord *event)
     Boolean active = (event->modifiers & activeFlag) != 0;
 
     s = mac_windowsession(window);
-    s->term->has_focus = active;
+    term_set_focus(s->term, active);
     term_update(s->term);
-    if (active)
+    if (active && s->cfg.scrollbar)
 	ShowControl(s->scrollbar);
     else {
 	if (HAVE_COLOR_QD())
@@ -1139,8 +1145,8 @@ struct do_text_args {
  *
  * x and y are text row and column (zero-based)
  */
-void do_text(Context ctx, int x, int y, wchar_t *text, int len,
-	     unsigned long attr, int lattr)
+static void do_text_internal(Context ctx, int x, int y, wchar_t *text, int len,
+		      unsigned long attr, int lattr)
 {
     Session *s = ctx;
     int style;
@@ -1151,17 +1157,12 @@ void do_text(Context ctx, int x, int y, wchar_t *text, int len,
 #endif
     char mactextbuf[1024];
     wchar_t *unitextptr;
-    int i, fontwidth;
+    int fontwidth;
     ByteCount iread, olen;
     OSStatus err;
     static DeviceLoopDrawingUPP do_text_for_device_upp = NULL;
 
     assert(len <= 1024);
-
-    /* SGT, 2004-10-14: I don't know how to support combining characters
-     * on the Mac. Hopefully the first person to fail this assertion will
-     * know how to do it better than me... */
-    assert(!(attr & TATTR_COMBINING));
 
     SetPort((GrafPtr)GetWindowPort(s->window));
 
@@ -1267,6 +1268,24 @@ void do_text(Context ctx, int x, int y, wchar_t *text, int len,
 #endif
 }
 
+/*
+ * Wrapper that handles combining characters.
+ */
+void do_text(Context ctx, int x, int y, wchar_t *text, int len,
+	     unsigned long attr, int lattr)
+{
+    if (attr & TATTR_COMBINING) {
+	unsigned long a = 0;
+	attr &= ~TATTR_COMBINING;
+	while (len--) {
+	    do_text_internal(ctx, x, y, text, 1, attr | a, lattr);
+	    text++;
+	    a = TATTR_COMBINING;
+	}
+    } else
+	do_text_internal(ctx, x, y, text, len, attr, lattr);
+}
+
 static pascal void do_text_for_device(short depth, short devflags,
 				      GDHandle device, long cookie)
 {
@@ -1287,9 +1306,7 @@ static pascal void do_text_for_device(short depth, short devflags,
     if (HAVE_COLOR_QD()) {
 	if (depth > 2) {
 	    fgcolour = ((a->attr & ATTR_FGMASK) >> ATTR_FGSHIFT);
-	    fgcolour = (fgcolour & 0xF) * 2 + (fgcolour & 0x10 ? 1 : 0);
 	    bgcolour = ((a->attr & ATTR_BGMASK) >> ATTR_BGSHIFT);
-	    bgcolour = (bgcolour & 0xF) * 2 + (bgcolour & 0x10 ? 1 : 0);
 	} else {
 	    /*
 	     * NB: bold reverse in 2bpp breaks with the usual PuTTY model and
@@ -1304,7 +1321,8 @@ static pascal void do_text_for_device(short depth, short devflags,
 	    bgcolour = tmp;
 	}
 	if (bright && depth > 2)
-	    fgcolour |= 1;
+	    if (fgcolour < 16) fgcolour |=8;
+	    else if (fgcolour >= 256) fgcolour |=1;
 	if ((a->attr & TATTR_ACTCURS) && depth > 1) {
 	    fgcolour = CURSOR_FG;
 	    bgcolour = CURSOR_BG;
@@ -1322,7 +1340,8 @@ static pascal void do_text_for_device(short depth, short devflags,
 	}
     }
 
-    EraseRect(&a->textrect);
+    if (!(a->attr & TATTR_COMBINING))
+	EraseRect(&a->textrect);
     switch (a->lattr & LATTR_MODE) {
       case LATTR_NORM:
       case LATTR_WIDE:
@@ -1356,7 +1375,7 @@ static pascal void do_text_for_device(short depth, short devflags,
     }
 }
 
-void do_cursor(Context ctx, int x, int y, char *text, int len,
+void do_cursor(Context ctx, int x, int y, wchar_t *text, int len,
 	     unsigned long attr, int lattr)
 {
 
@@ -1469,7 +1488,7 @@ void sys_cursor(void *frontend, int x, int y)
  * may want to perform additional actions on any kind of bell (for
  * example, taskbar flashing in Windows).
  */
-void beep(void *frontend, int mode)
+void do_beep(void *frontend, int mode)
 {
     if (mode != BELL_VISUAL)
 	SysBeep(30);
@@ -1506,6 +1525,14 @@ void set_title(void *frontend, char *title)
 
     c2pstrcpy(mactitle, title);
     SetWTitle(s->window, mactitle);
+}
+
+/*
+ * Used by backend to indicate busy-ness
+ */
+void set_busy_status(void *frontend, int status)
+{
+    /* FIXME do something */
 }
 
 /*
@@ -1694,19 +1721,13 @@ static void real_palette_set(Session *s, int n, int r, int g, int b)
 void palette_set(void *frontend, int n, int r, int g, int b)
 {
     Session *s = frontend;
-    static const int first[21] = {
-	0, 2, 4, 6, 8, 10, 12, 14,
-	1, 3, 5, 7, 9, 11, 13, 15,
-	16, 17, 18, 20, 21
-    };
     
     if (!HAVE_COLOR_QD())
 	return;
-    real_palette_set(s, first[n], r, g, b);
-    if (first[n] == 18)
-	real_palette_set(s, first[n]+1, r, g, b);
-    if (first[n] == DEFAULT_BG)
-	mac_adjustwinbg(s);
+    real_palette_set(s, n, r, g, b);
+    if (n == DEFAULT_BG)
+    	mac_adjustwinbg(s);
+
     ActivatePalette(s->window);
 }
 
@@ -1718,23 +1739,38 @@ void palette_reset(void *frontend)
     Session *s = frontend;
     /* This maps colour indices in cfg to those used in our palette. */
     static const int ww[] = {
-	6, 7, 8, 9, 10, 11, 12, 13,
-        14, 15, 16, 17, 18, 19, 20, 21,
-	0, 1, 2, 3, 4, 5
+	256, 257, 258, 259, 260, 261,
+	0, 8, 1, 9, 2, 10, 3, 11,
+	4, 12, 5, 13, 6, 14, 7, 15
     };
+
     int i;
 
     if (!HAVE_COLOR_QD())
 	return;
 
-    assert(lenof(ww) == NCOLOURS);
-
-    for (i = 0; i < NCOLOURS; i++) {
-	real_palette_set(s, i,
-			 s->cfg.colours[ww[i]][0],
-			 s->cfg.colours[ww[i]][1],
-			 s->cfg.colours[ww[i]][2]);
+    for (i = 0; i < 22; i++) {
+        int w = ww[i];
+        real_palette_set(s,w,
+			 s->cfg.colours[i][0],
+			 s->cfg.colours[i][1],
+			 s->cfg.colours[i][2]);
     }
+    for (i = 0; i < 240; i++) {
+	if (i < 216) {
+	    int r = i / 36, g = (i / 6) % 6, b = i % 6;
+	    real_palette_set(s,i+16,
+			     r * 0x33,
+			     g * 0x33,
+			     b * 0x33);
+	} else {
+	    int shade = i - 216;
+	    shade = (shade + 1) * 0xFF / (240 - 216 + 1);
+	    real_palette_set(s,i+16,shade,shade,shade);
+	}
+    }
+
+
     mac_adjustwinbg(s);
     ActivatePalette(s->window);
     /* Palette Manager will generate update events as required. */
@@ -1809,6 +1845,12 @@ void ldisc_update(void *frontend, int echo, int edit)
 {
 }
 
+char *get_ttymode(void *frontend, const char *mode)
+{
+    Session *s = frontend;
+    return term_get_ttymode(s->term, mode);
+}
+
 /*
  * Mac PuTTY doesn't support printing yet.
  */
@@ -1841,7 +1883,8 @@ void frontend_keypress(void *handle)
  * Ask whether to wipe a session log file before writing to it.
  * Returns 2 for wipe, 1 for append, 0 for cancel (don't log).
  */
-int askappend(void *frontend, Filename filename)
+int askappend(void *frontend, Filename filename,
+	      void (*callback)(void *ctx, int result), void *ctx)
 {
 
     /* FIXME: not implemented yet. */
@@ -1853,6 +1896,12 @@ int from_backend(void *frontend, int is_stderr, const char *data, int len)
     Session *s = frontend;
 
     return term_data(s->term, is_stderr, data, len);
+}
+
+int get_userpass_input(prompts_t *p, unsigned char *in, int inlen)
+{
+    Session *s = p->frontend;
+    return term_get_userpass_input(s->term, p, in, inlen);
 }
 
 /*

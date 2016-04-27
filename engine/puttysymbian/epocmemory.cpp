@@ -26,10 +26,16 @@ void epoc_memory_free() {
 }
 
 
-void *safemalloc(size_t size)
+void *safemalloc(size_t n, size_t size)
 {
     void *p;
-    p = User::Alloc((TInt)size);
+    if (n > 0x7fffffff / size) {
+	p = NULL;
+    } else {
+	size *= n;
+	if (size == 0) size = 1;
+        p = User::Alloc((TInt)size);
+    }
     if ( !p ) {
         fatalbox("Out of memory");
         exit(1);
@@ -38,16 +44,21 @@ void *safemalloc(size_t size)
     return p;
 }
 
-void *saferealloc(void *ptr, size_t size)
+void *saferealloc(void *ptr, size_t n, size_t size)
 {
     void *p;
     
-    if (!ptr) {
-	p = User::Alloc((TInt)size);
+    if (n > 0x7fffffff / size) {
+	p = NULL;
     } else {
-        p = User::ReAlloc(ptr, (TInt) size);
+	size *= n;
+        if (!ptr) {
+            p = User::Alloc((TInt)size);
+        } else {
+            p = User::ReAlloc(ptr, (TInt) size);
+        }
     }
-    
+        
     if (!p) {
         fatalbox("Out of memory");
         exit(1);

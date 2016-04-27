@@ -3,6 +3,8 @@
  * platform-specific SFTP module.
  */
 
+#include "int64.h"
+
 #ifndef PUTTY_PSFTP_H
 #define PUTTY_PSFTP_H
 
@@ -31,6 +33,19 @@ void get_file_times(char *filename, unsigned long *mtime,
  * process it, once.
  */
 int ssh_sftp_loop_iteration(void);
+
+/*
+ * Read a command line for PSFTP from standard input. Caller must
+ * free.
+ * 
+ * If `backend_required' is TRUE, should also listen for activity
+ * at the backend (rekeys, clientalives, unexpected closures etc)
+ * and respond as necessary, and if the backend closes it should
+ * treat this as a failure condition. If `backend_required' is
+ * FALSE, a back end is not (intentionally) active at all (e.g.
+ * psftp before an `open' command).
+ */
+char *ssh_sftp_get_cmdline(char *prompt, int backend_required);
 
 /*
  * The main program in psftp.c. Called from main() in the platform-
@@ -65,16 +80,15 @@ void gui_enable(char *arg);
  * the times when saving a new file.
  * 
  * On the other hand, the abstraction is pretty simple: it supports
- * only opening a file and reading it, or creating a file and
- * writing it. (FIXME: to use this in PSFTP it will also need to
- * support seeking to a starting point for restarted transfers.)
- * None of this read-and-write, seeking-back-and-forth stuff.
+ * only opening a file and reading it, or creating a file and writing
+ * it. None of this read-and-write, seeking-back-and-forth stuff.
  */
 typedef struct RFile RFile;
 typedef struct WFile WFile;
 /* Output params size, mtime and atime can all be NULL if desired */
-RFile *open_existing_file(char *name, unsigned long *size,
+RFile *open_existing_file(char *name, uint64 *size,
 			  unsigned long *mtime, unsigned long *atime);
+WFile *open_existing_wfile(char *name, uint64 *size);
 /* Returns <0 on error, 0 on eof, or number of bytes read, as usual */
 int read_from_file(RFile *f, void *buffer, int length);
 /* Closes and frees the RFile */
@@ -85,7 +99,11 @@ int write_to_file(WFile *f, void *buffer, int length);
 void set_file_times(WFile *f, unsigned long mtime, unsigned long atime);
 /* Closes and frees the WFile */
 void close_wfile(WFile *f);
-
+/* Seek offset bytes through file */
+enum { FROM_START, FROM_CURRENT, FROM_END };
+int seek_file(WFile *f, uint64 offset, int whence);
+/* Get file position */
+uint64 get_file_posn(WFile *f);
 /*
  * Determine the type of a file: nonexistent, file, directory or
  * weird. `weird' covers anything else - named pipes, Unix sockets,
@@ -135,6 +153,16 @@ WildcardMatcher *begin_wildcard_matching(char *name);
 /* The string returned from this will need freeing if not NULL */
 char *wildcard_get_filename(WildcardMatcher *dir);
 void finish_wildcard_matching(WildcardMatcher *dir);
+
+/*
+ * Vet a filename returned from the remote host, to ensure it isn't
+ * in some way malicious. The idea is that this function is applied
+ * to filenames returned from FXP_READDIR, which means we can panic
+ * if we see _anything_ resembling a directory separator.
+ * 
+ * Returns TRUE if the filename is kosher, FALSE if dangerous.
+ */
+int vet_filename(char *name);
 
 /*
  * Create a directory. Returns 0 on error, !=0 on success.

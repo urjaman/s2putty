@@ -1,4 +1,4 @@
-/* $Id: macpgen.r,v 1.1.1.1 2003/06/02 15:55:41 pekangas Exp $ */
+/* $Id: macpgen.r 7048 2007-01-01 21:19:14Z jacob $ */
 /*
  * Copyright (c) 1999, 2002, 2003 Ben Harris
  * All rights reserved.
@@ -422,7 +422,7 @@ resource 'DITL' (wAbout, "about", purgeable) {
 	StaticText { disabled, "PuTTYgen"},
 	{ 42, 13, 74, 227 },
 	StaticText { disabled, "Some version or other\n"
-			       "Copyright © 1997-9 Simon Tatham"},
+			       "Copyright © 1997-2007 Simon Tatham"},
     }
 };
 
@@ -443,11 +443,12 @@ type 'TEXT' {
 };
 
 resource 'TEXT' (wLicence, "licence", purgeable) {
-    "Copyright 1997-2003 Simon Tatham.\n"
+    "Copyright 1997-2007 Simon Tatham.\n"
     "\n"
-    "Portions copyright Robert de Bath, Joris van Rantwijk, Delian"
-    "Delchev, Andreas Schultz, Jeroen Massar, Wez Furlong, Nicolas Barry,"
-    "Justin Bradford, Ben Harris, and CORE SDI S.A.\n"
+    "Portions copyright Robert de Bath, Joris van Rantwijk, Delian "
+    "Delchev, Andreas Schultz, Jeroen Massar, Wez Furlong, Nicolas Barry, "
+    "Justin Bradford, Ben Harris, Malcolm Smith, Ahmad Khalifa, Markus "
+    "Kuhn, and CORE SDI S.A.\n"
     "\n"    
     "Permission is hereby granted, free of charge, to any person "
     "obtaining a copy of this software and associated documentation "

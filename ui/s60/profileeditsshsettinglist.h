@@ -44,6 +44,11 @@ public:
      */
     ~CProfileEditSshSettingList();
 
+    /** 
+     * Clear the private key setting
+     */
+    void ClearPrivateKey();
+
 
 private: // From CAknSettingItemList
     CAknSettingItem* CreateSettingItemL(TInt aSettingId);
@@ -59,6 +64,7 @@ private:
     TBuf<5> iPortText;
     TFileName iPrivateKey;
     TBool iCompression;
+    TInt iCipher;
     TBuf<5> iKeepaliveText;
     Config *iConfig;
 };

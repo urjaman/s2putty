@@ -12,9 +12,14 @@
 #include <utime.h>
 #include <errno.h>
 #include <assert.h>
+#include <glob.h>
+#ifndef HAVE_NO_SYS_SELECT_H
+#include <sys/select.h>
+#endif
 
 #include "putty.h"
 #include "psftp.h"
+#include "int64.h"
 
 /*
  * In PSFTP our selects are synchronous, so these functions are
@@ -64,17 +69,16 @@ Filename platform_default_filename(const char *name)
     return ret;
 }
 
-/*
- * Stubs for the GUI feedback mechanism in Windows PSCP.
- */
-void gui_update_stats(char *name, unsigned long size,
-		      int percentage, unsigned long elapsed,
-		      unsigned long done, unsigned long eta,
-		      unsigned long ratebs) {}
-void gui_send_errcount(int list, int errs) {}
-void gui_send_char(int is_stderr, int c) {}
-void gui_enable(char *arg) {}
+char *get_ttymode(void *frontend, const char *mode) { return NULL; }
 
+int get_userpass_input(prompts_t *p, unsigned char *in, int inlen)
+{
+    int ret;
+    ret = cmdline_get_passwd_input(p, in, inlen);
+    if (ret == -1)
+	ret = console_get_userpass_input(p, in, inlen);
+    return ret;
+}
 
 /*
  * Set local current directory. Returns NULL on success, or else an
@@ -119,7 +123,7 @@ struct RFile {
     int fd;
 };
 
-RFile *open_existing_file(char *name, unsigned long *size,
+RFile *open_existing_file(char *name, uint64 *size,
 			  unsigned long *mtime, unsigned long *atime)
 {
     int fd;
@@ -140,8 +144,9 @@ RFile *open_existing_file(char *name, unsigned long *size,
 	}
 
 	if (size)
-	    *size = statbuf.st_size;
-
+	    *size = uint64_make((statbuf.st_size >> 16) >> 16,
+				statbuf.st_size);
+	 	
 	if (mtime)
 	    *mtime = statbuf.st_mtime;
 
@@ -180,6 +185,33 @@ WFile *open_new_file(char *name)
     ret = snew(WFile);
     ret->fd = fd;
     ret->name = dupstr(name);
+
+    return ret;
+}
+
+
+WFile *open_existing_wfile(char *name, uint64 *size)
+{
+    int fd;
+    WFile *ret;
+
+    fd = open(name, O_APPEND | O_WRONLY);
+    if (fd < 0)
+	return NULL;
+
+    ret = snew(WFile);
+    ret->fd = fd;
+
+    if (size) {
+	struct stat statbuf;
+	if (fstat(fd, &statbuf) < 0) {
+	    fprintf(stderr, "%s: stat: %s\n", name, strerror(errno));
+	    memset(&statbuf, 0, sizeof(statbuf));
+	}
+
+	*size = uint64_make((statbuf.st_size >> 16) >> 16,
+			    statbuf.st_size);
+    }
 
     return ret;
 }
@@ -223,6 +255,44 @@ void close_wfile(WFile *f)
     close(f->fd);
     sfree(f->name);
     sfree(f);
+}
+
+/* Seek offset bytes through file, from whence, where whence is
+   FROM_START, FROM_CURRENT, or FROM_END */
+int seek_file(WFile *f, uint64 offset, int whence)
+{
+    off_t fileofft;
+    int lseek_whence;
+    
+    fileofft = (((off_t) offset.hi << 16) << 16) + offset.lo;
+
+    switch (whence) {
+    case FROM_START:
+	lseek_whence = SEEK_SET;
+	break;
+    case FROM_CURRENT:
+	lseek_whence = SEEK_CUR;
+	break;
+    case FROM_END:
+	lseek_whence = SEEK_END;
+	break;
+    default:
+	return -1;
+    }
+
+    return lseek(f->fd, fileofft, lseek_whence) >= 0 ? 0 : -1;
+}
+
+uint64 get_file_posn(WFile *f)
+{
+    off_t fileofft;
+    uint64 ret;
+
+    fileofft = lseek(f->fd, (off_t) 0, SEEK_CUR);
+
+    ret = uint64_make((fileofft >> 16) >> 16, fileofft);
+
+    return ret;
 }
 
 int file_type(char *name)
@@ -285,30 +355,71 @@ void close_directory(DirHandle *dir)
 
 int test_wildcard(char *name, int cmdline)
 {
-    /*
-     * On Unix, we currently don't support local wildcards at all.
-     * We will have to do so (FIXME) once PSFTP starts implementing
-     * mput, but until then we can assume `cmdline' is always set.
-     */
     struct stat statbuf;
 
-    assert(cmdline);
-    if (stat(name, &statbuf) < 0)
-	return WCTYPE_NONEXISTENT;
-    else
+    if (stat(name, &statbuf) == 0) {
 	return WCTYPE_FILENAME;
+    } else if (cmdline) {
+	/*
+	 * On Unix, we never need to parse wildcards coming from
+	 * the command line, because the shell will have expanded
+	 * them into a filename list already.
+	 */
+	return WCTYPE_NONEXISTENT;
+    } else {
+	glob_t globbed;
+	int ret = WCTYPE_NONEXISTENT;
+
+	if (glob(name, GLOB_ERR, NULL, &globbed) == 0) {
+	    if (globbed.gl_pathc > 0)
+		ret = WCTYPE_WILDCARD;
+	    globfree(&globbed);
+	}
+
+	return ret;
+    }
 }
 
 /*
- * Actually return matching file names for a local wildcard. FIXME:
- * we currently don't support this at all.
+ * Actually return matching file names for a local wildcard.
  */
 struct WildcardMatcher {
-    int x;
+    glob_t globbed;
+    int i;
 };
-WildcardMatcher *begin_wildcard_matching(char *name) { return NULL; }
-char *wildcard_get_filename(WildcardMatcher *dir) { return NULL; }
-void finish_wildcard_matching(WildcardMatcher *dir) {}
+WildcardMatcher *begin_wildcard_matching(char *name) {
+    WildcardMatcher *ret = snew(WildcardMatcher);
+
+    if (glob(name, 0, NULL, &ret->globbed) < 0) {
+	sfree(ret);
+	return NULL;
+    }
+
+    ret->i = 0;
+
+    return ret;
+}
+char *wildcard_get_filename(WildcardMatcher *dir) {
+    if (dir->i < dir->globbed.gl_pathc) {
+	return dupstr(dir->globbed.gl_pathv[dir->i++]);
+    } else
+	return NULL;
+}
+void finish_wildcard_matching(WildcardMatcher *dir) {
+    globfree(&dir->globbed);
+    sfree(dir);
+}
+
+int vet_filename(char *name)
+{
+    if (strchr(name, '/'))
+	return FALSE;
+
+    if (name[0] == '.' && (!name[1] || (name[1] == '.' && !name[2])))
+	return FALSE;
+
+    return TRUE;
+}
 
 int create_directory(char *name)
 {
@@ -321,55 +432,99 @@ char *dir_file_cat(char *dir, char *file)
 }
 
 /*
- * Wait for some network data and process it.
+ * Do a select() between all currently active network fds and
+ * optionally stdin.
  */
-int ssh_sftp_loop_iteration(void)
+static int ssh_sftp_do_select(int include_stdin, int no_fds_ok)
 {
     fd_set rset, wset, xset;
     int i, fdcount, fdsize, *fdlist;
     int fd, fdstate, rwx, ret, maxfd;
+    long now = GETTICKCOUNT();
 
     fdlist = NULL;
     fdcount = fdsize = 0;
 
-    /* Count the currently active fds. */
-    i = 0;
-    for (fd = first_fd(&fdstate, &rwx); fd >= 0;
-	 fd = next_fd(&fdstate, &rwx)) i++;
-
-    if (i < 1)
-	return -1;		       /* doom */
-
-    /* Expand the fdlist buffer if necessary. */
-    if (i > fdsize) {
-	fdsize = i + 16;
-	fdlist = sresize(fdlist, fdsize, int);
-    }
-
-    FD_ZERO(&rset);
-    FD_ZERO(&wset);
-    FD_ZERO(&xset);
-    maxfd = 0;
-
-    /*
-     * Add all currently open fds to the select sets, and store
-     * them in fdlist as well.
-     */
-    fdcount = 0;
-    for (fd = first_fd(&fdstate, &rwx); fd >= 0;
-	 fd = next_fd(&fdstate, &rwx)) {
-	fdlist[fdcount++] = fd;
-	if (rwx & 1)
-	    FD_SET_MAX(fd, maxfd, rset);
-	if (rwx & 2)
-	    FD_SET_MAX(fd, maxfd, wset);
-	if (rwx & 4)
-	    FD_SET_MAX(fd, maxfd, xset);
-    }
-
     do {
-	ret = select(maxfd, &rset, &wset, &xset, NULL);
-    } while (ret < 0 && errno == EINTR);
+
+	/* Count the currently active fds. */
+	i = 0;
+	for (fd = first_fd(&fdstate, &rwx); fd >= 0;
+	     fd = next_fd(&fdstate, &rwx)) i++;
+
+	if (i < 1 && !no_fds_ok)
+	    return -1;		       /* doom */
+
+	/* Expand the fdlist buffer if necessary. */
+	if (i > fdsize) {
+	    fdsize = i + 16;
+	    fdlist = sresize(fdlist, fdsize, int);
+	}
+
+	FD_ZERO(&rset);
+	FD_ZERO(&wset);
+	FD_ZERO(&xset);
+	maxfd = 0;
+
+	/*
+	 * Add all currently open fds to the select sets, and store
+	 * them in fdlist as well.
+	 */
+	fdcount = 0;
+	for (fd = first_fd(&fdstate, &rwx); fd >= 0;
+	     fd = next_fd(&fdstate, &rwx)) {
+	    fdlist[fdcount++] = fd;
+	    if (rwx & 1)
+		FD_SET_MAX(fd, maxfd, rset);
+	    if (rwx & 2)
+		FD_SET_MAX(fd, maxfd, wset);
+	    if (rwx & 4)
+		FD_SET_MAX(fd, maxfd, xset);
+	}
+
+	if (include_stdin)
+	    FD_SET_MAX(0, maxfd, rset);
+
+	do {
+	    long next, ticks;
+	    struct timeval tv, *ptv;
+
+	    if (run_timers(now, &next)) {
+		ticks = next - GETTICKCOUNT();
+		if (ticks <= 0)
+		    ticks = 1;	       /* just in case */
+		tv.tv_sec = ticks / 1000;
+		tv.tv_usec = ticks % 1000 * 1000;
+		ptv = &tv;
+	    } else {
+		ptv = NULL;
+	    }
+	    ret = select(maxfd, &rset, &wset, &xset, ptv);
+	    if (ret == 0)
+		now = next;
+	    else {
+		long newnow = GETTICKCOUNT();
+		/*
+		 * Check to see whether the system clock has
+		 * changed massively during the select.
+		 */
+		if (newnow - now < 0 || newnow - now > next - now) {
+		    /*
+		     * If so, look at the elapsed time in the
+		     * select and use it to compute a new
+		     * tickcount_offset.
+		     */
+		    long othernow = now + tv.tv_sec * 1000 + tv.tv_usec / 1000;
+		    /* So we'd like GETTICKCOUNT to have returned othernow,
+		     * but instead it return newnow. Hence ... */
+		    tickcount_offset += othernow - newnow;
+		    now = othernow;
+		} else {
+		    now = newnow;
+		}
+	    }
+	} while (ret < 0 && errno != EINTR);
+    } while (ret == 0);
 
     if (ret < 0) {
 	perror("select");
@@ -393,7 +548,58 @@ int ssh_sftp_loop_iteration(void)
 
     sfree(fdlist);
 
-    return 0;
+    return FD_ISSET(0, &rset) ? 1 : 0;
+}
+
+/*
+ * Wait for some network data and process it.
+ */
+int ssh_sftp_loop_iteration(void)
+{
+    return ssh_sftp_do_select(FALSE, FALSE);
+}
+
+/*
+ * Read a PSFTP command line from stdin.
+ */
+char *ssh_sftp_get_cmdline(char *prompt, int no_fds_ok)
+{
+    char *buf;
+    int buflen, bufsize, ret;
+
+    fputs(prompt, stdout);
+    fflush(stdout);
+
+    buf = NULL;
+    buflen = bufsize = 0;
+
+    while (1) {
+	ret = ssh_sftp_do_select(TRUE, no_fds_ok);
+	if (ret < 0) {
+	    printf("connection died\n");
+	    return NULL;	       /* woop woop */
+	}
+	if (ret > 0) {
+	    if (buflen >= bufsize) {
+		bufsize = buflen + 512;
+		buf = sresize(buf, bufsize, char);
+	    }
+	    ret = read(0, buf+buflen, 1);
+	    if (ret < 0) {
+		perror("read");
+		return NULL;
+	    }
+	    if (ret == 0) {
+		/* eof on stdin; no error, but no answer either */
+		return NULL;
+	    }
+
+	    if (buf[buflen++] == '\n') {
+		/* we have a full line */
+		return buf;
+	    }
+	}
+    }
 }
 
 /*

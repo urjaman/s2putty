@@ -16,6 +16,7 @@
 #include <stringloader.h>
 #include <aknnotewrappers.h>
 #include <aknlists.h>
+#include <baclipb.h>
 #include "terminalview.h"
 #include "terminalcontainer.h"
 #include "puttyappui.h"
@@ -218,6 +219,118 @@ void CTerminalView::HandleCommandL(TInt aCommand) {
             SetFontL();
             break;
         }
+
+        case EPuttyCmdSelect:
+            if ( iState == EStateConnected ) {
+                // activate selection (if not active)
+                if ( !iSelection ) {
+                    iSelection = ETrue;
+                    iContainer->Terminal().SetSelectMode(ETrue);
+                    iMark = EFalse;
+                    CEikButtonGroupContainer::Current()->
+                        SetCommandSetL(R_AVKON_SOFTKEYS_OPTIONS_CANCEL);
+                    CEikButtonGroupContainer::Current()->DrawDeferred();
+                } else {
+                    // selection already active -- stop
+                    iSelection = EFalse;
+                    iMark = EFalse;
+                    iContainer->Terminal().RemoveMark();
+                    iContainer->Terminal().SetSelectMode(EFalse);
+                    CEikButtonGroupContainer::Current()->
+                        SetCommandSetL(R_PUTTY_TERMINAL_SOFTKEYS);
+                    CEikButtonGroupContainer::Current()->DrawDeferred();
+                }
+            }
+            break;
+
+        case EPuttyCmdMark:
+            if ( (iState == EStateConnected) && iSelection ) {
+                iContainer->Terminal().SetMark();
+                iMark = ETrue;
+            }
+            break;
+
+        case EPuttyCmdCopy:
+            if ( (iState == EStateConnected) && iMark ) {
+                // get selection
+                const HBufC *text = iContainer->Terminal().CopySelectionLC();
+                if ( text->Length() > 0 ) {
+                    // put selection on clipboard
+                    CClipboard* cb = CClipboard::NewForWritingLC(
+                        CCoeEnv::Static()->FsSession());
+                    cb->StreamDictionary().At(KClipboardUidTypePlainText);    			 
+                    CPlainText *plainText = CPlainText::NewL();
+                    CleanupStack::PushL(plainText);    			 
+                    plainText->InsertL(0, *text);    				    			 
+                    plainText->CopyToStoreL(cb->Store(),
+                                            cb->StreamDictionary(),
+                                            0,
+                                            plainText->DocumentLength());    			 
+                    CleanupStack::PopAndDestroy(); // plainText
+                    cb->CommitL();
+                    CleanupStack::PopAndDestroy(); // cb
+                }
+                CleanupStack::PopAndDestroy(); // text
+            }
+            // terminate selection mode
+            iSelection = EFalse;
+            iMark = EFalse;
+            iContainer->Terminal().RemoveMark();
+            iContainer->Terminal().SetSelectMode(EFalse);
+            CEikButtonGroupContainer::Current()->
+                SetCommandSetL(R_PUTTY_TERMINAL_SOFTKEYS);
+            CEikButtonGroupContainer::Current()->DrawDeferred();
+            break;
+        	
+        case EPuttyCmdPaste:
+            if ( iState == EStateConnected ) {
+                // get text from clipboard
+                CPlainText *plainText = CPlainText::NewL();
+                CleanupStack::PushL(plainText);
+                
+            	CClipboard* cb = CClipboard::NewForReadingL(
+                    CCoeEnv::Static()->FsSession());
+            	CleanupStack::PushL(cb);
+            	cb->StreamDictionary().At(KClipboardUidTypePlainText);
+
+            	plainText->PasteFromStoreL(cb->Store(), cb->StreamDictionary(),
+                                           0);
+
+            	// paste text (if any) to terminal
+            	if ( plainText->DocumentLength() > 0 ) {
+                    HBufC *buf = HBufC::NewLC(plainText->DocumentLength());
+                    TPtr ptr = buf->Des();
+                    plainText->Extract(ptr, 0, plainText->DocumentLength());
+
+                    int i = 0;
+                    int len = ptr.Length();
+                    while ( i < len ) {
+                        TKeyCode key = (TKeyCode)ptr[i++];
+                        if ( (key == (TKeyCode)CEditableText::ELineBreak) ||
+                             (key == (TKeyCode)CEditableText::EParagraphDelimiter)) {
+                            iPutty->SendKeypress(EKeyEnter, 0);
+                        } else {
+                            iPutty->SendKeypress(key, 0);
+                        }
+                    }
+                    CleanupStack::PopAndDestroy(); // buf                    
+            	}
+            	CleanupStack::PopAndDestroy(2); // cb, plainText
+            }
+            break;
+
+        case EAknSoftkeyCancel:
+            // Cancel selection
+            if ( iSelection ) {
+                iSelection = EFalse;
+                iMark = EFalse;
+                iContainer->Terminal().RemoveMark();
+                iContainer->Terminal().SetSelectMode(EFalse);
+                CEikButtonGroupContainer::Current()->
+                    SetCommandSetL(R_PUTTY_TERMINAL_SOFTKEYS);
+                CEikButtonGroupContainer::Current()->DrawDeferred();
+            }
+            break;
         
         default:
             // Handle standard "Send Key X" commands
@@ -352,8 +465,12 @@ void CTerminalView::DoDeactivate() {
 
 
 // CAknView::DynInitMenuPaneL
-void CTerminalView::DynInitMenuPaneL(TInt /*aResourceId*/,
-                                     CEikMenuPane * /*aMenuPane*/) {
+void CTerminalView::DynInitMenuPaneL(TInt aResourceId,
+                                     CEikMenuPane *aMenuPane) {
+    if ( aResourceId == R_PUTTY_EDIT_MENU ) {
+        aMenuPane->SetItemDimmed(EPuttyCmdMark, !iSelection);
+        aMenuPane->SetItemDimmed(EPuttyCmdCopy, !(iSelection && iMark));
+    }
 }
 
 
@@ -579,6 +696,20 @@ void CTerminalView::SetFontL() {
 }
 
 
+// Handle Enter (center of joystick) key press
+TBool CTerminalView::HandleEnterL() {
+    if ( iSelection && iMark ) {
+        // Have a selection -- copy it
+        HandleCommandL(EPuttyCmdCopy);
+        return ETrue;
+    } else if ( iSelection ) {
+        // In selection mode but no selection yet -- drop a mark
+        HandleCommandL(EPuttyCmdMark);
+        return ETrue;
+    }
+    return EFalse;
+}
+
 
 // MPuttyClient::FatalError
 void CTerminalView::FatalError(const TDesC &aMessage) {
@@ -701,9 +832,9 @@ MPuttyClient::THostKeyResponse CTerminalView::HostKeyDialogL(
 
 // MPuttyClient::AcceptCipher()
 TBool CTerminalView::AcceptCipher(const TDesC &aCipherName,
-                                TCipherDirection aDirection) {
+                                  const TDesC &aCipherType) {
     TBool resp = EFalse;
-    TRAPD(error, resp = AcceptCipherL(aCipherName, aDirection));
+    TRAPD(error, resp = AcceptCipherL(aCipherName, aCipherType));
     if ( error != KErrNone ) {
         User::Panic(KFatalErrorPanic, error);
     }
@@ -712,40 +843,22 @@ TBool CTerminalView::AcceptCipher(const TDesC &aCipherName,
 
 
 TBool CTerminalView::AcceptCipherL(const TDesC &aCipherName,
-                                 TCipherDirection aDirection) {
+                                  const TDesC &aCipherType) {
     
     CEikonEnv *env = CEikonEnv::Static();
 
     HBufC *fmt = env->AllocReadResourceLC(R_PUTTY_STR_ACCEPT_CIPHER_DLG_FMT);
-    HBufC *dir = NULL;
-
-    switch ( aDirection ) {
-        case EBothDirections:
-            dir = env->AllocReadResourceLC(R_PUTTY_STR_ACCEPT_CIPHER_DIR_BOTH);
-            break;
-
-        case EClientToServer:
-            dir = env->AllocReadResourceLC(
-                R_PUTTY_STR_ACCEPT_CIPHER_CLIENT_TO_SERVER);
-            break;
-
-        case EServerToClient:
-            dir = env->AllocReadResourceLC(
-                R_PUTTY_STR_ACCEPT_CIPHER_SERVER_TO_CLIENT);
-            break;
-
-        default:
-            assert(EFalse);
-    }
 
     HBufC *contents = HBufC::NewLC(fmt->Length() +
-                                   aCipherName.Length() + dir->Length());
-    contents->Des().Format(*fmt, &aCipherName, dir);
+                                   aCipherName.Length() +
+                                   aCipherType.Length());
+    contents->Des().Format(*fmt, &aCipherType, &aCipherName);
 
-    TBool res = CAknQueryDialog::NewL()->ExecuteLD(
-        R_PUTTY_ACCEPT_WEAK_CIPHER_DIALOG);
+    CAknQueryDialog *dlg = CAknQueryDialog::NewL();
+    dlg->SetPromptL(*contents);
+    TBool res = dlg->ExecuteLD(R_PUTTY_CIPHER_QUERY_DIALOG);
 
-    CleanupStack::PopAndDestroy(3); // contents, dir, fmt
+    CleanupStack::PopAndDestroy(2); // contents, fmt
     return res;
 }
 
@@ -779,13 +892,17 @@ TBool CTerminalView::AuthenticationPromptL(const TDesC &aPrompt, TDes &aTarget,
 // MTerminalObserver::TerminalSizeChanged()
 void CTerminalView::TerminalSizeChanged(TInt aWidth, TInt aHeight) {
     assert((aWidth > 1) && (aHeight > 1));
-    iPutty->SetTerminalSize(aWidth, aHeight);
+    if ( iPutty ) {
+        iPutty->SetTerminalSize(aWidth, aHeight);
+    }
 }
 
 
 // MTerminalObserver::KeyPressed();
-void CTerminalView::KeyPressed(TKeyCode aCode, TUint aModifiers) {    
-    iPutty->SendKeypress(aCode, aModifiers);
+void CTerminalView::KeyPressed(TKeyCode aCode, TUint aModifiers) {
+    if ( iPutty ) {
+        iPutty->SendKeypress(aCode, aModifiers);
+    }
 }
 
 

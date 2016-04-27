@@ -68,6 +68,7 @@ struct termline {
 struct bidi_cache_entry {
     int width;
     struct termchar *chars;
+    int *forward, *backward;	       /* the permutations of line positions */
 };
 
 struct terminal_tag {
@@ -78,8 +79,9 @@ struct terminal_tag {
     tree234 *screen;		       /* lines on primary screen */
     tree234 *alt_screen;	       /* lines on alternate screen */
     int disptop;		       /* distance scrolled back (0 or -ve) */
-    int tempsblines;		       /* number of lines in temporary
-					  scrollback */
+    int tempsblines;		       /* number of lines of .scrollback that
+					  can be retrieved onto the terminal
+					  ("temporary scrollback") */
 
     termline **disptext;	       /* buffer of text on real screen */
     int dispcursx, dispcursy;	       /* location of cursor on real screen */
@@ -117,7 +119,7 @@ struct terminal_tag {
     int cursor_on;		       /* cursor enabled flag */
     int reset_132;		       /* Flag ESC c resets to 80 cols */
     int use_bce;		       /* Use Background coloured erase */
-    int blinker;		       /* When blinking is the cursor on ? */
+    int cblinker;		       /* When blinking is the cursor on ? */
     int tblinker;		       /* When the blinking text is on */
     int blink_is_real;		       /* Actually blink blinking text */
     int term_echoing;		       /* Does terminal want local echo? */
@@ -133,17 +135,21 @@ struct terminal_tag {
     bufchain printer_buf;	       /* buffered data for printer */
     printer_job *print_job;
 
+    /* ESC 7 saved state for the alternate screen */
+    pos alt_savecurs;
+    int alt_save_attr;
+    int alt_save_cset, alt_save_csattr;
+    int alt_save_utf, alt_save_wnext;
+    int alt_save_sco_acs;
+
     int rows, cols, savelines;
     int has_focus;
     int in_vbell;
-    unsigned long vbell_startpoint;
+    long vbell_end;
     int app_cursor_keys, app_keypad_keys, vt52_mode;
     int repeat_off, cr_lf_return;
     int seen_disp_event;
     int big_cursor;
-
-    long last_blink;		       /* used for real blinking control */
-    long last_tblink;
 
     int xterm_mouse;		       /* send mouse messages to app */
     int mouse_is_down;		       /* used while tracking mouse buttons */
@@ -244,6 +250,19 @@ struct terminal_tag {
      * through.
      */
     int in_term_out;
+
+    /*
+     * We schedule a window update shortly after receiving terminal
+     * data. This tracks whether one is currently pending.
+     */
+    int window_update_pending;
+    long next_update;
+
+    /*
+     * Track pending blinks and tblinks.
+     */
+    int tblink_pending, cblink_pending;
+    long next_tblink, next_cblink;
 
     /*
      * These are buffers used by the bidi and Arabic shaping code.

@@ -150,14 +150,19 @@ TKeyResponse CTerminalContainer::OfferKeyEventL(const TKeyEvent &aKeyEvent,
     if ( aType == EEventKey ) {
         switch ( aKeyEvent.iScanCode ) {
             case EStdKeyDevice3: { // Center of joystick
-                // Send an Enter event to the terminal
-                TKeyEvent event;
-                event.iCode = EKeyEnter;
-                event.iModifiers = 0;
-                event.iRepeats = 0;
-                event.iScanCode = EStdKeyEnter;
-                iTerminal->OfferKeyEventL(event, EEventKey);
-                return EKeyWasConsumed;
+                // Check if the view wishes to handle this (for copy/paste)
+                if ( iView->HandleEnterL() ) {
+                    return EKeyWasConsumed;
+                } else {                
+                    // Send an Enter event to the terminal
+                    TKeyEvent event;
+                    event.iCode = EKeyEnter;
+                    event.iModifiers = 0;
+                    event.iRepeats = 0;
+                    event.iScanCode = EStdKeyEnter;
+                    iTerminal->OfferKeyEventL(event, EEventKey);
+                    return EKeyWasConsumed;
+                }
             }
                 
             case EStdKeyDial:

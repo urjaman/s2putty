@@ -71,3 +71,5 @@ LIBRARY		aknskins.lib aknskinsrv.lib aknswallpaperutils.lib
 LIBRARY		esock.lib
 LIBRARY		commondialogs.lib
 LIBRARY		puttyengine.lib
+LIBRARY		etext.lib
+LIBRARY		estor.lib

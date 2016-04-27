@@ -1,26 +1,39 @@
         PuTTY for Symbian OS
         --------------------
 
-Version 1.5 beta 1, 4 March 2008
+Version 1.5 Beta 2, 20 December 2008
 
 Copyright 2002-2008 Petteri Kangaslampi
 Portions copyright 2003-2004 Sergei Khloupnov.
-Based on PuTTY 0.56 beta, Copyright 1997-2004 Simon Tatham.
+Based on PuTTY 0.60, Copyright 1997-2007 Simon Tatham.
 See license.txt for full copyright and license information.
 
 
 Introduction
 ------------
 
-This package is a fresh beta release of PuTTY SSH client for Symbian
-OS based smartphones. As a beta release it is expected to be
-reasonably stable, but can still have bugs, missing functionality, and
-general rough edges.
+This package is a new beta release of PuTTY SSH client for Symbian OS
+based smartphones. Even though it is a beta release, it is expected to
+be stable and complete, and will most likely be used to build a final
+1.5 release in a few weeks.
 
-The previous beta release, 1.4 beta 1, is now almost two years old,
-and there have been a large number of changes since then. To reflect
-this, this release has been numbered 1.5 beta 1. For a brief list of
-changes, see the "Changes" section below.
+The largest difference compared to 1.5 beta 1 is that the PuTTY core
+has been upgraded to version 0.60. Among other changes the new core
+has a better terminal update logic, which should improve battery life,
+and should also fix color problems reported in earlier
+versions. Additionally, this release adds much-requested clipboard
+support to S60. There have also been a number of other changes, see
+the "Changes" section below.
+
+Note that starting with 1.5 Beta 2 PuTTY can use full 256-bit keys
+with the AES encryption algorithm. This slows down key exchange
+considerably, and especially on slower handsets it may appear PuTTY
+hangs before it prompts you for the password. To avoid this, PuTTY now
+uses 128-bit Blowfish as the default cipher, which should reduce CPU
+use in other cases too. However, if you have a previous installation,
+existing profiles will continue to use 256-bit AES, and will therefore
+work more slowly. To update existing profiles to use Blowfish, change
+the preferred cipher on the SSH settings page.
 
 PuTTY is distributed in two different packages, one for S60 third
 edition, and one for Series 80 phones. Make sure you use the correct
@@ -51,7 +64,7 @@ self-signed certificate. To be able to verify the packages, you'll
 need to install the certificate to the device. The steps needed are:
 
 1. Fetch the certificate from
-   http://www.s2.org/~pekangas/petteri_s80_2008_der and unzip it.
+   http://www.s2.org/~pekangas/petteri_s80_2008_der.zip and unzip it.
 
 2. Verify the certificate. Its MD5 sum is
    652a37da35fb97cde1a31a6c8af040cf. A PGP signature is available at
@@ -105,6 +118,16 @@ from the e.g. the Messages Inbox or using the file manager.
 Changes
 -------
 
+Main changes since 1.5 beta 1:
+- Updated to PuTTY 0.60 core
+- Default cipher is now 128-bit Blowfish, and the cipher can be
+  changed from the SSH settings page.
+- Fixed the send grid to work properly on S60 3.1, and to handle the
+  E71 keyboard
+- S60 settings view can now clear the private key, fixing bug 1930543.
+- Copy/paste support for S60, thanks to a patch from Thomas Grenman
+- A proper icon for S60 3rd ed, from James Nash
+
 Main changes since 1.4 beta 1:
 - Support for different character encodings, most notably UTF-8
 - S80 settings improvements: Settings are stored as profiles, and the
@@ -128,8 +151,6 @@ Future plans
 
 Changes planned for 1.5 final:
 - Fix bugs
-- Update to the latest PuTTY engine core
-- Possibly copy/paste support for S60
 - Any good ideas? Contact me, preferably with patches
 
 
@@ -159,6 +180,8 @@ Keresztfavli. Especially the network code, noise generation, and
 storage implementation borrow heavily from SyOSsh.
 
 The original S60 port was written by Sergei Khloupnov.
+
+S60 3rd ed icon by James Nash <http://cirrus.twiddles.com/>
 
 Obviously this program wouldn't exist without the original PuTTY SSH
 client by Simon Tatham and others. Many thanks for writing such an

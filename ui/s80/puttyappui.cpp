@@ -837,10 +837,10 @@ MPuttyClient::THostKeyResponse CPuttyAppUi::HostKeyDialogL(
 
 // MPuttyClient::AcceptCipher()
 TBool CPuttyAppUi::AcceptCipher(const TDesC &aCipherName,
-                                TCipherDirection aDirection) {
+                                const TDesC &aCipherUsage) {
     TBool resp = EFalse;
     TRAPD(error, resp = AcceptCipherL(aCipherName,
-                                      aDirection));
+                                      aCipherUsage));
     if ( error != KErrNone ) {
         User::Panic(*iFatalErrorPanic, error);
     }
@@ -848,40 +848,20 @@ TBool CPuttyAppUi::AcceptCipher(const TDesC &aCipherName,
 }
 
 TBool CPuttyAppUi::AcceptCipherL(const TDesC &aCipherName,
-                                 TCipherDirection aDirection) {
+                                 const TDesC &aCipherUsage) {
     
     CEikonEnv *env = CEikonEnv::Static();
 
     HBufC *title = env->AllocReadResourceLC(R_STR_ACCEPT_CIPHER_TITLE);
     HBufC *fmt = env->AllocReadResourceLC(R_STR_ACCEPT_CIPHER_DLG_FMT);
-    HBufC *dir = NULL;
-
-    switch ( aDirection ) {
-        case EBothDirections:
-            dir = env->AllocReadResourceLC(R_STR_ACCEPT_CIPHER_DIR_BOTH);
-            break;
-
-        case EClientToServer:
-            dir = env->AllocReadResourceLC(
-                R_STR_ACCEPT_CIPHER_CLIENT_TO_SERVER);
-            break;
-
-        case EServerToClient:
-            dir = env->AllocReadResourceLC(
-                R_STR_ACCEPT_CIPHER_SERVER_TO_CLIENT);
-            break;
-
-        default:
-            assert(EFalse);
-    }
 
     HBufC *contents = HBufC::NewLC(fmt->Length() + aCipherName.Length() +
-                                   dir->Length());
-    contents->Des().Format(*fmt, &aCipherName, dir);
+                                   aCipherUsage.Length());
+    contents->Des().Format(*fmt, &aCipherUsage, &aCipherName);
 
     TBool res = CCknConfirmationDialog::RunDlgLD(*title, *contents);
 
-    CleanupStack::PopAndDestroy(4); // contents, fir, fmt, title
+    CleanupStack::PopAndDestroy(3); // contents, fmt, title
 
     return res;
 }

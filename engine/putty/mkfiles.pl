@@ -12,6 +12,8 @@
 #    are hardwired, and also the libraries are fixed. This is
 #    mainly because I was too scared to go anywhere near it.
 #  - sbcsgen.pl is still run at startup.
+#
+# FIXME: no attempt made to handle !forceobj in the project files.
 
 use FileHandle;
 use Cwd;
@@ -51,15 +53,18 @@ while (<IN>) {
   if ($_[0] eq "!name") { $project_name = $_[1]; next; }
   if ($_[0] eq "!srcdir") { push @srcdirs, $_[1]; next; }
   if ($_[0] eq "!makefile" and &mfval($_[1])) { $makefiles{$_[1]}=$_[2]; next;}
+  if ($_[0] eq "!specialobj" and &mfval($_[1])) { $specialobj{$_[1]}->{$_[2]} = 1; next;}
+  if ($_[0] eq "!forceobj") { $forceobj{$_[1]} = 1; next; }
   if ($_[0] eq "!begin") {
       if (&mfval($_[1])) {
-	  $divert = \$makefile_extra{$_[1]};
+          $sect = $_[2] ? $_[2] : "end";
+	  $divert = \($makefile_extra{$_[1]}->{$sect});
       } else {
 	  $divert = \$dummy;
       }
       next;
   }
-  # If we're gathering help text, keep doing so.
+  # If we're gathering help/verbatim text, keep doing so.
   if (defined $divert) { ${$divert} .= "$_\n"; next; }
   # Ignore blank lines.
   next if scalar @_ == 0;
@@ -91,8 +96,8 @@ while (<IN>) {
     if ($groups{$i}) {
       foreach $j (@{$groups{$i}}) { unshift @objs, $j; }
     } elsif (($i eq "[G]" or $i eq "[C]" or $i eq "[M]" or
-              $i eq "[X]" or $i eq "[U]") and defined $prog) {
-      $type = substr($i,1,1);
+              $i eq "[X]" or $i eq "[U]" or $i eq "[MX]") and defined $prog) {
+      $type = substr($i,1,(length $i)-2);
     } else {
       push @$listref, $i;
     }
@@ -121,7 +126,8 @@ foreach $i (@prognames) {
           sort @{$programs{$i}};
   $programs{$i} = [@list];
   foreach $j (@list) {
-    # Dependencies for "x" start with "x.c".
+    # Dependencies for "x" start with "x.c" or "x.m" (depending on
+    # which one exists).
     # Dependencies for "x.res" start with "x.rc".
     # Dependencies for "x.rsrc" start with "x.r".
     # Both types of file are pushed on the list of files to scan.
@@ -134,10 +140,9 @@ foreach $i (@prognames) {
       $file = "$1.r";
       $depends{$j} = [$file];
       push @scanlist, $file;
-    } elsif ($j =~ /\.lib$/) {
-      # libraries don't have dependencies
-    } else {
+    } elsif ($j !~ /\./) {
       $file = "$j.c";
+      $file = "$j.m" unless &findfile($file);
       $depends{$j} = [$file];
       push @scanlist, $file;
     }
@@ -151,9 +156,11 @@ foreach $i (@prognames) {
 # added back on to @scanlist to be scanned in turn (if not already
 # done).
 #
-# Resource scripts (.rc) can also include a file by means of a line
-# ending `ICON "filename"'. Files included by this method are not
-# added to @scanlist because they can never include further files.
+# Resource scripts (.rc) can also include a file by means of:
+#  - a line # ending `ICON "filename"';
+#  - a line ending `RT_MANIFEST "filename"'.
+# Files included by this method are not added to @scanlist because
+# they can never include further files.
 #
 # In this pass we write out a hash %further which maps a source
 # file name into a listref containing further source file names.
@@ -173,8 +180,8 @@ while (scalar @scanlist > 0) {
       push @scanlist, $1;
       next;
     };
-    /ICON\s+\"([^\"]+)\"\s*$/ and do {
-      push @{$further{$file}}, $1;
+    /(RT_MANIFEST|ICON)\s+\"([^\"]+)\"\s*$/ and do {
+      push @{$further{$file}}, $2;
       next;
     }
   }
@@ -208,7 +215,8 @@ sub mfval($) {
     # Returns true if the argument is a known makefile type. Otherwise,
     # prints a warning and returns false;
     if (grep { $type eq $_ }
-	("vc","vcproj","cygwin","borland","lcc","gtk","mpw")) {
+	("vc","vcproj","cygwin","borland","lcc","devcppproj","gtk","ac","mpw",
+	 "osx",)) {
 	    return 1;
 	}
     warn "$.:unknown makefile type '$type'\n";
@@ -221,8 +229,14 @@ sub dirpfx {
     my ($path) = shift @_;
     my ($sep) = shift @_;
     my $ret = "", $i;
-    while (($i = index $path, $sep) >= 0) {
-	$path = substr $path, ($i + length $sep);
+
+    while (($i = index $path, $sep) >= 0 ||
+	   ($j = index $path, "/") >= 0) {
+        if ($i >= 0 and ($j < 0 or $i < $j)) {
+	    $path = substr $path, ($i + length $sep);
+	} else {
+	    $path = substr $path, ($j + 1);
+	}
 	$ret .= "..$sep";
     }
     return $ret;
@@ -230,14 +244,17 @@ sub dirpfx {
 
 sub findfile {
   my ($name) = @_;
-  my $dir, $i, $outdir = "";
+  my $dir;
+  my $i;
+  my $outdir = undef;
   unless (defined $findfilecache{$name}) {
     $i = 0;
     foreach $dir (@srcdirs) {
       $outdir = $dir, $i++ if -f "$dir$name";
+      $outdir=~s/^\.\///;
     }
     die "multiple instances of source file $name\n" if $i > 1;
-    $findfilecache{$name} = $outdir . $name;
+    $findfilecache{$name} = (defined $outdir ? $outdir . $name : undef);
   }
   return $findfilecache{$name};
 }
@@ -255,12 +272,25 @@ sub objects {
     } elsif ($i =~ /^(.*)\.lib/) {
       $y = $1;
       ($x = $ltmpl) =~ s/X/$y/;
-    } else {
+    } elsif ($i !~ /\./) {
       ($x = $otmpl) =~ s/X/$i/;
     }
     push @ret, $x if $x ne "";
   }
   return join " ", @ret;
+}
+
+sub special {
+  my ($prog, $suffix) = @_;
+  my @ret;
+  my ($i, $x, $y);
+  @ret = ();
+  foreach $i (@{$programs{$prog}}) {
+    if (substr($i, (length $i) - (length $suffix)) eq $suffix) {
+      push @ret, $i;
+    }
+  }
+  return (scalar @ret) ? (join " ", @ret) : undef;
 }
 
 sub splitline {
@@ -270,7 +300,8 @@ sub splitline {
   $splitchar = (defined $splitchar ? $splitchar : '\\');
   while (length $line > $len) {
     $line =~ /^(.{0,$len})\s(.*)$/ or $line =~ /^(.{$len,}?\s(.*)$/;
-    $result .= $1 . " ${splitchar}\n\t\t";
+    $result .= $1;
+    $result .= " ${splitchar}\n\t\t" if $2 ne '';
     $line = $2;
     $len = 60;
   }
@@ -278,12 +309,13 @@ sub splitline {
 }
 
 sub deps {
-  my ($otmpl, $rtmpl, $prefix, $dirsep, $depchar, $splitchar) = @_;
+  my ($otmpl, $rtmpl, $prefix, $dirsep, $mftyp, $depchar, $splitchar) = @_;
   my ($i, $x, $y);
   my @deps, @ret;
   @ret = ();
   $depchar ||= ':';
   foreach $i (sort keys %depends) {
+    next if $specialobj{$mftyp}->{$i};
     if ($i =~ /^(.*)\.(res|rsrc)/) {
       next if !defined $rtmpl;
       $y = $1;
@@ -297,7 +329,7 @@ sub deps {
       s/\//$dirsep/g;
       $_ = $prefix . $_;
     } @deps;
-    push @ret, {obj => $x, deps => [@deps]};
+    push @ret, {obj => $x, obj_orig => $i, deps => [@deps]};
   }
   return @ret;
 }
@@ -309,7 +341,7 @@ sub prognames {
   @ret = ();
   foreach $n (@prognames) {
     ($prog, $type) = split ",", $n;
-    push @ret, $n if index($types, $type) >= 0;
+    push @ret, $n if index(":$types:", ":$type:") >= 0;
   }
   return @ret;
 }
@@ -321,7 +353,7 @@ sub progrealnames {
   @ret = ();
   foreach $n (@prognames) {
     ($prog, $type) = split ",", $n;
-    push @ret, $prog if index($types, $type) >= 0;
+    push @ret, $prog if index(":$types:", ":$type:") >= 0;
   }
   return @ret;
 }
@@ -330,7 +362,7 @@ sub manpages {
   my ($types,$suffix) = @_;
 
   # assume that all UNIX programs have a man page
-  if($suffix eq "1" && $types =~ /X/) {
+  if($suffix eq "1" && $types =~ /:X:/) {
     return map("$_.1", &progrealnames($types));
   }
   return ();
@@ -348,7 +380,7 @@ if (defined $makefiles{'cygwin'}) {
     "#\n# This file was created by `mkfiles.pl' from the `Recipe' file.\n".
     "# DO NOT EDIT THIS FILE DIRECTLY; edit Recipe or mkfiles.pl instead.\n";
     # gcc command line option is -D not /D
-    ($_ = $help) =~ s/=\/D/=-D/gs;
+    ($_ = $help) =~ s/([=" ])\/D/\1-D/gs;
     print $_;
     print
     "\n".
@@ -364,24 +396,20 @@ if (defined $makefiles{'cygwin'}) {
     "# RCINC = --include-dir c:\\cygwin\\include\\\n".
     "\n".
     &splitline("CFLAGS = -mno-cygwin -Wall -O2 -D_WINDOWS -DDEBUG -DWIN32S_COMPAT".
-      " -D_NO_OLDNAMES -DNO_MULTIMON " .
+      " -D_NO_OLDNAMES -DNO_MULTIMON -DNO_HTMLHELP " .
 	       (join " ", map {"-I$dirpfx$_"} @srcdirs)) .
 	       "\n".
     "LDFLAGS = -mno-cygwin -s\n".
     &splitline("RCFLAGS = \$(RCINC) --define WIN32=1 --define _WIN32=1".
-      " --define WINVER=0x0400 --define MINGW32_FIX=1")."\n".
+      " --define WINVER=0x0400")."\n".
+    "\n".
+    $makefile_extra{'cygwin'}->{'vars'} .
     "\n".
     ".SUFFIXES:\n".
-    "\n".
-    "%.o: %.c\n".
-    "\t\$(CC) \$(COMPAT) \$(FWHACK) \$(XFLAGS) \$(CFLAGS) -c \$<\n".
-    "\n".
-    "%.res.o: %.rc\n".
-    "\t\$(RC) \$(FWHACK) \$(RCFL) \$(RCFLAGS) \$< \$\@\n".
     "\n";
-    print &splitline("all:" . join "", map { " $_.exe" } &progrealnames("GC"));
+    print &splitline("all:" . join "", map { " $_.exe" } &progrealnames("G:C"));
     print "\n\n";
-    foreach $p (&prognames("GC")) {
+    foreach $p (&prognames("G:C")) {
       ($prog, $type) = split ",", $p;
       $objstr = &objects($p, "X.o", "X.res.o", undef);
       print &splitline($prog . ".exe: " . $objstr), "\n";
@@ -391,15 +419,25 @@ if (defined $makefiles{'cygwin'}) {
                        "-Wl,-Map,$prog.map " .
                        $objstr . " $libstr", 69), "\n\n";
     }
-    foreach $d (&deps("X.o", "X.res.o", $dirpfx, "/")) {
-      print &splitline(sprintf("%s: %s", $d->{obj}, join " ", @{$d->{deps}})),
-        "\n";
+    foreach $d (&deps("X.o", "X.res.o", $dirpfx, "/", "cygwin")) {
+      if ($forceobj{$d->{obj_orig}}) {
+        printf ("%s: FORCE\n", $d->{obj});
+      } else {
+        print &splitline(sprintf("%s: %s", $d->{obj},
+                         join " ", @{$d->{deps}})), "\n";
+      }
+      if ($d->{obj} =~ /\.res\.o$/) {
+	  print "\t\$(RC) \$(RCFL) \$(RCFLAGS) ".$d->{deps}->[0]." ".$d->{obj}."\n\n";
+      } else {
+	  print "\t\$(CC) \$(COMPAT) \$(CFLAGS) \$(XFLAGS) -c ".$d->{deps}->[0]."\n\n";
+      }
     }
     print "\n";
-    print $makefile_extra{'cygwin'};
+    print $makefile_extra{'cygwin'}->{'end'};
     print "\nclean:\n".
     "\trm -f *.o *.exe *.res.o *.map\n".
-    "\n";
+    "\n".
+    "FORCE:\n";
     select STDOUT; close OUT;
 
 }
@@ -426,7 +464,7 @@ if (defined $makefiles{'borland'}) {
     "#\n# This file was created by `mkfiles.pl' from the `Recipe' file.\n".
     "# DO NOT EDIT THIS FILE DIRECTLY; edit Recipe or mkfiles.pl instead.\n";
     # bcc32 command line option is -D not /D
-    ($_ = $help) =~ s/=\/D/=-D/gs;
+    ($_ = $help) =~ s/([=" ])\/D/\1-D/gs;
     print $_;
     print
     "\n".
@@ -435,32 +473,36 @@ if (defined $makefiles{'borland'}) {
     "MAKEFILE = Makefile.bor\n".
     "\n".
     "# C compilation flags\n".
-    "CFLAGS = -D_WINDOWS -DWINVER=0x0401\n".
+    "CFLAGS = -D_WINDOWS -DWINVER=0x0500\n".
+    "# Resource compilation flags\n".
+    "RCFLAGS = -DNO_WINRESRC_H -DWIN32 -D_WIN32 -DWINVER=0x0401\n".
     "\n".
     "# Get include directory for resource compiler\n".
     "!if !\$d(BCB)\n".
     "BCB = \$(MAKEDIR)\\..\n".
     "!endif\n".
     "\n".
+    $makefile_extra{'borland'}->{'vars'} .
+    "\n".
     ".c.obj:\n".
-    &splitline("\tbcc32 -w-aus -w-ccc -w-par -w-pia \$(COMPAT) \$(FWHACK)".
-	       " \$(XFLAGS) \$(CFLAGS) ".
+    &splitline("\tbcc32 -w-aus -w-ccc -w-par -w-pia \$(COMPAT)".
+	       " \$(CFLAGS) \$(XFLAGS) ".
 	       (join " ", map {"-I$dirpfx$_"} @srcdirs) .
 	       " /c \$*.c",69)."\n".
     ".rc.res:\n".
-    &splitline("\tbrcc32 \$(FWHACK) \$(RCFL) -i \$(BCB)\\include -r".
-      " -DNO_WINRESRC_H -DWIN32 -D_WIN32 -DWINVER=0x0401 \$*.rc",69)."\n".
+    &splitline("\tbrcc32 \$(RCFL) -i \$(BCB)\\include -r".
+      " \$(RCFLAGS) \$*.rc",69)."\n".
     "\n";
-    print &splitline("all:" . join "", map { " $_.exe" } &progrealnames("GC"));
+    print &splitline("all:" . join "", map { " $_.exe" } &progrealnames("G:C"));
     print "\n\n";
-    foreach $p (&prognames("GC")) {
+    foreach $p (&prognames("G:C")) {
       ($prog, $type) = split ",", $p;
       $objstr = &objects($p, "X.obj", "X.res", undef);
       print &splitline("$prog.exe: " . $objstr . " $prog.rsp"), "\n";
       my $ap = ($type eq "G") ? "-aa" : "-ap";
       print "\tilink32 $ap -Gn -L\$(BCB)\\lib \@$prog.rsp\n\n";
     }
-    foreach $p (&prognames("GC")) {
+    foreach $p (&prognames("G:C")) {
       ($prog, $type) = split ",", $p;
       print $prog, ".rsp: \$(MAKEFILE)\n";
       $objstr = &objects($p, "X.obj", undef, undef);
@@ -488,12 +530,16 @@ if (defined $makefiles{'borland'}) {
       print "\techo " . &objects($p, undef, "X.res", undef) . " >> $prog.rsp\n";
       print "\n";
     }
-    foreach $d (&deps("X.obj", "X.res", $dirpfx, "\\")) {
-      print &splitline(sprintf("%s: %s", $d->{obj}, join " ", @{$d->{deps}})),
-        "\n";
+    foreach $d (&deps("X.obj", "X.res", $dirpfx, "\\", "borland")) {
+      if ($forceobj{$d->{obj_orig}}) {
+        printf("%s: FORCE\n", $d->{obj});
+      } else {
+        print &splitline(sprintf("%s: %s", $d->{obj},
+                                 join " ", @{$d->{deps}})), "\n";
+      }
     }
     print "\n";
-    print $makefile_extra{'borland'};
+    print $makefile_extra{'borland'}->{'end'};
     print "\nclean:\n".
     "\t-del *.obj\n".
     "\t-del *.exe\n".
@@ -504,7 +550,10 @@ if (defined $makefiles{'borland'}) {
     "\t-del *.pdb\n".
     "\t-del *.rsp\n".
     "\t-del *.tds\n".
-    "\t-del *.\$\$\$\$\$\$\n";
+    "\t-del *.\$\$\$\$\$\$\n".
+    "\n".
+    "FORCE:\n".
+    "\t-rem dummy command\n";
     select STDOUT; close OUT;
 }
 
@@ -525,23 +574,24 @@ if (defined $makefiles{'vc'}) {
       "MAKEFILE = Makefile.vc\n".
       "\n".
       "# C compilation flags\n".
-      "CFLAGS = /nologo /W3 /O1 /D_WINDOWS /D_WIN32_WINDOWS=0x401 /DWINVER=0x401\n".
+      "CFLAGS = /nologo /W3 /O1 " .
+      (join " ", map {"-I$dirpfx$_"} @srcdirs) .
+      " /D_WINDOWS /D_WIN32_WINDOWS=0x500 /DWINVER=0x500\n".
       "LFLAGS = /incremental:no /fixed\n".
+      "RCFLAGS = -DWIN32 -D_WIN32 -DWINVER=0x0400\n".
       "\n".
-      ".c.obj:\n".
-      "\tcl \$(COMPAT) \$(FWHACK) \$(XFLAGS) \$(CFLAGS) /c \$*.c\n".
-      ".rc.res:\n".
-      "\trc \$(FWHACK) \$(RCFL) -r -DWIN32 -D_WIN32 -DWINVER=0x0400 \$*.rc\n".
+      $makefile_extra{'vc'}->{'vars'} .
+      "\n".
       "\n";
-    print &splitline("all:" . join "", map { " $_.exe" } &progrealnames("GC"));
+    print &splitline("all:" . join "", map { " $_.exe" } &progrealnames("G:C"));
     print "\n\n";
-    foreach $p (&prognames("GC")) {
+    foreach $p (&prognames("G:C")) {
 	($prog, $type) = split ",", $p;
 	$objstr = &objects($p, "X.obj", "X.res", undef);
 	print &splitline("$prog.exe: " . $objstr . " $prog.rsp"), "\n";
 	print "\tlink \$(LFLAGS) -out:$prog.exe -map:$prog.map \@$prog.rsp\n\n";
     }
-    foreach $p (&prognames("GC")) {
+    foreach $p (&prognames("G:C")) {
 	($prog, $type) = split ",", $p;
 	print $prog, ".rsp: \$(MAKEFILE)\n";
 	$objstr = &objects($p, "X.obj", "X.res", "X.lib");
@@ -560,12 +610,18 @@ if (defined $makefiles{'vc'}) {
 	}
 	print "\n";
     }
-    foreach $d (&deps("X.obj", "X.res", $dirpfx, "\\")) {
-	print &splitline(sprintf("%s: %s", $d->{obj}, join " ", @{$d->{deps}})),
-	  "\n";
+    foreach $d (&deps("X.obj", "X.res", $dirpfx, "\\", "vc")) {
+        $extradeps = $forceobj{$d->{obj_orig}} ? ["*.c","*.h","*.rc"] : [];
+        print &splitline(sprintf("%s: %s", $d->{obj},
+                                 join " ", @$extradeps, @{$d->{deps}})), "\n";
+        if ($d->{obj} =~ /.obj$/) {
+	    print "\tcl \$(COMPAT) \$(CFLAGS) \$(XFLAGS) /c ".$d->{deps}->[0],"\n\n";
+	} else {
+	    print "\trc \$(RCFL) -r \$(RCFLAGS) ".$d->{deps}->[0],"\n\n";
+	}
     }
     print "\n";
-    print $makefile_extra{'vc'};
+    print $makefile_extra{'vc'}->{'end'};
     print "\nclean: tidy\n".
       "\t-del *.exe\n\n".
       "tidy:\n".
@@ -588,6 +644,7 @@ if (defined $makefiles{'vc'}) {
 }
 
 if (defined $makefiles{'vcproj'}) {
+    $dirpfx = &dirpfx($makefiles{'vcproj'}, "\\");
 
     $orig_dir = cwd;
 
@@ -604,13 +661,13 @@ if (defined $makefiles{'vcproj'}) {
     mkdir $makefiles{'vcproj'}
         if(! -d $makefiles{'vcproj'});
     chdir $makefiles{'vcproj'};
-    @deps = &deps("X.obj", "X.res", "", "\\");
+    @deps = &deps("X.obj", "X.res", $dirpfx, "\\", "vcproj");
     %all_object_deps = map {$_->{obj} => $_->{deps}} @deps;
     # Create the project files
     # Get names of all Windows projects (GUI and console)
-    my @prognames = &prognames("GC");
+    my @prognames = &prognames("G:C");
     foreach $progname (@prognames) {
-    	create_project(\%all_object_deps, $progname);
+      create_vc_project(\%all_object_deps, $progname);
     }
     # Create the workspace file
     open OUT, ">$project_name.dsw"; binmode OUT; select OUT;
@@ -652,7 +709,7 @@ if (defined $makefiles{'vcproj'}) {
     select STDOUT; close OUT;
     chdir $orig_dir;
 
-    sub create_project {
+    sub create_vc_project {
     	my ($all_object_deps, $progname) = @_;
     	# Construct program's dependency info
     	%seen_objects = ();
@@ -739,8 +796,12 @@ if (defined $makefiles{'vcproj'}) {
     	"# PROP Intermediate_Dir \"Release\"\r\n".
     	"# PROP Ignore_Export_Lib 0\r\n".
     	"# PROP Target_Dir \"\"\r\n".
-    	"# ADD BASE CPP /nologo /W3 /GX /O2 /D \"WIN32\" /D \"NDEBUG\" /D \"_WINDOWS\" /D \"_MBCS\" /YX /FD /c\r\n".
-    	"# ADD CPP /nologo /W3 /GX /O2 /D \"WIN32\" /D \"NDEBUG\" /D \"_WINDOWS\" /D \"_MBCS\" /YX /FD /c\r\n".
+    	"# ADD BASE CPP /nologo /W3 /GX /O2 ".
+	  (join " ", map {"/I \"..\\..\\$dirpfx$_\""} @srcdirs) .
+	  " /D \"WIN32\" /D \"NDEBUG\" /D \"_WINDOWS\" /D \"_MBCS\" /YX /FD /c\r\n".
+    	"# ADD CPP /nologo /W3 /GX /O2 ".
+	  (join " ", map {"/I \"..\\..\\$dirpfx$_\""} @srcdirs) .
+	  " /D \"WIN32\" /D \"NDEBUG\" /D \"_WINDOWS\" /D \"_MBCS\" /YX /FD /c\r\n".
     	"# ADD BASE MTL /nologo /D \"NDEBUG\" /mktyplib203 /win32\r\n".
     	"# ADD MTL /nologo /D \"NDEBUG\" /mktyplib203 /win32\r\n".
     	"# ADD BASE RSC /l 0x809 /d \"NDEBUG\"\r\n".
@@ -766,8 +827,12 @@ if (defined $makefiles{'vcproj'}) {
     	"# PROP Intermediate_Dir \"Debug\"\r\n".
     	"# PROP Ignore_Export_Lib 0\r\n".
     	"# PROP Target_Dir \"\"\r\n".
-    	"# ADD BASE CPP /nologo /W3 /Gm /GX /ZI /Od /D \"WIN32\" /D \"_DEBUG\" /D \"_WINDOWS\" /D \"_MBCS\" /YX /FD /GZ /c\r\n".
-    	"# ADD CPP /nologo /W3 /Gm /GX /ZI /Od /D \"WIN32\" /D \"_DEBUG\" /D \"_WINDOWS\" /D \"_MBCS\" /YX /FD /GZ /c\r\n".
+    	"# ADD BASE CPP /nologo /W3 /Gm /GX /ZI /Od ".
+	  (join " ", map {"/I \"..\\..\\$dirpfx$_\""} @srcdirs) .
+	  " /D \"WIN32\" /D \"_DEBUG\" /D \"_WINDOWS\" /D \"_MBCS\" /YX /FD /GZ /c\r\n".
+    	"# ADD CPP /nologo /W3 /Gm /GX /ZI /Od ".
+	  (join " ", map {"/I \"..\\..\\$dirpfx$_\""} @srcdirs) .
+	  " /D \"WIN32\" /D \"_DEBUG\" /D \"_WINDOWS\" /D \"_MBCS\" /YX /FD /GZ /c\r\n".
     	"# ADD BASE MTL /nologo /D \"_DEBUG\" /mktyplib203 /win32\r\n".
     	"# ADD MTL /nologo /D \"_DEBUG\" /mktyplib203 /win32\r\n".
     	"# ADD BASE RSC /l 0x809 /d \"_DEBUG\"\r\n".
@@ -852,7 +917,7 @@ if (defined $makefiles{'gtk'}) {
     "#\n# This file was created by `mkfiles.pl' from the `Recipe' file.\n".
     "# DO NOT EDIT THIS FILE DIRECTLY; edit Recipe or mkfiles.pl instead.\n";
     # gcc command line option is -D not /D
-    ($_ = $help) =~ s/=\/D/=-D/gs;
+    ($_ = $help) =~ s/([=" ])\/D/\1-D/gs;
     print $_;
     print
     "\n".
@@ -862,9 +927,10 @@ if (defined $makefiles{'gtk'}) {
     "\n".
     &splitline("CFLAGS = -O2 -Wall -Werror -g " .
 	       (join " ", map {"-I$dirpfx$_"} @srcdirs) .
-	       " `gtk-config --cflags`")."\n".
-    "XLDFLAGS = `gtk-config --libs`\n".
-    "ULDFLAGS =#\n".
+	       " `gtk-config --cflags`").
+		 " -D _FILE_OFFSET_BITS=64\n".
+    "XLDFLAGS = \$(LDFLAGS) `gtk-config --libs`\n".
+    "ULDFLAGS = \$(LDFLAGS)\n".
     "INSTALL=install\n",
     "INSTALL_PROGRAM=\$(INSTALL)\n",
     "INSTALL_DATA=\$(INSTALL)\n",
@@ -874,29 +940,98 @@ if (defined $makefiles{'gtk'}) {
     "mandir=\$(prefix)/man\n",
     "man1dir=\$(mandir)/man1\n",
     "\n".
+    $makefile_extra{'gtk'}->{'vars'} .
+    "\n".
     ".SUFFIXES:\n".
     "\n".
-    "%.o:\n".
-    "\t\$(CC) \$(COMPAT) \$(FWHACK) \$(XFLAGS) \$(CFLAGS) -c \$<\n".
     "\n";
-    print &splitline("all:" . join "", map { " $_" } &progrealnames("XU"));
+    print &splitline("all:" . join "", map { " $_" } &progrealnames("X:U"));
     print "\n\n";
-    foreach $p (&prognames("XU")) {
+    foreach $p (&prognames("X:U")) {
       ($prog, $type) = split ",", $p;
       $objstr = &objects($p, "X.o", undef, undef);
       print &splitline($prog . ": " . $objstr), "\n";
       $libstr = &objects($p, undef, undef, "-lX");
-      print &splitline("\t\$(CC)" . $mw . " \$(${type}LDFLAGS) -o \$@ " .
-                       $objstr . " $libstr", 69), "\n\n";
+      print &splitline("\t\$(CC)" . $mw . " -o \$@ " .
+                       $objstr . " \$(${type}LDFLAGS) $libstr", 69), "\n\n";
     }
-    foreach $d (&deps("X.o", undef, $dirpfx, "/")) {
-      print &splitline(sprintf("%s: %s", $d->{obj}, join " ", @{$d->{deps}})),
-          "\n";
+    foreach $d (&deps("X.o", undef, $dirpfx, "/", "gtk")) {
+      if ($forceobj{$d->{obj_orig}}) {
+        printf("%s: FORCE\n", $d->{obj});
+      } else {
+        print &splitline(sprintf("%s: %s", $d->{obj},
+                                 join " ", @{$d->{deps}})), "\n";
+      }
+      print &splitline("\t\$(CC) \$(COMPAT) \$(CFLAGS) \$(XFLAGS) -c $d->{deps}->[0]\n");
     }
     print "\n";
-    print $makefile_extra{'gtk'};
+    print $makefile_extra{'gtk'}->{'end'};
     print "\nclean:\n".
-    "\trm -f *.o". (join "", map { " $_" } &progrealnames("XU")) . "\n";
+    "\trm -f *.o". (join "", map { " $_" } &progrealnames("X:U")) . "\n";
+    print "\nFORCE:\n";
+    select STDOUT; close OUT;
+}
+
+if (defined $makefiles{'ac'}) {
+    $dirpfx = &dirpfx($makefiles{'ac'}, "/");
+
+    ##-- Unix/autoconf makefile
+    open OUT, ">$makefiles{'ac'}"; select OUT;
+    print
+    "# Makefile.in for $project_name under Unix with Autoconf.\n".
+    "#\n# This file was created by `mkfiles.pl' from the `Recipe' file.\n".
+    "# DO NOT EDIT THIS FILE DIRECTLY; edit Recipe or mkfiles.pl instead.\n";
+    # gcc command line option is -D not /D
+    ($_ = $help) =~ s/([=" ])\/D/\1-D/gs;
+    print $_;
+    print
+    "\n".
+    "CC = \@CC\@\n".
+    "\n".
+    &splitline("CFLAGS = \@CFLAGS\@ \@CPPFLAGS\@ \@DEFS\@ \@GTK_CFLAGS\@ " .
+	       (join " ", map {"-I$dirpfx$_"} @srcdirs))."\n".
+    "XLDFLAGS = \@LDFLAGS\@ \@LIBS\@ \@GTK_LIBS\@\n".
+    "ULDFLAGS = \@LDFLAGS\@ \@LIBS\@\n".
+    "INSTALL=\@INSTALL\@\n",
+    "INSTALL_PROGRAM=\$(INSTALL)\n",
+    "INSTALL_DATA=\$(INSTALL)\n",
+    "prefix=\@prefix\@\n",
+    "exec_prefix=\@exec_prefix\@\n",
+    "bindir=\@bindir\@\n",
+    "mandir=\@mandir\@\n",
+    "man1dir=\$(mandir)/man1\n",
+    "\n".
+    $makefile_extra{'gtk'}->{'vars'} .
+    "\n".
+    ".SUFFIXES:\n".
+    "\n".
+    "\n".
+    "all: \@all_targets\@\n".
+    &splitline("all-cli:" . join "", map { " $_" } &progrealnames("U"))."\n".
+    &splitline("all-gtk:" . join "", map { " $_" } &progrealnames("X"))."\n";
+    print "\n";
+    foreach $p (&prognames("X:U")) {
+      ($prog, $type) = split ",", $p;
+      $objstr = &objects($p, "X.o", undef, undef);
+      print &splitline($prog . ": " . $objstr), "\n";
+      $libstr = &objects($p, undef, undef, "-lX");
+      print &splitline("\t\$(CC)" . $mw . " -o \$@ " .
+                       $objstr . " \$(${type}LDFLAGS) $libstr", 69), "\n\n";
+    }
+    foreach $d (&deps("X.o", undef, $dirpfx, "/", "gtk")) {
+      if ($forceobj{$d->{obj_orig}}) {
+        printf("%s: FORCE\n", $d->{obj});
+      } else {
+        print &splitline(sprintf("%s: %s", $d->{obj},
+                                 join " ", @{$d->{deps}})), "\n";
+      }
+      print &splitline("\t\$(CC) \$(COMPAT) \$(CFLAGS) \$(XFLAGS) -c $d->{deps}->[0]\n");
+    }
+    print "\n";
+    print $makefile_extra{'gtk'}->{'end'};
+    print "\nclean:\n".
+    "\trm -f *.o". (join "", map { " $_" } &progrealnames("X:U")) . "\n";
+    print "\nFORCE:\n";
     select STDOUT; close OUT;
 }
 
@@ -907,8 +1042,8 @@ if (defined $makefiles{'mpw'}) {
     "# Makefile for $project_name under MPW.\n#\n".
     "# This file was created by `mkfiles.pl' from the `Recipe' file.\n".
     "# DO NOT EDIT THIS FILE DIRECTLY; edit Recipe or mkfiles.pl instead.\n";
-    # MPW command line option is -d not /D
-    ($_ = $help) =~ s/=\/D/=-d /gs;
+    # MPW command line option is -d not /D (FIXME further massaging?)
+    ($_ = $help) =~ s/([=" ])\/D/\1-d /gs;
     print $_;
     print "\n\n".
     "ROptions     = `Echo \"{VER}\" | StreamEdit -e \"1,\$ replace /=(\xc5)\xa81\xb0/ 'STR=\xb6\xb6\xb6\xb6\xb6\"' \xa81 '\xb6\xb6\xb6\xb6\xb6\"'\"`".
@@ -1008,14 +1143,14 @@ if (defined $makefiles{'mpw'}) {
       }
 
     }
-    foreach $d (&deps("", "X.rsrc", "::", ":")) {
+    foreach $d (&deps("", "X.rsrc", "::", ":", "mpw")) {
       next unless $d->{obj};
       print &splitline(sprintf("%s \xc4 %s", $d->{obj}, join " ", @{$d->{deps}}),
     		   undef, "\xb6"), "\n";
       print "\tRez ", $d->{deps}->[0], " -o {Targ} {ROptions}\n\n";
     }
     foreach $arch (qw(68K CFM68K)) {
-        foreach $d (&deps("X.\L$arch\E.o", "", "::", ":")) {
+        foreach $d (&deps("X.\L$arch\E.o", "", "::", ":", "mpw")) {
     	 next unless $d->{obj};
     	print &splitline(sprintf("%s \xc4 %s", $d->{obj},
     				 join " ", @{$d->{deps}}),
@@ -1025,7 +1160,7 @@ if (defined $makefiles{'mpw'}) {
          }
     }
     foreach $arch (qw(PPC Carbon)) {
-        foreach $d (&deps("X.\L$arch\E.o", "", "::", ":")) {
+        foreach $d (&deps("X.\L$arch\E.o", "", "::", ":", "mpw")) {
     	 next unless $d->{obj};
     	print &splitline(sprintf("%s \xc4 %s", $d->{obj},
     				 join " ", @{$d->{deps}}),
@@ -1050,7 +1185,7 @@ if (defined $makefiles{'lcc'}) {
     "#\n# This file was created by `mkfiles.pl' from the `Recipe' file.\n".
     "# DO NOT EDIT THIS FILE DIRECTLY; edit Recipe or mkfiles.pl instead.\n";
     # lcc command line option is -D not /D
-    ($_ = $help) =~ s/=\/D/=-D/gs;
+    ($_ = $help) =~ s/([=" ])\/D/\1-D/gs;
     print $_;
     print
     "\n".
@@ -1062,18 +1197,16 @@ if (defined $makefiles{'lcc'}) {
     "CFLAGS = -D_WINDOWS " .
       (join " ", map {"-I$dirpfx$_"} @srcdirs) .
       "\n".
+    "# Resource compilation flags\n".
+    "RCFLAGS = \n".
     "\n".
     "# Get include directory for resource compiler\n".
     "\n".
-    ".c.obj:\n".
-    &splitline("\tlcc -O -p6 \$(COMPAT) \$(FWHACK)".
-      " \$(XFLAGS) \$(CFLAGS)  \$*.c",69)."\n".
-    ".rc.res:\n".
-    &splitline("\tlrc \$(FWHACK) \$(RCFL) -r \$*.rc",69)."\n".
+    $makefile_extra{'lcc'}->{'vars'} .
     "\n";
-    print &splitline("all:" . join "", map { " $_.exe" } &progrealnames("GC"));
+    print &splitline("all:" . join "", map { " $_.exe" } &progrealnames("G:C"));
     print "\n\n";
-    foreach $p (&prognames("GC")) {
+    foreach $p (&prognames("G:C")) {
       ($prog, $type) = split ",", $p;
       $objstr = &objects($p, "X.obj", "X.res", undef);
       print &splitline("$prog.exe: " . $objstr ), "\n";
@@ -1084,16 +1217,300 @@ if (defined $makefiles{'lcc'}) {
       print "\n\n";
     }
 
-    foreach $d (&deps("X.obj", "X.res", $dirpfx, "\\")) {
-      print &splitline(sprintf("%s: %s", $d->{obj}, join " ", @{$d->{deps}})),
-        "\n";
+    foreach $d (&deps("X.obj", "X.res", $dirpfx, "\\", "lcc")) {
+      if ($forceobj{$d->{obj_orig}}) {
+         printf("%s: FORCE\n", $d->{obj});
+      } else {
+         print &splitline(sprintf("%s: %s", $d->{obj},
+                          join " ", @{$d->{deps}})), "\n";
+      }
+      if ($d->{obj} =~ /\.obj$/) {
+	  print &splitline("\tlcc -O -p6 \$(COMPAT)".
+			   " \$(CFLAGS) \$(XFLAGS) ".$d->{deps}->[0],69)."\n";
+      } else {
+          print &splitline("\tlrc \$(RCFL) -r \$(RCFLAGS) ".
+                           $d->{deps}->[0],69)."\n";
+      }
     }
     print "\n";
-    print $makefile_extra{'lcc'};
+    print $makefile_extra{'lcc'}->{'end'};
     print "\nclean:\n".
     "\t-del *.obj\n".
     "\t-del *.exe\n".
-    "\t-del *.res\n";
+    "\t-del *.res\n".
+    "\n".
+    "FORCE:\n";
 
     select STDOUT; close OUT;
+}
+
+if (defined $makefiles{'osx'}) {
+    $dirpfx = &dirpfx($makefiles{'osx'}, "/");
+
+    ##-- Mac OS X makefile
+    open OUT, ">$makefiles{'osx'}"; select OUT;
+    print
+    "# Makefile for $project_name under Mac OS X.\n".
+    "#\n# This file was created by `mkfiles.pl' from the `Recipe' file.\n".
+    "# DO NOT EDIT THIS FILE DIRECTLY; edit Recipe or mkfiles.pl instead.\n";
+    # gcc command line option is -D not /D
+    ($_ = $help) =~ s/([=" ])\/D/\1-D/gs;
+    print $_;
+    print
+    "CC = \$(TOOLPATH)gcc\n".
+    "\n".
+    &splitline("CFLAGS = -O2 -Wall -Werror -g " .
+	       (join " ", map {"-I$dirpfx$_"} @srcdirs))."\n".
+    "MLDFLAGS = -framework Cocoa\n".
+    "ULDFLAGS =\n".
+    "\n" .
+    $makefile_extra{'osx'}->{'vars'} .
+    "\n" .
+    &splitline("all:" . join "", map { " $_" } &progrealnames("MX:U")) .
+    "\n";
+    foreach $p (&prognames("MX")) {
+      ($prog, $type) = split ",", $p;
+      $objstr = &objects($p, "X.o", undef, undef);
+      $icon = &special($p, ".icns");
+      $infoplist = &special($p, "info.plist");
+      print "${prog}.app:\n\tmkdir -p \$\@\n";
+      print "${prog}.app/Contents: ${prog}.app\n\tmkdir -p \$\@\n";
+      print "${prog}.app/Contents/MacOS: ${prog}.app/Contents\n\tmkdir -p \$\@\n";
+      $targets = "${prog}.app/Contents/MacOS/$prog";
+      if (defined $icon) {
+	print "${prog}.app/Contents/Resources: ${prog}.app/Contents\n\tmkdir -p \$\@\n";
+	print "${prog}.app/Contents/Resources/${prog}.icns: ${prog}.app/Contents/Resources $icon\n\tcp $icon \$\@\n";
+	$targets .= " ${prog}.app/Contents/Resources/${prog}.icns";
+      }
+      if (defined $infoplist) {
+	print "${prog}.app/Contents/Info.plist: ${prog}.app/Contents/Resources $infoplist\n\tcp $infoplist \$\@\n";
+	$targets .= " ${prog}.app/Contents/Info.plist";
+      }
+      $targets .= " \$(${prog}_extra)";
+      print &splitline("${prog}: $targets", 69) . "\n\n";
+      print &splitline("${prog}.app/Contents/MacOS/$prog: ".
+	               "${prog}.app/Contents/MacOS " . $objstr), "\n";
+      $libstr = &objects($p, undef, undef, "-lX");
+      print &splitline("\t\$(CC)" . $mw . " \$(MLDFLAGS) -o \$@ " .
+                       $objstr . " $libstr", 69), "\n\n";
+    }
+    foreach $p (&prognames("U")) {
+      ($prog, $type) = split ",", $p;
+      $objstr = &objects($p, "X.o", undef, undef);
+      print &splitline($prog . ": " . $objstr), "\n";
+      $libstr = &objects($p, undef, undef, "-lX");
+      print &splitline("\t\$(CC)" . $mw . " \$(ULDFLAGS) -o \$@ " .
+                       $objstr . " $libstr", 69), "\n\n";
+    }
+    foreach $d (&deps("X.o", undef, $dirpfx, "/")) {
+      if ($forceobj{$d->{obj_orig}}) {
+         printf("%s: FORCE\n", $d->{obj});
+      } else {
+         print &splitline(sprintf("%s: %s", $d->{obj},
+                                  join " ", @{$d->{deps}})), "\n";
+      }
+      $firstdep = $d->{deps}->[0];
+      if ($firstdep =~ /\.c$/) {
+	  print "\t\$(CC) \$(COMPAT) \$(FWHACK) \$(CFLAGS) \$(XFLAGS) -c \$<\n";
+      } elsif ($firstdep =~ /\.m$/) {
+	  print "\t\$(CC) -x objective-c \$(COMPAT) \$(FWHACK) \$(CFLAGS) \$(XFLAGS) -c \$<\n";
+      }
+    }
+    print "\n".$makefile_extra{'osx'}->{'end'};
+    print "\nclean:\n".
+    "\trm -f *.o *.dmg". (join "", map { " $_" } &progrealnames("U")) . "\n".
+    "\trm -rf *.app\n";
+    "\n".
+    "FORCE:\n";
+    select STDOUT; close OUT;
+}
+
+if (defined $makefiles{'devcppproj'}) {
+    $dirpfx = &dirpfx($makefiles{'devcppproj'}, "\\");
+    $orig_dir = cwd;
+
+    ##-- Dev-C++ 5 projects
+    #
+    # Note: All files created in this section are written in binary
+    # mode to prevent any posibility of misinterpreted line endings.
+    # I don't know if Dev-C++ is as touchy as MSVC with LF-only line
+    # endings. But however, CRLF line endings are the common way on
+    # Win32 machines where Dev-C++ is running.
+    # Hence, in order for mkfiles.pl to generate CRLF project files
+    # even when run from Unix, I make sure all files are binary and
+    # explicitly write the CRLFs.
+    #
+    # Create directories if necessary
+    mkdir $makefiles{'devcppproj'}
+        if(! -d $makefiles{'devcppproj'});
+    chdir $makefiles{'devcppproj'};
+    @deps = &deps("X.obj", "X.res", $dirpfx, "\\", "devcppproj");
+    %all_object_deps = map {$_->{obj} => $_->{deps}} @deps;
+    # Make dir names FAT/NTFS compatible
+    my @srcdirs = @srcdirs;
+    for ($i=0; $i<@srcdirs; $i++) {
+      $srcdirs[$i] =~ s/\//\\/g;
+      $srcdirs[$i] =~ s/\\$//;
+    }
+    # Create the project files
+    # Get names of all Windows projects (GUI and console)
+    my @prognames = &prognames("G:C");
+    foreach $progname (@prognames) {
+      create_devcpp_project(\%all_object_deps, $progname);
+    }
+
+    sub create_devcpp_project {
+      my ($all_object_deps, $progname) = @_;
+      # Construct program's dependency info (Taken from 'vcproj', seems to work right here, too.)
+      %seen_objects = ();
+      %lib_files = ();
+      %source_files = ();
+      %header_files = ();
+      %resource_files = ();
+      @object_files = split " ", &objects($progname, "X.obj", "X.res", "X.lib");
+      foreach $object_file (@object_files) {
+      next if defined $seen_objects{$object_file};
+      $seen_objects{$object_file} = 1;
+      if($object_file =~ /\.lib$/io) {
+    $lib_files{$object_file} = 1;
+    next;
+      }
+      $object_deps = $all_object_deps{$object_file};
+      foreach $object_dep (@$object_deps) {
+    if($object_dep =~ /\.c$/io) {
+        $source_files{$object_dep} = 1;
+        next;
+    }
+    if($object_dep =~ /\.h$/io) {
+        $header_files{$object_dep} = 1;
+        next;
+    }
+    if($object_dep =~ /\.(rc|ico)$/io) {
+        $resource_files{$object_dep} = 1;
+        next;
+    }
+      }
+      }
+      $libs = join " ", sort keys %lib_files;
+      @source_files = sort keys %source_files;
+      @header_files = sort keys %header_files;
+      @resources = sort keys %resource_files;
+  ($windows_project, $type) = split ",", $progname;
+      mkdir $windows_project
+      if(! -d $windows_project);
+      chdir $windows_project;
+
+  $subsys = ($type eq "G") ? "0" : "1";  # 0 = Win32 GUI, 1 = Win32 Console
+      open OUT, ">$windows_project.dev"; binmode OUT; select OUT;
+      print
+      "# DEV-C++ 5 Project File - $windows_project.dev\r\n".
+      "# ** DO NOT EDIT **\r\n".
+      "\r\n".
+      # No difference between DEBUG and RELEASE here as in 'vcproj', because
+      # Dev-C++ does not support mutiple compilation profiles in one single project.
+      # (At least I can say this for Dev-C++ 5 Beta)
+      "[Project]\r\n".
+      "FileName=$windows_project.dev\r\n".
+      "Name=$windows_project\r\n".
+      "Ver=1\r\n".
+      "IsCpp=1\r\n".
+      "Type=$subsys\r\n".
+      # Multimon is disabled here, as Dev-C++ (Version 5 Beta) does not have multimon.h
+      "Compiler=-W -D__GNUWIN32__ -DWIN32 -DNDEBUG -D_WINDOWS -DNO_MULTIMON -D_MBCS_\@\@_\r\n".
+      "CppCompiler=-W -D__GNUWIN32__ -DWIN32 -DNDEBUG -D_WINDOWS -DNO_MULTIMON -D_MBCS_\@\@_\r\n".
+      "Includes=" . (join ";", map {"..\\..\\$dirpfx$_"} @srcdirs) . "\r\n".
+      "Linker=-ladvapi32 -lcomctl32 -lcomdlg32 -lgdi32 -limm32 -lshell32 -luser32 -lwinmm -lwinspool_\@\@_\r\n".
+      "Libs=\r\n".
+      "UnitCount=" . (@source_files + @header_files + @resources) . "\r\n".
+      "Folders=\"Header Files\",\"Resource Files\",\"Source Files\"\r\n".
+      "ObjFiles=\r\n".
+      "PrivateResource=${windows_project}_private.rc\r\n".
+      "ResourceIncludes=..\\..\\..\\WINDOWS\r\n".
+      "MakeIncludes=\r\n".
+      "Icon=\r\n". # It's ok to leave this blank.
+      "ExeOutput=\r\n".
+      "ObjectOutput=\r\n".
+      "OverrideOutput=0\r\n".
+      "OverrideOutputName=$windows_project.exe\r\n".
+      "HostApplication=\r\n".
+      "CommandLine=\r\n".
+      "UseCustomMakefile=0\r\n".
+      "CustomMakefile=\r\n".
+      "IncludeVersionInfo=0\r\n".
+      "SupportXPThemes=0\r\n".
+      "CompilerSet=0\r\n".
+      "CompilerSettings=0000000000000000000000\r\n".
+      "\r\n";
+      $unit_count = 1;
+      foreach $source_file (@source_files) {
+      print
+        "[Unit$unit_count]\r\n".
+        "FileName=..\\..\\$source_file\r\n".
+        "Folder=Source Files\r\n".
+        "Compile=1\r\n".
+        "CompileCpp=0\r\n".
+        "Link=1\r\n".
+        "Priority=1000\r\n".
+        "OverrideBuildCmd=0\r\n".
+        "BuildCmd=\r\n".
+        "\r\n";
+      $unit_count++;
+  }
+      foreach $header_file (@header_files) {
+      print
+        "[Unit$unit_count]\r\n".
+        "FileName=..\\..\\$header_file\r\n".
+        "Folder=Header Files\r\n".
+        "Compile=1\r\n".
+        "CompileCpp=1\r\n". # Dev-C++ want's to compile all header files with both compilers C and C++. It does not hurt.
+        "Link=1\r\n".
+        "Priority=1000\r\n".
+        "OverrideBuildCmd=0\r\n".
+        "BuildCmd=\r\n".
+        "\r\n";
+      $unit_count++;
+  }
+      foreach $resource_file (@resources) {
+      if ($resource_file =~ /.*\.(ico|cur|bmp|dlg|rc2|rct|bin|rgs|gif|jpg|jpeg|jpe)/io) { # Default filter as in 'vcproj'
+        $Compile = "0";    # Don't compile images and other binary resource files
+        $CompileCpp = "0";
+      } else {
+        $Compile = "1";
+        $CompileCpp = "1"; # Dev-C++ want's to compile all .rc files with both compilers C and C++. It does not hurt.
+      }
+      print
+        "[Unit$unit_count]\r\n".
+        "FileName=..\\..\\$resource_file\r\n".
+        "Folder=Resource Files\r\n".
+        "Compile=$Compile\r\n".
+        "CompileCpp=$CompileCpp\r\n".
+        "Link=0\r\n".
+        "Priority=1000\r\n".
+        "OverrideBuildCmd=0\r\n".
+        "BuildCmd=\r\n".
+        "\r\n";
+      $unit_count++;
+  }
+      #Note: By default, [VersionInfo] is not used.
+      print
+      "[VersionInfo]\r\n".
+      "Major=0\r\n".
+      "Minor=0\r\n".
+      "Release=1\r\n".
+      "Build=1\r\n".
+      "LanguageID=1033\r\n".
+      "CharsetID=1252\r\n".
+      "CompanyName=\r\n".
+      "FileVersion=0.1\r\n".
+      "FileDescription=\r\n".
+      "InternalName=\r\n".
+      "LegalCopyright=\r\n".
+      "LegalTrademarks=\r\n".
+      "OriginalFilename=$windows_project.exe\r\n".
+      "ProductName=$windows_project\r\n".
+      "ProductVersion=0.1\r\n".
+      "AutoIncBuildNr=0\r\n";
+      select STDOUT; close OUT;
+      chdir "..";
+    }
 }

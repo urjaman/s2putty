@@ -20,7 +20,7 @@
 struct Filename {
     char path[FILENAME_MAX];
 };
-#define f_open(filename, mode) ( fopen((filename).path, (mode)) )
+#define f_open(filename, mode, isprivate) ( fopen((filename).path, (mode)) )
 
 struct FontSpec {
     char name[32];
@@ -94,7 +94,7 @@ typedef void *Context;
  * cause the compiler to notice it can optimise away the
  * implementation of XDM-AUTHORIZATION-1 in x11fwd.c :-)
  */
-#define sk_getxdmdata(socket, ip, port) (0)
+#define sk_getxdmdata(socket, lenp) (0)
 
 /*
  * Exports from unicode.c.

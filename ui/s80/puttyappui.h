@@ -59,7 +59,7 @@ public:
     virtual THostKeyResponse UnknownHostKey(const TDesC &aFingerprint);
     virtual THostKeyResponse DifferentHostKey(const TDesC &aFingerprint);
     virtual TBool AcceptCipher(const TDesC &aCipherName,
-                               TCipherDirection aDirection);
+                               const TDesC &aCipherUsage);
     virtual TBool AuthenticationPrompt(const TDesC &aPrompt, TDes &aTarget,
                                        TBool aSecret);
 
@@ -77,7 +77,7 @@ private:
                                     TInt aDialogTitleRes,
                                     TInt aDialogFormatRes);
     TBool AcceptCipherL(const TDesC &aCipherName,
-                        TCipherDirection aDirection);
+                        const TDesC &aCipherUsage);
     void ReadUiSettingsL(Config *aConfig);
     static TInt ConnectToProfileCallback(TAny *aAny);
     void DoConnectToProfile();

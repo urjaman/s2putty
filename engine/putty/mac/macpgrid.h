@@ -1,4 +1,4 @@
-/* $Id: macpgrid.h,v 1.1.1.1 2003/06/02 15:55:41 pekangas Exp $ */
+/* $Id: macpgrid.h 4787 2004-11-16 15:27:00Z simon $ */
 
 /*
  * macpgrid.h -- Mac resource IDs for PuTTYgen

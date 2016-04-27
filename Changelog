@@ -1,4 +1,547 @@
 ------------------------------------------------------------------------
+r404 | pekangas | 2008-12-20 18:26:30 +0000 (Sat, 20 Dec 2008) | 1 line
+Changed paths:
+   M /s2putty/trunk/README.txt
+   M /s2putty/trunk/README_source.txt
+   M /s2putty/trunk/build/s60v3/installnote.txt
+   M /s2putty/trunk/build/s60v3/putty.pkg
+   M /s2putty/trunk/build/s80v2/installnote.txt
+   M /s2putty/trunk/build/s80v2/putty.pkg
+   M /s2putty/trunk/ui/s80/putty.rss
+
+Updated for 1.5 beta 2
+------------------------------------------------------------------------
+r403 | pekangas | 2008-12-20 18:14:05 +0000 (Sat, 20 Dec 2008) | 1 line
+Changed paths:
+   M /s2putty/trunk/putty_users_guide.odt
+   M /s2putty/trunk/putty_users_guide.pdf
+
+Updated the User's Guide for 1.5 Beta 2
+------------------------------------------------------------------------
+r402 | pekangas | 2008-12-14 22:44:36 +0000 (Sun, 14 Dec 2008) | 1 line
+Changed paths:
+   M /s2putty/trunk/README.txt
+   M /s2putty/trunk/putty_users_guide.odt
+   M /s2putty/trunk/putty_users_guide.pdf
+
+Fixed links to certificate files in documentation
+------------------------------------------------------------------------
+r401 | pekangas | 2008-12-14 22:14:54 +0000 (Sun, 14 Dec 2008) | 1 line
+Changed paths:
+   M /s2putty/trunk/build/s60v3/putty.pkg
+
+Corrected install file revision
+------------------------------------------------------------------------
+r400 | pekangas | 2008-12-14 22:14:02 +0000 (Sun, 14 Dec 2008) | 1 line
+Changed paths:
+   M /s2putty/trunk/README.txt
+   M /s2putty/trunk/README_source.txt
+   M /s2putty/trunk/build/s60v3/installnote.txt
+   M /s2putty/trunk/build/s60v3/putty.pkg
+
+Updated for a new snapshot
+------------------------------------------------------------------------
+r399 | pekangas | 2008-12-14 19:19:32 +0000 (Sun, 14 Dec 2008) | 1 line
+Changed paths:
+   M /s2putty/trunk/build/s60v3/bld.inf
+   M /s2putty/trunk/build/s60v3/putty.pkg
+   A /s2putty/trunk/build/s60v3/puttyicons.mk
+   M /s2putty/trunk/ui/s60/putty.rss
+   A /s2putty/trunk/ui/s60v3/putty.svg
+   M /s2putty/trunk/ui/s60v3/putty_reg.rss
+
+Added an icon drawn by James Nash. Thanks James!
+------------------------------------------------------------------------
+r398 | pekangas | 2008-12-14 18:21:09 +0000 (Sun, 14 Dec 2008) | 1 line
+Changed paths:
+   M /s2putty/trunk/ui/s60/terminalcontainer.cpp
+   M /s2putty/trunk/ui/s60/terminalview.cpp
+   M /s2putty/trunk/ui/s60/terminalview.h
+
+Implemented better keyboard support for copy/paste
+------------------------------------------------------------------------
+r397 | pekangas | 2008-12-14 17:51:26 +0000 (Sun, 14 Dec 2008) | 1 line
+Changed paths:
+   M /s2putty/trunk/build/s60v3/puttyui.mmp
+   M /s2putty/trunk/ui/s60/putty.rss
+   M /s2putty/trunk/ui/s60/puttyui.hrh
+   M /s2putty/trunk/ui/s60/terminalview.cpp
+   M /s2putty/trunk/ui/s60/terminalview.h
+
+Integrated copy/paste support to the S60 UI from Thomas Grenman. Thanks!
+------------------------------------------------------------------------
+r396 | pekangas | 2008-12-14 17:17:54 +0000 (Sun, 14 Dec 2008) | 1 line
+Changed paths:
+   D /s2putty/trunk/ui/s60/puttyterminalcontainer.cpp
+   D /s2putty/trunk/ui/s60/puttyterminalcontainer.h
+   D /s2putty/trunk/ui/s60/puttyterminalview.cpp
+   D /s2putty/trunk/ui/s60/puttyterminalview.h
+
+Deleted unused terminal view files
+------------------------------------------------------------------------
+r395 | pekangas | 2008-11-09 21:32:06 +0000 (Sun, 09 Nov 2008) | 1 line
+Changed paths:
+   M /s2putty/trunk/README.txt
+   M /s2putty/trunk/README_source.txt
+   M /s2putty/trunk/build/s60v3/installnote.txt
+   M /s2putty/trunk/build/s60v3/putty.pkg
+   M /s2putty/trunk/build/s80v2/installnote.txt
+   M /s2putty/trunk/build/s80v2/putty.pkg
+
+Updated README and installation files for a new development snapshot.
+------------------------------------------------------------------------
+r394 | pekangas | 2008-11-09 21:23:28 +0000 (Sun, 09 Nov 2008) | 2 lines
+Changed paths:
+   M /s2putty/trunk/engine/puttyengineimp.cpp
+
+Don't handle cursor colors in the engine, leave them to the UI as
+before.
+------------------------------------------------------------------------
+r393 | pekangas | 2008-11-09 19:49:07 +0000 (Sun, 09 Nov 2008) | 2 lines
+Changed paths:
+   M /s2putty/trunk/ui/s60/profileeditsshsettinglist.cpp
+   M /s2putty/trunk/ui/s60/profileeditsshsettinglist.h
+   M /s2putty/trunk/ui/s60/profileeditview.cpp
+   M /s2putty/trunk/ui/s60/putty.rss
+   M /s2putty/trunk/ui/s60/puttyui.hrh
+
+Added a menu item to clear the private key setting in the SSH settings
+tab. This fixes bug #1930543.
+------------------------------------------------------------------------
+r392 | pekangas | 2008-11-09 17:40:56 +0000 (Sun, 09 Nov 2008) | 1 line
+Changed paths:
+   M /s2putty/trunk/ui/s80/putty.rss
+
+Updated about dialog text
+------------------------------------------------------------------------
+r391 | pekangas | 2008-11-09 17:39:57 +0000 (Sun, 09 Nov 2008) | 1 line
+Changed paths:
+   M /s2putty/trunk/ui/s80/putty.rss
+   M /s2putty/trunk/ui/s80/puttyui.hrh
+   M /s2putty/trunk/ui/s80/settingsdialog.cpp
+
+Added cipher selection to the Series 80 UI.
+------------------------------------------------------------------------
+r390 | pekangas | 2008-11-09 17:24:19 +0000 (Sun, 09 Nov 2008) | 4 lines
+Changed paths:
+   M /s2putty/trunk/engine/puttyengineimp.cpp
+   M /s2putty/trunk/ui/s60/profileeditsshsettinglist.cpp
+   M /s2putty/trunk/ui/s60/profileeditsshsettinglist.h
+   M /s2putty/trunk/ui/s60/putty.rss
+   M /s2putty/trunk/ui/s60/puttyui.hrh
+
+Changed the default cipher to Blowfish to improve performance. AES is
+especially slow at key generation time since the default key size is
+256 bits.
+Added a cipher selection (Blowfish vs AES) setting to the S60 UI.
+------------------------------------------------------------------------
+r389 | pekangas | 2008-11-08 16:27:42 +0000 (Sat, 08 Nov 2008) | 1 line
+Changed paths:
+   M /s2putty/trunk/README.txt
+   M /s2putty/trunk/README_source.txt
+   M /s2putty/trunk/build/s60v3/installnote.txt
+   M /s2putty/trunk/build/s60v3/putty.pkg
+   M /s2putty/trunk/build/s80v2/installnote.txt
+   M /s2putty/trunk/build/s80v2/putty.pkg
+   M /s2putty/trunk/license.txt
+
+Updated install notes and license texts with PuTTY 0.60 copyright information.
+------------------------------------------------------------------------
+r388 | pekangas | 2008-11-08 16:20:39 +0000 (Sat, 08 Nov 2008) | 2 lines
+Changed paths:
+   M /s2putty/trunk/engine/putty/sshbn.c
+   M /s2putty/trunk/engine/puttyengineimp.cpp
+   M /s2putty/trunk/engine/puttyengineimp.h
+   M /s2putty/trunk/ui/s80/putty.rss
+   M /s2putty/trunk/ui/s80/puttyappui.cpp
+   M /s2putty/trunk/ui/s80/puttyappui.h
+
+Fixed the engine to build successfully under the Series 80 SDK and
+updated the Series 80 UI to work with the new engine.
+------------------------------------------------------------------------
+r387 | pekangas | 2008-11-08 16:19:53 +0000 (Sat, 08 Nov 2008) | 1 line
+Changed paths:
+   M /s2putty/trunk/engine/putty/putty.h
+   M /s2putty/trunk/engine/putty/ssh.c
+   M /s2putty/trunk/engine/putty/terminal.c
+   M /s2putty/trunk/engine/putty/timing.c
+   M /s2putty/trunk/engine/putty/version.c
+
+Removed writable static data introduced as part of PuTTY core version update.
+------------------------------------------------------------------------
+r386 | pekangas | 2008-11-08 14:58:01 +0000 (Sat, 08 Nov 2008) | 1 line
+Changed paths:
+   M /s2putty/trunk/ui/s60/putty.rss
+   M /s2putty/trunk/ui/s60/terminalview.cpp
+
+Made the weak cipher query dialog more informative.
+------------------------------------------------------------------------
+r385 | pekangas | 2008-11-08 14:57:42 +0000 (Sat, 08 Nov 2008) | 1 line
+Changed paths:
+   M /s2putty/trunk/engine/putty/ssh.c
+
+Fixed memory leaks when the user rejects a weak cipher.
+------------------------------------------------------------------------
+r384 | pekangas | 2008-11-08 14:45:42 +0000 (Sat, 08 Nov 2008) | 1 line
+Changed paths:
+   M /s2putty/trunk/engine/putty/sshrand.c
+
+Ensure the random seed is saved when the pool is destroyed.
+------------------------------------------------------------------------
+r383 | pekangas | 2008-11-08 14:30:53 +0000 (Sat, 08 Nov 2008) | 1 line
+Changed paths:
+   M /s2putty/trunk/ui/s60/terminalview.cpp
+
+Fixed a crash in a rare race condition in the terminal view
+------------------------------------------------------------------------
+r382 | pekangas | 2008-11-08 14:30:34 +0000 (Sat, 08 Nov 2008) | 1 line
+Changed paths:
+   M /s2putty/trunk/engine/putty/ssh.c
+
+Fixed memory leaks when the user does not accept an SSH host key.
+------------------------------------------------------------------------
+r381 | pekangas | 2008-11-08 13:50:18 +0000 (Sat, 08 Nov 2008) | 3 lines
+Changed paths:
+   M /s2putty/trunk/engine/puttyengineimp.cpp
+
+Consider the connection closed only when all sockets have been
+closed. This ensures all data is sent to the server and removes a
+memory leak.
+------------------------------------------------------------------------
+r380 | pekangas | 2008-11-03 21:32:31 +0000 (Mon, 03 Nov 2008) | 1 line
+Changed paths:
+   M /s2putty/trunk/engine/puttyengineimp.cpp
+
+Fixed a bad assert that could trigger incorrectly when timers were set up.
+------------------------------------------------------------------------
+r379 | pekangas | 2008-10-20 22:08:32 +0100 (Mon, 20 Oct 2008) | 1 line
+Changed paths:
+   M /s2putty/trunk/engine/putty/putty.h
+   M /s2putty/trunk/engine/putty/ssh.c
+   M /s2putty/trunk/engine/putty/terminal.c
+   M /s2putty/trunk/engine/putty/timing.c
+   M /s2putty/trunk/engine/puttyengineimp.cpp
+
+Fixed a couple of memory leaks in the new PuTTY engine
+------------------------------------------------------------------------
+r378 | pekangas | 2008-10-19 22:25:25 +0100 (Sun, 19 Oct 2008) | 3 lines
+Changed paths:
+   M /s2putty/trunk/build/common/puttyengine.mmh
+   M /s2putty/trunk/build/s60v3/installnote.txt
+   M /s2putty/trunk/build/s60v3/putty.pkg
+   A /s2putty/trunk/engine/oneshottimer.cpp
+   A /s2putty/trunk/engine/oneshottimer.h
+   A /s2putty/trunk/engine/putty/Buildscr (from /s2putty/branches/original/putty/Buildscr:377)
+   A /s2putty/trunk/engine/putty/CHECKLST.txt (from /s2putty/branches/original/putty/CHECKLST.txt:377)
+   A /s2putty/trunk/engine/putty/LATEST.VER (from /s2putty/branches/original/putty/LATEST.VER:377)
+   A /s2putty/trunk/engine/putty/LICENCE (from /s2putty/branches/original/putty/LICENCE:377)
+   A /s2putty/trunk/engine/putty/README (from /s2putty/branches/original/putty/README:377)
+   A /s2putty/trunk/engine/putty/Recipe (from /s2putty/branches/original/putty/Recipe:377)
+   A /s2putty/trunk/engine/putty/be_all_s.c (from /s2putty/branches/original/putty/be_all_s.c:377)
+   A /s2putty/trunk/engine/putty/be_nos_s.c (from /s2putty/branches/original/putty/be_nos_s.c:377)
+   M /s2putty/trunk/engine/putty/be_nossh.c
+   A /s2putty/trunk/engine/putty/charset/README (from /s2putty/branches/original/putty/charset/README:377)
+   M /s2putty/trunk/engine/putty/charset/charset.h
+   M /s2putty/trunk/engine/putty/charset/localenc.c
+   M /s2putty/trunk/engine/putty/charset/macenc.c
+   M /s2putty/trunk/engine/putty/charset/mimeenc.c
+   D /s2putty/trunk/engine/putty/charset/readme
+   M /s2putty/trunk/engine/putty/charset/sbcs.dat
+   M /s2putty/trunk/engine/putty/charset/sbcsdat.c
+   M /s2putty/trunk/engine/putty/charset/sbcsgen.pl
+   M /s2putty/trunk/engine/putty/charset/xenc.c
+   M /s2putty/trunk/engine/putty/cmdgen.c
+   M /s2putty/trunk/engine/putty/cmdline.c
+   M /s2putty/trunk/engine/putty/config.c
+   D /s2putty/trunk/engine/putty/console.c
+   M /s2putty/trunk/engine/putty/contrib/kh2reg.py
+   M /s2putty/trunk/engine/putty/dialog.h
+   A /s2putty/trunk/engine/putty/doc/AppendixA.html (from /s2putty/branches/original/putty/doc/AppendixA.html:377)
+   A /s2putty/trunk/engine/putty/doc/AppendixB.html (from /s2putty/branches/original/putty/doc/AppendixB.html:377)
+   A /s2putty/trunk/engine/putty/doc/AppendixC.html (from /s2putty/branches/original/putty/doc/AppendixC.html:377)
+   A /s2putty/trunk/engine/putty/doc/AppendixD.html (from /s2putty/branches/original/putty/doc/AppendixD.html:377)
+   A /s2putty/trunk/engine/putty/doc/AppendixE.html (from /s2putty/branches/original/putty/doc/AppendixE.html:377)
+   A /s2putty/trunk/engine/putty/doc/Chapter1.html (from /s2putty/branches/original/putty/doc/Chapter1.html:377)
+   A /s2putty/trunk/engine/putty/doc/Chapter10.html (from /s2putty/branches/original/putty/doc/Chapter10.html:377)
+   A /s2putty/trunk/engine/putty/doc/Chapter2.html (from /s2putty/branches/original/putty/doc/Chapter2.html:377)
+   A /s2putty/trunk/engine/putty/doc/Chapter3.html (from /s2putty/branches/original/putty/doc/Chapter3.html:377)
+   A /s2putty/trunk/engine/putty/doc/Chapter4.html (from /s2putty/branches/original/putty/doc/Chapter4.html:377)
+   A /s2putty/trunk/engine/putty/doc/Chapter5.html (from /s2putty/branches/original/putty/doc/Chapter5.html:377)
+   A /s2putty/trunk/engine/putty/doc/Chapter6.html (from /s2putty/branches/original/putty/doc/Chapter6.html:377)
+   A /s2putty/trunk/engine/putty/doc/Chapter7.html (from /s2putty/branches/original/putty/doc/Chapter7.html:377)
+   A /s2putty/trunk/engine/putty/doc/Chapter8.html (from /s2putty/branches/original/putty/doc/Chapter8.html:377)
+   A /s2putty/trunk/engine/putty/doc/Chapter9.html (from /s2putty/branches/original/putty/doc/Chapter9.html:377)
+   A /s2putty/trunk/engine/putty/doc/IndexPage.html (from /s2putty/branches/original/putty/doc/IndexPage.html:377)
+   A /s2putty/trunk/engine/putty/doc/Makefile (from /s2putty/branches/original/putty/doc/Makefile:377)
+   M /s2putty/trunk/engine/putty/doc/blurb.but
+   A /s2putty/trunk/engine/putty/doc/chm.but (from /s2putty/branches/original/putty/doc/chm.but:377)
+   A /s2putty/trunk/engine/putty/doc/chm.css (from /s2putty/branches/original/putty/doc/chm.css:377)
+   M /s2putty/trunk/engine/putty/doc/config.but
+   M /s2putty/trunk/engine/putty/doc/errors.but
+   M /s2putty/trunk/engine/putty/doc/faq.but
+   M /s2putty/trunk/engine/putty/doc/feedback.but
+   M /s2putty/trunk/engine/putty/doc/gs.but
+   M /s2putty/trunk/engine/putty/doc/index.but
+   A /s2putty/trunk/engine/putty/doc/index.html (from /s2putty/branches/original/putty/doc/index.html:377)
+   M /s2putty/trunk/engine/putty/doc/intro.but
+   M /s2putty/trunk/engine/putty/doc/licence.but
+   D /s2putty/trunk/engine/putty/doc/makefile
+   M /s2putty/trunk/engine/putty/doc/man-pg.but
+   M /s2putty/trunk/engine/putty/doc/man-pl.but
+   M /s2putty/trunk/engine/putty/doc/man-pscp.but
+   M /s2putty/trunk/engine/putty/doc/man-psft.but
+   M /s2putty/trunk/engine/putty/doc/man-ptel.but
+   M /s2putty/trunk/engine/putty/doc/man-pter.but
+   M /s2putty/trunk/engine/putty/doc/man-putt.but
+   M /s2putty/trunk/engine/putty/doc/pageant.but
+   A /s2putty/trunk/engine/putty/doc/pgpkeys.but (from /s2putty/branches/original/putty/doc/pgpkeys.but:377)
+   A /s2putty/trunk/engine/putty/doc/plink.1 (from /s2putty/branches/original/putty/doc/plink.1:377)
+   M /s2putty/trunk/engine/putty/doc/plink.but
+   A /s2putty/trunk/engine/putty/doc/pscp.1 (from /s2putty/branches/original/putty/doc/pscp.1:377)
+   M /s2putty/trunk/engine/putty/doc/pscp.but
+   A /s2putty/trunk/engine/putty/doc/psftp.1 (from /s2putty/branches/original/putty/doc/psftp.1:377)
+   M /s2putty/trunk/engine/putty/doc/psftp.but
+   A /s2putty/trunk/engine/putty/doc/pterm.1 (from /s2putty/branches/original/putty/doc/pterm.1:377)
+   M /s2putty/trunk/engine/putty/doc/pubkey.but
+   A /s2putty/trunk/engine/putty/doc/putty.1 (from /s2putty/branches/original/putty/doc/putty.1:377)
+   A /s2putty/trunk/engine/putty/doc/putty.cnt (from /s2putty/branches/original/putty/doc/putty.cnt:377)
+   A /s2putty/trunk/engine/putty/doc/putty.hlp (from /s2putty/branches/original/putty/doc/putty.hlp:377)
+   A /s2putty/trunk/engine/putty/doc/puttydoc.txt (from /s2putty/branches/original/putty/doc/puttydoc.txt:377)
+   A /s2putty/trunk/engine/putty/doc/puttygen.1 (from /s2putty/branches/original/putty/doc/puttygen.1:377)
+   A /s2putty/trunk/engine/putty/doc/puttytel.1 (from /s2putty/branches/original/putty/doc/puttytel.1:377)
+   M /s2putty/trunk/engine/putty/doc/site.but
+   A /s2putty/trunk/engine/putty/doc/udp.but (from /s2putty/branches/original/putty/doc/udp.but:377)
+   M /s2putty/trunk/engine/putty/doc/using.but
+   A /s2putty/trunk/engine/putty/doc/vids.but (from /s2putty/branches/original/putty/doc/vids.but:377)
+   A /s2putty/trunk/engine/putty/doc/vstr.but (from /s2putty/branches/original/putty/doc/vstr.but:377)
+   A /s2putty/trunk/engine/putty/icons (from /s2putty/branches/original/putty/icons:377)
+   M /s2putty/trunk/engine/putty/import.c
+   M /s2putty/trunk/engine/putty/int64.c
+   M /s2putty/trunk/engine/putty/int64.h
+   D /s2putty/trunk/engine/putty/licence
+   M /s2putty/trunk/engine/putty/logging.c
+   A /s2putty/trunk/engine/putty/mac/Makefile.mpw (from /s2putty/branches/original/putty/mac/Makefile.mpw:377)
+   A /s2putty/trunk/engine/putty/mac/README.mac (from /s2putty/branches/original/putty/mac/README.mac:377)
+   M /s2putty/trunk/engine/putty/mac/mac.c
+   M /s2putty/trunk/engine/putty/mac/mac.h
+   M /s2putty/trunk/engine/putty/mac/mac_res.r
+   M /s2putty/trunk/engine/putty/mac/macabout.c
+   M /s2putty/trunk/engine/putty/mac/macctrls.c
+   M /s2putty/trunk/engine/putty/mac/macdlg.c
+   M /s2putty/trunk/engine/putty/mac/macevlog.c
+   M /s2putty/trunk/engine/putty/mac/macmisc.c
+   M /s2putty/trunk/engine/putty/mac/macnet.c
+   M /s2putty/trunk/engine/putty/mac/macnoise.c
+   M /s2putty/trunk/engine/putty/mac/macpgen.c
+   M /s2putty/trunk/engine/putty/mac/macpgen.r
+   M /s2putty/trunk/engine/putty/mac/macpgkey.c
+   M /s2putty/trunk/engine/putty/mac/macpgrid.h
+   M /s2putty/trunk/engine/putty/mac/macresid.h
+   M /s2putty/trunk/engine/putty/mac/macstore.c
+   M /s2putty/trunk/engine/putty/mac/macstuff.h
+   M /s2putty/trunk/engine/putty/mac/macterm.c
+   M /s2putty/trunk/engine/putty/mac/macucs.c
+   D /s2putty/trunk/engine/putty/mac/makefile.mpw
+   M /s2putty/trunk/engine/putty/mac/mkputty.mpw
+   M /s2putty/trunk/engine/putty/mac/mtcpnet.c
+   M /s2putty/trunk/engine/putty/mac/otnet.c
+   D /s2putty/trunk/engine/putty/mac/readme.mac
+   A /s2putty/trunk/engine/putty/mac/setfile.sh (from /s2putty/branches/original/putty/mac/setfile.sh:377)
+   M /s2putty/trunk/engine/putty/mac/version.r
+   A /s2putty/trunk/engine/putty/macosx (from /s2putty/branches/original/putty/macosx:377)
+   D /s2putty/trunk/engine/putty/makefile.bor
+   D /s2putty/trunk/engine/putty/makefile.cyg
+   D /s2putty/trunk/engine/putty/makefile.lcc
+   D /s2putty/trunk/engine/putty/makefile.vc
+   A /s2putty/trunk/engine/putty/manifest (from /s2putty/branches/original/putty/manifest:377)
+   M /s2putty/trunk/engine/putty/minibidi.c
+   D /s2putty/trunk/engine/putty/minibidi.h
+   M /s2putty/trunk/engine/putty/misc.c
+   M /s2putty/trunk/engine/putty/misc.h
+   A /s2putty/trunk/engine/putty/mkauto.sh (from /s2putty/branches/original/putty/mkauto.sh:377)
+   M /s2putty/trunk/engine/putty/mkfiles.pl
+   A /s2putty/trunk/engine/putty/mksrcarc.sh (from /s2putty/branches/original/putty/mksrcarc.sh:377)
+   M /s2putty/trunk/engine/putty/mkunxarc.sh
+   D /s2putty/trunk/engine/putty/msvc
+   M /s2putty/trunk/engine/putty/network.h
+   D /s2putty/trunk/engine/putty/noise.c
+   A /s2putty/trunk/engine/putty/noprint.c (from /s2putty/branches/original/putty/noprint.c:377)
+   A /s2putty/trunk/engine/putty/notiming.c (from /s2putty/branches/original/putty/notiming.c:377)
+   D /s2putty/trunk/engine/putty/pageant.c
+   D /s2putty/trunk/engine/putty/pageant.ico
+   D /s2putty/trunk/engine/putty/pageant.mft
+   D /s2putty/trunk/engine/putty/pageant.rc
+   D /s2putty/trunk/engine/putty/pageantc.c
+   D /s2putty/trunk/engine/putty/pageants.ico
+   A /s2putty/trunk/engine/putty/pinger.c (from /s2putty/branches/original/putty/pinger.c:377)
+   D /s2putty/trunk/engine/putty/plink.c
+   D /s2putty/trunk/engine/putty/plink.rc
+   M /s2putty/trunk/engine/putty/portfwd.c
+   D /s2putty/trunk/engine/putty/printing.c
+   M /s2putty/trunk/engine/putty/proxy.c
+   A /s2putty/trunk/engine/putty/pscp.c (from /s2putty/branches/original/putty/pscp.c:377)
+   M /s2putty/trunk/engine/putty/psftp.c
+   M /s2putty/trunk/engine/putty/psftp.h
+   M /s2putty/trunk/engine/putty/putty.h
+   D /s2putty/trunk/engine/putty/putty.ico
+   D /s2putty/trunk/engine/putty/putty.iss
+   D /s2putty/trunk/engine/putty/putty.mft
+   D /s2putty/trunk/engine/putty/puttycfg.ico
+   D /s2putty/trunk/engine/putty/puttygen.c
+   D /s2putty/trunk/engine/putty/puttygen.ico
+   D /s2putty/trunk/engine/putty/puttygen.mft
+   D /s2putty/trunk/engine/putty/puttygen.rc
+   M /s2putty/trunk/engine/putty/puttymem.h
+   M /s2putty/trunk/engine/putty/puttyps.h
+   M /s2putty/trunk/engine/putty/raw.c
+   D /s2putty/trunk/engine/putty/readme
+   D /s2putty/trunk/engine/putty/readme.txt
+   D /s2putty/trunk/engine/putty/recipe
+   M /s2putty/trunk/engine/putty/rlogin.c
+   D /s2putty/trunk/engine/putty/scp.c
+   D /s2putty/trunk/engine/putty/scp.ico
+   D /s2putty/trunk/engine/putty/scp.rc
+   A /s2putty/trunk/engine/putty/sercfg.c (from /s2putty/branches/original/putty/sercfg.c:377)
+   M /s2putty/trunk/engine/putty/settings.c
+   M /s2putty/trunk/engine/putty/sftp.c
+   A /s2putty/trunk/engine/putty/sign.sh (from /s2putty/branches/original/putty/sign.sh:377)
+   D /s2putty/trunk/engine/putty/sizetip.c
+   M /s2putty/trunk/engine/putty/ssh.c
+   M /s2putty/trunk/engine/putty/ssh.h
+   M /s2putty/trunk/engine/putty/sshaes.c
+   A /s2putty/trunk/engine/putty/ssharcf.c (from /s2putty/branches/original/putty/ssharcf.c:377)
+   M /s2putty/trunk/engine/putty/sshblowf.c
+   M /s2putty/trunk/engine/putty/sshbn.c
+   M /s2putty/trunk/engine/putty/sshcrcda.c
+   M /s2putty/trunk/engine/putty/sshdes.c
+   M /s2putty/trunk/engine/putty/sshdh.c
+   M /s2putty/trunk/engine/putty/sshdss.c
+   M /s2putty/trunk/engine/putty/sshmd5.c
+   M /s2putty/trunk/engine/putty/sshprime.c
+   M /s2putty/trunk/engine/putty/sshpubk.c
+   M /s2putty/trunk/engine/putty/sshrand.c
+   M /s2putty/trunk/engine/putty/sshrsa.c
+   A /s2putty/trunk/engine/putty/sshsh256.c (from /s2putty/branches/original/putty/sshsh256.c:377)
+   M /s2putty/trunk/engine/putty/sshsha.c
+   M /s2putty/trunk/engine/putty/sshzlib.c
+   M /s2putty/trunk/engine/putty/telnet.c
+   M /s2putty/trunk/engine/putty/terminal.c
+   M /s2putty/trunk/engine/putty/terminal.h
+   M /s2putty/trunk/engine/putty/testback.c
+   A /s2putty/trunk/engine/putty/testdata (from /s2putty/branches/original/putty/testdata:377)
+   A /s2putty/trunk/engine/putty/time.c (from /s2putty/branches/original/putty/time.c:377)
+   A /s2putty/trunk/engine/putty/timing.c (from /s2putty/branches/original/putty/timing.c:377)
+   M /s2putty/trunk/engine/putty/tree234.c
+   D /s2putty/trunk/engine/putty/unicode.c
+   A /s2putty/trunk/engine/putty/unix/Makefile.gtk (from /s2putty/branches/original/putty/unix/Makefile.gtk:377)
+   A /s2putty/trunk/engine/putty/unix/Makefile.in (from /s2putty/branches/original/putty/unix/Makefile.in:377)
+   A /s2putty/trunk/engine/putty/unix/configure (from /s2putty/branches/original/putty/unix/configure:377)
+   A /s2putty/trunk/engine/putty/unix/configure.ac (from /s2putty/branches/original/putty/unix/configure.ac:377)
+   A /s2putty/trunk/engine/putty/unix/gtkcfg.c (from /s2putty/branches/original/putty/unix/gtkcfg.c:377)
+   M /s2putty/trunk/engine/putty/unix/gtkdlg.c
+   D /s2putty/trunk/engine/putty/unix/gtkpanel.c
+   D /s2putty/trunk/engine/putty/unix/gtkpanel.h
+   A /s2putty/trunk/engine/putty/unix/gtkwin.c (from /s2putty/branches/original/putty/unix/gtkwin.c:377)
+   A /s2putty/trunk/engine/putty/unix/install-sh (from /s2putty/branches/original/putty/unix/install-sh:377)
+   D /s2putty/trunk/engine/putty/unix/makefile.gtk
+   D /s2putty/trunk/engine/putty/unix/pterm.c
+   D /s2putty/trunk/engine/putty/unix/ptermm.c
+   D /s2putty/trunk/engine/putty/unix/pty.c
+   D /s2putty/trunk/engine/putty/unix/signal.c
+   M /s2putty/trunk/engine/putty/unix/unix.h
+   M /s2putty/trunk/engine/putty/unix/uxagentc.c
+   M /s2putty/trunk/engine/putty/unix/uxcfg.c
+   A /s2putty/trunk/engine/putty/unix/uxconfig.in (from /s2putty/branches/original/putty/unix/uxconfig.in:377)
+   M /s2putty/trunk/engine/putty/unix/uxcons.c
+   M /s2putty/trunk/engine/putty/unix/uxgen.c
+   M /s2putty/trunk/engine/putty/unix/uxmisc.c
+   M /s2putty/trunk/engine/putty/unix/uxnet.c
+   M /s2putty/trunk/engine/putty/unix/uxplink.c
+   M /s2putty/trunk/engine/putty/unix/uxproxy.c
+   A /s2putty/trunk/engine/putty/unix/uxpterm.c (from /s2putty/branches/original/putty/unix/uxpterm.c:377)
+   A /s2putty/trunk/engine/putty/unix/uxpty.c (from /s2putty/branches/original/putty/unix/uxpty.c:377)
+   M /s2putty/trunk/engine/putty/unix/uxputty.c
+   A /s2putty/trunk/engine/putty/unix/uxser.c (from /s2putty/branches/original/putty/unix/uxser.c:377)
+   M /s2putty/trunk/engine/putty/unix/uxsftp.c
+   A /s2putty/trunk/engine/putty/unix/uxsignal.c (from /s2putty/branches/original/putty/unix/uxsignal.c:377)
+   M /s2putty/trunk/engine/putty/unix/uxstore.c
+   M /s2putty/trunk/engine/putty/unix/uxucs.c
+   A /s2putty/trunk/engine/putty/unix/xpmptcfg.c (from /s2putty/branches/original/putty/unix/xpmptcfg.c:377)
+   A /s2putty/trunk/engine/putty/unix/xpmpterm.c (from /s2putty/branches/original/putty/unix/xpmpterm.c:377)
+   A /s2putty/trunk/engine/putty/unix/xpmpucfg.c (from /s2putty/branches/original/putty/unix/xpmpucfg.c:377)
+   A /s2putty/trunk/engine/putty/unix/xpmputty.c (from /s2putty/branches/original/putty/unix/xpmputty.c:377)
+   M /s2putty/trunk/engine/putty/version.c
+   A /s2putty/trunk/engine/putty/version.def (from /s2putty/branches/original/putty/version.def:377)
+   M /s2putty/trunk/engine/putty/wcwidth.c
+   D /s2putty/trunk/engine/putty/website.url
+   D /s2putty/trunk/engine/putty/win_res.h
+   D /s2putty/trunk/engine/putty/win_res.rc
+   D /s2putty/trunk/engine/putty/wincfg.c
+   D /s2putty/trunk/engine/putty/winctrls.c
+   D /s2putty/trunk/engine/putty/windefs.c
+   D /s2putty/trunk/engine/putty/windlg.c
+   D /s2putty/trunk/engine/putty/window.c
+   A /s2putty/trunk/engine/putty/windows (from /s2putty/branches/original/putty/windows:377)
+   D /s2putty/trunk/engine/putty/winhelp.h
+   D /s2putty/trunk/engine/putty/winmisc.c
+   D /s2putty/trunk/engine/putty/winnet.c
+   D /s2putty/trunk/engine/putty/winsftp.c
+   D /s2putty/trunk/engine/putty/winstore.c
+   D /s2putty/trunk/engine/putty/winstuff.h
+   D /s2putty/trunk/engine/putty/winutils.c
+   M /s2putty/trunk/engine/putty/x11fwd.c
+   M /s2putty/trunk/engine/puttyengineimp.cpp
+   M /s2putty/trunk/engine/puttyengineimp.h
+   M /s2putty/trunk/engine/puttysymbian/epocmemory.cpp
+   M /s2putty/trunk/engine/puttysymbian/epocnet.cpp
+   M /s2putty/trunk/engine/puttysymbian/puttysymbian.h
+   M /s2putty/trunk/include/puttyclient.h
+   M /s2putty/trunk/test/sendgrid/test_s60v3.mmp
+   M /s2putty/trunk/ui/s60/profilelistview.cpp
+   M /s2putty/trunk/ui/s60/profilelistview.h
+   M /s2putty/trunk/ui/s60/putty.rss
+   M /s2putty/trunk/ui/s60/terminalview.cpp
+   M /s2putty/trunk/ui/s60/terminalview.h
+
+Merged in changes from PuTTY 0.60 and updated the engine and S60 UI to
+work with the changes. Basic functionality does work but more
+extensive testing is needed.
+------------------------------------------------------------------------
+r375 | pekangas | 2008-10-05 18:41:05 +0100 (Sun, 05 Oct 2008) | 3 lines
+Changed paths:
+   M /s2putty/trunk/ui/s60/sendgrid.cpp
+
+The Send Grid now also accepts QWERTY key events, matching the E61/E71
+keyboard. This makes it work properly on the E71, where keys now
+generate QWERTY keyboard events by default.
+------------------------------------------------------------------------
+r374 | pekangas | 2008-10-05 18:07:23 +0100 (Sun, 05 Oct 2008) | 1 line
+Changed paths:
+   M /s2putty/trunk/ui/s60/sendgrid.cpp
+
+Fixed grid colors after cell index changes
+------------------------------------------------------------------------
+r373 | pekangas | 2008-10-05 17:55:40 +0100 (Sun, 05 Oct 2008) | 1 line
+Changed paths:
+   A /s2putty/trunk/test/sendgrid/test_s60v3.pkg
+
+Added an installation package for the Send Grid test
+------------------------------------------------------------------------
+r372 | pekangas | 2008-10-05 17:55:17 +0100 (Sun, 05 Oct 2008) | 3 lines
+Changed paths:
+   M /s2putty/trunk/ui/s60/sendgrid.cpp
+
+Changed the Send Grid to use grid cells 1 and 2 instead of 0 and
+1. This seems to fix label display on S60 3.1, at least on the
+emulator.
+------------------------------------------------------------------------
+r371 | pekangas | 2008-10-05 17:54:17 +0100 (Sun, 05 Oct 2008) | 1 line
+Changed paths:
+   M /s2putty/trunk/test/sendgrid/test_s60v3.mmp
+   M /s2putty/trunk/test/sendgrid/testappview.cpp
+
+Fixed to build properly and work on hardware
+------------------------------------------------------------------------
 r362 | pekangas | 2008-03-04 21:35:15 +0000 (Tue, 04 Mar 2008) | 1 line
 Changed paths:
    M /s2putty/trunk/build/s60v3/putty.pkg

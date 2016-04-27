@@ -449,6 +449,14 @@ RESOURCE ARRAY r_settings_ssh_page {
             id = ESettingsCompression;
         },
         DLG_LINE {
+            type = EEikCtChoiceList;
+            prompt = "Preferred Cipher";
+            id = ESettingsSshCipher;
+            control = CHOICELIST {
+                array_id = r_settings_ssh_ciphers;
+            };
+        },
+        DLG_LINE {
             type = EEikCtNumberEditor;
             prompt = "SSH Keepalive interval";
             id = ESettingsKeepalive;
@@ -466,6 +474,13 @@ RESOURCE ARRAY r_settings_ssh_versions {
         LBUF { txt = "1 preferred"; },
         LBUF { txt = "2 preferred"; },
         LBUF { txt = "2 only"; }
+    };
+}
+
+RESOURCE ARRAY r_settings_ssh_ciphers {
+    items = {
+        LBUF { txt = "Blowfish-128"; },
+        LBUF { txt = "AES-256"; }
     };
 }
 
@@ -711,10 +726,9 @@ RESOURCE TBUF r_str_different_host_key_dlg_fmt {
 // Accept cipher dialog title
 RESOURCE TBUF r_str_accept_cipher_title { buf = "Accept Cipher?"; }
 
-// Accept cipher dialog contents format string. First %S = cipher, second
-// the direction
+// Accept cipher dialog contents format string. First %S = usage, second cipher
 RESOURCE TBUF r_str_accept_cipher_dlg_fmt {
-    buf = "SECURITY WARNING!\nThe server supports only weak ciphers.\nAccept cipher %S for\ncommunication %S?";
+    buf = "SECURITY WARNING!\nThe server supports only weak ciphers.\nAccept %S %S?";
 }
 
 // Cipher communication directions: Both, client-to-server, server-to-client
@@ -771,7 +785,7 @@ RESOURCE TBUF r_str_show_putty_config_files { buf = "Show PuTTY\nconfig files"; 
 RESOURCE TBUF r_str_about_title { buf = "About PuTTY"; }
 
 // ABout dialog contents (FIXME: Make more dynamic)
-RESOURCE TBUF r_str_about_text { buf = "PuTTY for Symbian OS\nVersion 1.5 Beta 1\nBased on PuTTY 0.56 beta\nBuilt " __DATE__ ", " __TIME__; }
+RESOURCE TBUF r_str_about_text { buf = "PuTTY for Symbian OS\nVersion 1.5 Beta 2\nBased on PuTTY 0.60\nBuilt " __DATE__ ", " __TIME__; }
 
 // Delete profile confirmation title
 RESOURCE TBUF r_str_delete_profile_confirm_title { buf = "Delete profile?"; }

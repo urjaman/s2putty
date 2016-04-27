@@ -44,6 +44,26 @@ static const TInt KFullLargeHeight = 14;
 static const TInt KSmallFontIndex = 0;
 static const TInt KLargeFontIndex = 1;
 
+// Cipher list when the user prefers Blowfish (default)
+static const int KCiphersBlowfish[CIPHER_MAX] = {
+    CIPHER_BLOWFISH,
+    CIPHER_AES,
+    CIPHER_3DES,
+    CIPHER_WARN,
+    CIPHER_ARCFOUR,
+    CIPHER_DES
+};
+
+// Cipher list when the user prefers AES (default)
+static const int KCiphersAes[CIPHER_MAX] = {
+    CIPHER_AES,
+    CIPHER_BLOWFISH,
+    CIPHER_3DES,
+    CIPHER_WARN,
+    CIPHER_ARCFOUR,
+    CIPHER_DES
+};
+
 
 // Converts a null-terminated string to a descriptor. Doesn't support anything
 // except 7-bit ASCII.
@@ -117,6 +137,13 @@ void CSettingsDialog::PreLayoutDynInitL() {
     ((CEikCheckBox*)Control(ESettingsCompression))
         ->SetState(iConfig->compression ?
                    CEikCheckBox::ESet : CEikCheckBox::EClear);
+
+    // Cipher
+    if ( iConfig->ssh_cipherlist[0] == CIPHER_AES ) {
+        ((CEikChoiceList*)Control(ESettingsSshCipher))->SetCurrentItem(1);
+    } else {
+        ((CEikChoiceList*)Control(ESettingsSshCipher))->SetCurrentItem(0);
+    }
 
     // SSH Keepalive interval
     ((CEikNumberEditor*)Control(ESettingsKeepalive))
@@ -250,6 +277,13 @@ TBool CSettingsDialog::OkToExitL(TInt aButtonId) {
     } else {
         iConfig->compression = 0;
     }
+
+    // Cipher
+    const int *ciphers = KCiphersBlowfish;
+    if ( ((CEikChoiceList*)Control(ESettingsSshCipher))->CurrentItem() == 1 ) {
+        ciphers = KCiphersAes;
+    }
+    Mem::Copy(iConfig->ssh_cipherlist, ciphers, sizeof(int)*CIPHER_MAX);
 
     // SSH Keepalive interval
     iConfig->ping_interval =

@@ -420,8 +420,7 @@ MPuttyClient::THostKeyResponse CProfileListView::DifferentHostKey(
     return EAbadonConnection;    
 }
 
-TBool CProfileListView::AcceptCipher(const TDesC &,
-                                     MPuttyClient::TCipherDirection) {
+TBool CProfileListView::AcceptCipher(const TDesC &, const TDesC &) {
     User::Invariant();
     return EFalse;
 }

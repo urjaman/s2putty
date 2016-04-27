@@ -74,6 +74,7 @@ enum TDlgControls {
     ESettingsLogFile,
     ESettingsKeepalive,
     ESettingsCompression,
+    ESettingsSshCipher,
     ESettingsCharacterSet,
     ESettingsProfile,
     ESettingsFullScreen,

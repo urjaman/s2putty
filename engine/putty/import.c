@@ -12,25 +12,15 @@
 #include "ssh.h"
 #include "misc.h"
 
-#define PUT_32BIT(cp, value) do { \
-  (cp)[3] = (unsigned char)(value); \
-  (cp)[2] = (unsigned char)((value) >> 8); \
-  (cp)[1] = (unsigned char)((value) >> 16); \
-  (cp)[0] = (unsigned char)((value) >> 24); } while (0)
-
-#define GET_32BIT(cp) \
-    (((unsigned long)(unsigned char)(cp)[0] << 24) | \
-    ((unsigned long)(unsigned char)(cp)[1] << 16) | \
-    ((unsigned long)(unsigned char)(cp)[2] << 8) | \
-    ((unsigned long)(unsigned char)(cp)[3]))
-
 int openssh_encrypted(const Filename *filename);
-struct ssh2_userkey *openssh_read(const Filename *filename, char *passphrase);
+struct ssh2_userkey *openssh_read(const Filename *filename, char *passphrase,
+				  const char **errmsg_p);
 int openssh_write(const Filename *filename, struct ssh2_userkey *key,
 		  char *passphrase);
 
 int sshcom_encrypted(const Filename *filename, char **comment);
-struct ssh2_userkey *sshcom_read(const Filename *filename, char *passphrase);
+struct ssh2_userkey *sshcom_read(const Filename *filename, char *passphrase,
+				 const char **errmsg_p);
 int sshcom_write(const Filename *filename, struct ssh2_userkey *key,
 		 char *passphrase);
 
@@ -54,7 +44,7 @@ int import_possible(int type)
 int import_target_type(int type)
 {
     /*
-     * There are no known foreign SSH1 key formats.
+     * There are no known foreign SSH-1 key formats.
      */
     return SSH_KEYTYPE_SSH2;
 }
@@ -76,29 +66,29 @@ int import_encrypted(const Filename *filename, int type, char **comment)
 }
 
 /*
- * Import an SSH1 key.
+ * Import an SSH-1 key.
  */
 int import_ssh1(const Filename *filename, int type,
-		struct RSAKey *key, char *passphrase)
+		struct RSAKey *key, char *passphrase, const char **errmsg_p)
 {
     return 0;
 }
 
 /*
- * Import an SSH2 key.
+ * Import an SSH-2 key.
  */
 struct ssh2_userkey *import_ssh2(const Filename *filename, int type,
-				 char *passphrase)
+				 char *passphrase, const char **errmsg_p)
 {
     if (type == SSH_KEYTYPE_OPENSSH)
-	return openssh_read(filename, passphrase);
+	return openssh_read(filename, passphrase, errmsg_p);
     if (type == SSH_KEYTYPE_SSHCOM)
-	return sshcom_read(filename, passphrase);
+	return sshcom_read(filename, passphrase, errmsg_p);
     return NULL;
 }
 
 /*
- * Export an SSH1 key.
+ * Export an SSH-1 key.
  */
 int export_ssh1(const Filename *filename, int type, struct RSAKey *key,
 		char *passphrase)
@@ -107,7 +97,7 @@ int export_ssh1(const Filename *filename, int type, struct RSAKey *key,
 }
 
 /*
- * Export an SSH2 key.
+ * Export an SSH-2 key.
  */
 int export_ssh2(const Filename *filename, int type,
                 struct ssh2_userkey *key, char *passphrase)
@@ -117,6 +107,17 @@ int export_ssh2(const Filename *filename, int type,
     if (type == SSH_KEYTYPE_SSHCOM)
 	return sshcom_write(filename, key, passphrase);
     return 0;
+}
+
+/*
+ * Strip trailing CRs and LFs at the end of a line of text.
+ */
+void strip_crlf(char *str)
+{
+    char *p = str + strlen(str);
+
+    while (p > str && (p[-1] == '\r' || p[-1] == '\n'))
+	*--p = '\0';
 }
 
 /* ----------------------------------------------------------------------
@@ -315,11 +316,12 @@ struct openssh_key {
     int keyblob_len, keyblob_size;
 };
 
-static struct openssh_key *load_openssh_key(const Filename *filename)
+static struct openssh_key *load_openssh_key(const Filename *filename,
+					    const char **errmsg_p)
 {
     struct openssh_key *ret;
     FILE *fp;
-    char buffer[256];
+    char *line = NULL;
     char *errmsg, *p;
     int headers_done;
     char base64_bit[4];
@@ -331,55 +333,64 @@ static struct openssh_key *load_openssh_key(const Filename *filename)
     ret->encrypted = 0;
     memset(ret->iv, 0, sizeof(ret->iv));
 
-    fp = f_open(*filename, "r");
+    fp = f_open(*filename, "r", FALSE);
     if (!fp) {
-	errmsg = "Unable to open key file";
-	goto error;
-    }
-    if (!fgets(buffer, sizeof(buffer), fp) ||
-	0 != strncmp(buffer, "-----BEGIN ", 11) ||
-	0 != strcmp(buffer+strlen(buffer)-17, "PRIVATE KEY-----\n")) {
-	errmsg = "File does not begin with OpenSSH key header";
-	goto error;
-    }
-    if (!strcmp(buffer, "-----BEGIN RSA PRIVATE KEY-----\n"))
-	ret->type = OSSH_RSA;
-    else if (!strcmp(buffer, "-----BEGIN DSA PRIVATE KEY-----\n"))
-	ret->type = OSSH_DSA;
-    else {
-	errmsg = "Unrecognised key type";
+	errmsg = "unable to open key file";
 	goto error;
     }
 
+    if (!(line = fgetline(fp))) {
+	errmsg = "unexpected end of file";
+	goto error;
+    }
+    strip_crlf(line);
+    if (0 != strncmp(line, "-----BEGIN ", 11) ||
+	0 != strcmp(line+strlen(line)-16, "PRIVATE KEY-----")) {
+	errmsg = "file does not begin with OpenSSH key header";
+	goto error;
+    }
+    if (!strcmp(line, "-----BEGIN RSA PRIVATE KEY-----"))
+	ret->type = OSSH_RSA;
+    else if (!strcmp(line, "-----BEGIN DSA PRIVATE KEY-----"))
+	ret->type = OSSH_DSA;
+    else {
+	errmsg = "unrecognised key type";
+	goto error;
+    }
+    memset(line, 0, strlen(line));
+    sfree(line);
+    line = NULL;
+
     headers_done = 0;
     while (1) {
-	if (!fgets(buffer, sizeof(buffer), fp)) {
-	    errmsg = "Unexpected end of file";
+	if (!(line = fgetline(fp))) {
+	    errmsg = "unexpected end of file";
 	    goto error;
 	}
-	if (0 == strncmp(buffer, "-----END ", 9) &&
-	    0 == strcmp(buffer+strlen(buffer)-17, "PRIVATE KEY-----\n"))
+	strip_crlf(line);
+	if (0 == strncmp(line, "-----END ", 9) &&
+	    0 == strcmp(line+strlen(line)-16, "PRIVATE KEY-----"))
 	    break;		       /* done */
-	if ((p = strchr(buffer, ':')) != NULL) {
+	if ((p = strchr(line, ':')) != NULL) {
 	    if (headers_done) {
-		errmsg = "Header found in body of key data";
+		errmsg = "header found in body of key data";
 		goto error;
 	    }
 	    *p++ = '\0';
 	    while (*p && isspace((unsigned char)*p)) p++;
-	    if (!strcmp(buffer, "Proc-Type")) {
+	    if (!strcmp(line, "Proc-Type")) {
 		if (p[0] != '4' || p[1] != ',') {
 		    errmsg = "Proc-Type is not 4 (only 4 is supported)";
 		    goto error;
 		}
 		p += 2;
-		if (!strcmp(p, "ENCRYPTED\n"))
+		if (!strcmp(p, "ENCRYPTED"))
 		    ret->encrypted = 1;
-	    } else if (!strcmp(buffer, "DEK-Info")) {
+	    } else if (!strcmp(line, "DEK-Info")) {
 		int i, j;
 
 		if (strncmp(p, "DES-EDE3-CBC,", 13)) {
-		    errmsg = "Ciphers other than DES-EDE3-CBC not supported";
+		    errmsg = "ciphers other than DES-EDE3-CBC not supported";
 		    goto error;
 		}
 		p += 13;
@@ -390,14 +401,14 @@ static struct openssh_key *load_openssh_key(const Filename *filename)
 		    p += 2;
 		}
 		if (i < 8) {
-		    errmsg = "Expected 16-digit iv in DEK-Info";
+		    errmsg = "expected 16-digit iv in DEK-Info";
 		    goto error;
 		}
 	    }
 	} else {
 	    headers_done = 1;
 
-	    p = buffer;
+	    p = line;
 	    while (isbase64(*p)) {
                 base64_bit[base64_chars++] = *p;
                 if (base64_chars == 4) {
@@ -409,7 +420,7 @@ static struct openssh_key *load_openssh_key(const Filename *filename)
                     len = base64_decode_atom(base64_bit, out);
 
                     if (len <= 0) {
-                        errmsg = "Invalid base64 encoding";
+                        errmsg = "invalid base64 encoding";
                         goto error;
                     }
 
@@ -428,39 +439,47 @@ static struct openssh_key *load_openssh_key(const Filename *filename)
 		p++;
 	    }
 	}
+	memset(line, 0, strlen(line));
+	sfree(line);
+	line = NULL;
     }
 
     if (ret->keyblob_len == 0 || !ret->keyblob) {
-	errmsg = "Key body not present";
+	errmsg = "key body not present";
 	goto error;
     }
 
     if (ret->encrypted && ret->keyblob_len % 8 != 0) {
-	errmsg = "Encrypted key blob is not a multiple of cipher block size";
+	errmsg = "encrypted key blob is not a multiple of cipher block size";
 	goto error;
     }
 
-    memset(buffer, 0, sizeof(buffer));
     memset(base64_bit, 0, sizeof(base64_bit));
+    if (errmsg_p) *errmsg_p = NULL;
     return ret;
 
     error:
-    memset(buffer, 0, sizeof(buffer));
+    if (line) {
+	memset(line, 0, strlen(line));
+	sfree(line);
+	line = NULL;
+    }
     memset(base64_bit, 0, sizeof(base64_bit));
     if (ret) {
 	if (ret->keyblob) {
             memset(ret->keyblob, 0, ret->keyblob_size);
             sfree(ret->keyblob);
         }
-        memset(&ret, 0, sizeof(ret));
+        memset(ret, 0, sizeof(*ret));
 	sfree(ret);
     }
+    if (errmsg_p) *errmsg_p = errmsg;
     return NULL;
 }
 
 int openssh_encrypted(const Filename *filename)
 {
-    struct openssh_key *key = load_openssh_key(filename);
+    struct openssh_key *key = load_openssh_key(filename, NULL);
     int ret;
 
     if (!key)
@@ -468,14 +487,15 @@ int openssh_encrypted(const Filename *filename)
     ret = key->encrypted;
     memset(key->keyblob, 0, key->keyblob_size);
     sfree(key->keyblob);
-    memset(&key, 0, sizeof(key));
+    memset(key, 0, sizeof(*key));
     sfree(key);
     return ret;
 }
 
-struct ssh2_userkey *openssh_read(const Filename *filename, char *passphrase)
+struct ssh2_userkey *openssh_read(const Filename *filename, char *passphrase,
+				  const char **errmsg_p)
 {
-    struct openssh_key *key = load_openssh_key(filename);
+    struct openssh_key *key = load_openssh_key(filename, errmsg_p);
     struct ssh2_userkey *retkey;
     unsigned char *p;
     int ret, id, len, flags;
@@ -592,7 +612,7 @@ struct ssh2_userkey *openssh_read(const Filename *filename, char *passphrase)
 	     * this is some sort of version indication).
 	     */
 	    if (len != 1 || p[0] != 0) {
-		errmsg = "Version number mismatch";
+		errmsg = "version number mismatch";
 		goto error;
 	    }
 	} else if (key->type == OSSH_RSA) {
@@ -660,8 +680,9 @@ struct ssh2_userkey *openssh_read(const Filename *filename, char *passphrase)
     }
     memset(key->keyblob, 0, key->keyblob_size);
     sfree(key->keyblob);
-    memset(&key, 0, sizeof(key));
+    memset(key, 0, sizeof(*key));
     sfree(key);
+    if (errmsg_p) *errmsg_p = errmsg;
     return retval;
 }
 
@@ -771,6 +792,7 @@ int openssh_write(const Filename *filename, struct ssh2_userkey *key,
         footer = "-----END DSA PRIVATE KEY-----\n";
     } else {
         assert(0);                     /* zoinks! */
+	exit(1); /* XXX: GCC doesn't understand assert() on some systems. */
     }
 
     /*
@@ -871,7 +893,7 @@ int openssh_write(const Filename *filename, struct ssh2_userkey *key,
      * And save it. We'll use Unix line endings just in case it's
      * subsequently transferred in binary mode.
      */
-    fp = f_open(*filename, "wb");      /* ensure Unix line endings */
+    fp = f_open(*filename, "wb", TRUE);      /* ensure Unix line endings */
     if (!fp)
 	goto error;
     fputs(header, fp);
@@ -911,9 +933,9 @@ int openssh_write(const Filename *filename, struct ssh2_userkey *key,
  */
 
 /*
- * The format of the base64 blob is largely ssh2-packet-formatted,
+ * The format of the base64 blob is largely SSH-2-packet-formatted,
  * except that mpints are a bit different: they're more like the
- * old ssh1 mpint. You have a 32-bit bit count N, followed by
+ * old SSH-1 mpint. You have a 32-bit bit count N, followed by
  * (N+7)/8 bytes of data.
  * 
  * So. The blob contains:
@@ -925,7 +947,7 @@ int openssh_write(const Filename *filename, struct ssh2_userkey *key,
  *  - string encrypted-blob
  * 
  * (The first size field includes the size field itself and the
- * magic number before it. All other size fields are ordinary ssh2
+ * magic number before it. All other size fields are ordinary SSH-2
  * strings, so the size field indicates how much data is to
  * _follow_.)
  * 
@@ -970,7 +992,7 @@ int openssh_write(const Filename *filename, struct ssh2_userkey *key,
  * `dl-modp{sign{dsa' prefixes.
  * 
  * Finally, the encryption. The cipher-type string appears to be
- * either `none' or `3des-cbc'. Looks as if this is SSH2-style
+ * either `none' or `3des-cbc'. Looks as if this is SSH-2-style
  * 3des-cbc (i.e. outer cbc rather than inner). The key is created
  * from the passphrase by means of yet another hashing faff:
  * 
@@ -988,12 +1010,13 @@ struct sshcom_key {
     int keyblob_len, keyblob_size;
 };
 
-static struct sshcom_key *load_sshcom_key(const Filename *filename)
+static struct sshcom_key *load_sshcom_key(const Filename *filename,
+					  const char **errmsg_p)
 {
     struct sshcom_key *ret;
     FILE *fp;
-    char buffer[256];
-    int len;
+    char *line = NULL;
+    int hdrstart, len;
     char *errmsg, *p;
     int headers_done;
     char base64_bit[4];
@@ -1004,49 +1027,72 @@ static struct sshcom_key *load_sshcom_key(const Filename *filename)
     ret->keyblob = NULL;
     ret->keyblob_len = ret->keyblob_size = 0;
 
-    fp = f_open(*filename, "r");
+    fp = f_open(*filename, "r", FALSE);
     if (!fp) {
-	errmsg = "Unable to open key file";
+	errmsg = "unable to open key file";
 	goto error;
     }
-    if (!fgets(buffer, sizeof(buffer), fp) ||
-	0 != strcmp(buffer, "---- BEGIN SSH2 ENCRYPTED PRIVATE KEY ----\n")) {
-	errmsg = "File does not begin with ssh.com key header";
+    if (!(line = fgetline(fp))) {
+	errmsg = "unexpected end of file";
 	goto error;
     }
+    strip_crlf(line);
+    if (0 != strcmp(line, "---- BEGIN SSH2 ENCRYPTED PRIVATE KEY ----")) {
+	errmsg = "file does not begin with ssh.com key header";
+	goto error;
+    }
+    memset(line, 0, strlen(line));
+    sfree(line);
+    line = NULL;
 
     headers_done = 0;
     while (1) {
-	if (!fgets(buffer, sizeof(buffer), fp)) {
-	    errmsg = "Unexpected end of file";
+	if (!(line = fgetline(fp))) {
+	    errmsg = "unexpected end of file";
 	    goto error;
 	}
-        if (!strcmp(buffer, "---- END SSH2 ENCRYPTED PRIVATE KEY ----\n"))
+	strip_crlf(line);
+        if (!strcmp(line, "---- END SSH2 ENCRYPTED PRIVATE KEY ----"))
             break;                     /* done */
-	if ((p = strchr(buffer, ':')) != NULL) {
+	if ((p = strchr(line, ':')) != NULL) {
 	    if (headers_done) {
-		errmsg = "Header found in body of key data";
+		errmsg = "header found in body of key data";
 		goto error;
 	    }
 	    *p++ = '\0';
 	    while (*p && isspace((unsigned char)*p)) p++;
+	    hdrstart = p - line;
+
             /*
              * Header lines can end in a trailing backslash for
              * continuation.
              */
-            while ((len = strlen(p)) > (int)(sizeof(buffer) - (p-buffer) -1) ||
-                   p[len-1] != '\n' || p[len-2] == '\\') {
-                if (len > (int)((p-buffer) + sizeof(buffer)-2)) {
-                    errmsg = "Header line too long to deal with";
+	    len = hdrstart + strlen(line+hdrstart);
+	    assert(!line[len]);
+            while (line[len-1] == '\\') {
+		char *line2;
+		int line2len;
+
+		line2 = fgetline(fp);
+		if (!line2) {
+                    errmsg = "unexpected end of file";
                     goto error;
                 }
-                if (!fgets(p+len-2, sizeof(buffer)-(p-buffer)-(len-2), fp)) {
-                    errmsg = "Unexpected end of file";
-                    goto error;
-                }
+		strip_crlf(line2);
+
+		line2len = strlen(line2);
+		line = sresize(line, len + line2len + 1, char);
+		strcpy(line + len - 1, line2);
+		len += line2len - 1;
+		assert(!line[len]);
+
+		memset(line2, 0, strlen(line2));
+		sfree(line2);
+		line2 = NULL;
             }
-            p[strcspn(p, "\n")] = '\0';
-            if (!strcmp(buffer, "Comment")) {
+	    p = line + hdrstart;
+	    strip_crlf(p);
+            if (!strcmp(line, "Comment")) {
                 /* Strip quotes in comment if present. */
                 if (p[0] == '"' && p[strlen(p)-1] == '"') {
                     p++;
@@ -1058,7 +1104,7 @@ static struct sshcom_key *load_sshcom_key(const Filename *filename)
 	} else {
 	    headers_done = 1;
 
-	    p = buffer;
+	    p = line;
 	    while (isbase64(*p)) {
                 base64_bit[base64_chars++] = *p;
                 if (base64_chars == 4) {
@@ -1069,7 +1115,7 @@ static struct sshcom_key *load_sshcom_key(const Filename *filename)
                     len = base64_decode_atom(base64_bit, out);
 
                     if (len <= 0) {
-                        errmsg = "Invalid base64 encoding";
+                        errmsg = "invalid base64 encoding";
                         goto error;
                     }
 
@@ -1086,30 +1132,40 @@ static struct sshcom_key *load_sshcom_key(const Filename *filename)
 		p++;
 	    }
 	}
+	memset(line, 0, strlen(line));
+	sfree(line);
+	line = NULL;
     }
 
     if (ret->keyblob_len == 0 || !ret->keyblob) {
-	errmsg = "Key body not present";
+	errmsg = "key body not present";
 	goto error;
     }
 
+    if (errmsg_p) *errmsg_p = NULL;
     return ret;
 
     error:
+    if (line) {
+	memset(line, 0, strlen(line));
+	sfree(line);
+	line = NULL;
+    }
     if (ret) {
 	if (ret->keyblob) {
             memset(ret->keyblob, 0, ret->keyblob_size);
             sfree(ret->keyblob);
         }
-        memset(&ret, 0, sizeof(ret));
+        memset(ret, 0, sizeof(*ret));
 	sfree(ret);
     }
+    if (errmsg_p) *errmsg_p = errmsg;
     return NULL;
 }
 
 int sshcom_encrypted(const Filename *filename, char **comment)
 {
-    struct sshcom_key *key = load_sshcom_key(filename);
+    struct sshcom_key *key = load_sshcom_key(filename, NULL);
     int pos, len, answer;
 
     *comment = NULL;
@@ -1142,7 +1198,7 @@ int sshcom_encrypted(const Filename *filename, char **comment)
     *comment = dupstr(key->comment);
     memset(key->keyblob, 0, key->keyblob_size);
     sfree(key->keyblob);
-    memset(&key, 0, sizeof(key));
+    memset(key, 0, sizeof(*key));
     sfree(key);
     return answer;
 }
@@ -1189,9 +1245,10 @@ static int sshcom_put_mpint(void *target, void *data, int len)
     return len+4;
 }
 
-struct ssh2_userkey *sshcom_read(const Filename *filename, char *passphrase)
+struct ssh2_userkey *sshcom_read(const Filename *filename, char *passphrase,
+				 const char **errmsg_p)
 {
-    struct sshcom_key *key = load_sshcom_key(filename);
+    struct sshcom_key *key = load_sshcom_key(filename, errmsg_p);
     char *errmsg;
     int pos, len;
     const char prefix_rsa[] = "if-modn{sign{rsa";
@@ -1212,7 +1269,7 @@ struct ssh2_userkey *sshcom_read(const Filename *filename, char *passphrase)
      * Check magic number.
      */
     if (GET_32BIT(key->keyblob) != SSHCOM_MAGIC_NUMBER) {
-        errmsg = "Key does not begin with magic number";
+        errmsg = "key does not begin with magic number";
         goto error;
     }
 
@@ -1222,7 +1279,7 @@ struct ssh2_userkey *sshcom_read(const Filename *filename, char *passphrase)
     pos = 8;
     if (key->keyblob_len < pos+4 ||
         (len = GET_32BIT(key->keyblob + pos)) > key->keyblob_len - pos - 4) {
-        errmsg = "Key blob does not contain a key type string";
+        errmsg = "key blob does not contain a key type string";
         goto error;
     }
     if (len > sizeof(prefix_rsa) - 1 &&
@@ -1232,7 +1289,7 @@ struct ssh2_userkey *sshcom_read(const Filename *filename, char *passphrase)
         !memcmp(key->keyblob+pos+4, prefix_dsa, sizeof(prefix_dsa) - 1)) {
         type = DSA;
     } else {
-        errmsg = "Key is of unknown type";
+        errmsg = "key is of unknown type";
         goto error;
     }
     pos += 4+len;
@@ -1242,7 +1299,7 @@ struct ssh2_userkey *sshcom_read(const Filename *filename, char *passphrase)
      */
     if (key->keyblob_len < pos+4 ||
         (len = GET_32BIT(key->keyblob + pos)) > key->keyblob_len - pos - 4) {
-        errmsg = "Key blob does not contain a cipher type string";
+        errmsg = "key blob does not contain a cipher type string";
         goto error;
     }
     if (len == 4 && !memcmp(key->keyblob+pos+4, "none", 4))
@@ -1250,7 +1307,7 @@ struct ssh2_userkey *sshcom_read(const Filename *filename, char *passphrase)
     else if (len == 8 && !memcmp(key->keyblob+pos+4, "3des-cbc", 8))
         encrypted = 1;
     else {
-        errmsg = "Key encryption is of unknown type";
+        errmsg = "key encryption is of unknown type";
         goto error;
     }
     pos += 4+len;
@@ -1260,13 +1317,13 @@ struct ssh2_userkey *sshcom_read(const Filename *filename, char *passphrase)
      */
     if (key->keyblob_len < pos+4 ||
         (len = GET_32BIT(key->keyblob + pos)) > key->keyblob_len - pos - 4) {
-        errmsg = "Key blob does not contain actual key data";
+        errmsg = "key blob does not contain actual key data";
         goto error;
     }
     ciphertext = (char *)key->keyblob + pos + 4;
     cipherlen = len;
     if (cipherlen == 0) {
-        errmsg = "Length of key data is zero";
+        errmsg = "length of key data is zero";
         goto error;
     }
 
@@ -1286,7 +1343,7 @@ struct ssh2_userkey *sshcom_read(const Filename *filename, char *passphrase)
 	unsigned char keybuf[32], iv[8];
 
         if (cipherlen % 8 != 0) {
-            errmsg = "Encrypted part of key is not a multiple of cipher block"
+            errmsg = "encrypted part of key is not a multiple of cipher block"
                 " size";
             goto error;
         }
@@ -1416,8 +1473,9 @@ struct ssh2_userkey *sshcom_read(const Filename *filename, char *passphrase)
     }
     memset(key->keyblob, 0, key->keyblob_size);
     sfree(key->keyblob);
-    memset(&key, 0, sizeof(key));
+    memset(key, 0, sizeof(*key));
     sfree(key);
+    if (errmsg_p) *errmsg_p = errmsg;
     return ret;
 }
 
@@ -1497,6 +1555,7 @@ int sshcom_write(const Filename *filename, struct ssh2_userkey *key,
 	type = "dl-modp{sign{dsa-nist-sha1},dh{plain}}";
     } else {
         assert(0);                     /* zoinks! */
+	exit(1); /* XXX: GCC doesn't understand assert() on some systems. */
     }
 
     /*
@@ -1587,7 +1646,7 @@ int sshcom_write(const Filename *filename, struct ssh2_userkey *key,
      * And save it. We'll use Unix line endings just in case it's
      * subsequently transferred in binary mode.
      */
-    fp = f_open(*filename, "wb");      /* ensure Unix line endings */
+    fp = f_open(*filename, "wb", TRUE);      /* ensure Unix line endings */
     if (!fp)
 	goto error;
     fputs("---- BEGIN SSH2 ENCRYPTED PRIVATE KEY ----\n", fp);

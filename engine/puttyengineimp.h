@@ -20,6 +20,8 @@ extern "C" {
 #include "puttyclient.h"
 #include "epocnet.h"
 
+class COneShotTimer;
+
 /**
  * PuTTY engine implementation class. Takes care of implementing the
  * CPuttyEngine interface on top of the core PuTTY software.
@@ -37,18 +39,23 @@ public:
     void putty_connection_fatal(char *p, va_list ap);
     void putty_do_text(int x, int y, wchar_t *text, int len,
                        unsigned long attr, int lattr);
-    void putty_verify_ssh_host_key(char *host, int port, char *keytype,
+    int putty_verify_ssh_host_key(char *host, int port, char *keytype,
                                    char *keystr, char *fingerprint);
-    void putty_askcipher(char *ciphername, int cs);
+    int putty_askcipher(const char *ciphername, const char *ciphertype);
     void putty_palette_set(int n, int r, int g, int b);
     void putty_palette_reset();
     void putty_do_cursor(int x, int y, wchar_t *text, int len,
                          unsigned long attr, int lattr);
     int putty_from_backend(int is_stderr, const char *data, int len);
+    int putty_from_backend_untrusted(const char *data, int len);
     void putty_logevent(const char *msg);
-    int putty_ssh_get_line(const char *prompt, char *str, int maxlen,
-                           int is_pw);
-
+    int putty_get_userpass_input(prompts_t *p);
+    /*int putty_ssh_get_line(const char *prompt, char *str, int maxlen,
+      int is_pw);*/
+    char *putty_get_ttymode(const char *mode);
+    void putty_notify_remote_exit();
+    void putty_timer_change_notify(long next);
+    
     // CPuttyEngine methods
     virtual Config *GetConfig();
     virtual TInt Connect(RSocketServ &aSocketServ, RConnection &aConnection);
@@ -67,9 +74,9 @@ public:
     virtual void SocketOpened();
     virtual void SocketClosed();
 
-    // Terminal update callback
-    static TInt UpdateCallback(TAny *aAny);
-    TInt UpdateTerminal();
+    // Timer callback
+    static TInt TimerCallback(TAny *aAny);
+    TInt DoTimerCallback();
 
 private:
     virtual void RunL();
@@ -87,14 +94,9 @@ private:
     char *iConnError;
     TInt iNumSockets;
     TInt iTermWidth, iTermHeight;
-    CPeriodic *iTermUpdatePeriodic;
 
-    enum {
-        KNumColors = 24
-    };
-
-    TRgb iDefaultPalette[KNumColors];
-    TRgb iPalette[KNumColors];
+    TRgb *iDefaultPalette;
+    TRgb *iPalette;
 
     Config iConfig;
     void *iBackendHandle;
@@ -106,6 +108,9 @@ private:
 
     TUint16 *iTextBuf;
     TInt iTextBufLen;
+    
+    COneShotTimer *iTimer;
+    long iTimerNext;
 
     Statics iStatics;
 };

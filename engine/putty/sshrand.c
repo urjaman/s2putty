@@ -5,6 +5,9 @@
 #include "putty.h"
 #include "ssh.h"
 
+/* Collect environmental noise every 5 minutes */
+#define NOISE_REGULAR_INTERVAL (5*60*TICKSPERSEC)
+
 void noise_get_heavy(void (*func) (void *, int));
 void noise_get_light(void (*func) (void *, int));
 
@@ -37,7 +40,10 @@ struct RandPool {
 
     unsigned char incomingb[HASHINPUT];
     int incomingpos;
+
+    int stir_pending;
 };
+
 
 
 static void random_stir(struct RandPool *pool)
@@ -45,6 +51,14 @@ static void random_stir(struct RandPool *pool)
     word32 block[HASHINPUT / sizeof(word32)];
     word32 digest[HASHSIZE / sizeof(word32)];
     int i, j, k;
+
+    /*
+     * noise_get_light will call random_add_noise, which may call
+     * back to here. Prevent recursive stirs.
+     */
+    if (pool->stir_pending)
+	return;
+    pool->stir_pending = TRUE;
 
     noise_get_light(random_add_noise);
 
@@ -109,6 +123,8 @@ static void random_stir(struct RandPool *pool)
     memcpy(pool->incoming, digest, sizeof(digest));
 
     pool->poolpos = sizeof(pool->incoming);
+
+    pool->stir_pending = FALSE;
 }
 
 void random_add_noise(void *noise, int length)
@@ -183,29 +199,44 @@ static void random_add_heavynoise_bitbybit(void *noise, int length)
     pool->poolpos = i;
 }
 
-void random_init(void)
+static void random_timer(void *ctx, long now)
 {
-    struct RandPool *pool = NULL;
-    
-    if ( statics()->random_active )
-        return;
-
-    pool = snew(struct RandPool);
-    memset(pool, 0, sizeof(struct RandPool)); /* just to start with */
-
-    statics()->random_pool = pool;
-    statics()->random_active = 1;
-
-    noise_get_heavy(random_add_heavynoise_bitbybit);
-    random_stir(pool);
+    if (statics()->random_active > 0 && now - statics()->random_next_noise_collection >= 0) {
+	noise_regular();
+	statics()->random_next_noise_collection =
+	    schedule_timer(NOISE_REGULAR_INTERVAL, random_timer, statics()->random_pool);
+    }
 }
 
-void random_free(void)
+void random_ref(void)
+{    
+    if (!statics()->random_active) {
+        struct RandPool *pool = NULL;
+        pool = snew(struct RandPool);
+        statics()->random_pool = pool;
+        
+        memset(pool, 0, sizeof(struct RandPool)); /* just to start with */
+        
+	noise_get_heavy(random_add_heavynoise_bitbybit);
+	random_stir(pool);
+
+	statics()->random_next_noise_collection =
+	    schedule_timer(NOISE_REGULAR_INTERVAL, random_timer, &pool);
+    }
+    statics()->random_active++;
+}
+
+void random_unref(void)
 {
-    if ( !statics()->random_active )
-        return;
-    sfree(statics()->random_pool);
-    statics()->random_pool = NULL;
+    /* [Petteri] Ensure we save the seed before destroying the pool */
+    if ( statics()->random_active == 1 ) {
+        random_save_seed();
+    }
+    statics()->random_active--;
+    if ( !statics()->random_active ) {
+        sfree(statics()->random_pool);
+        statics()->random_pool = NULL;        
+    }
 }
 
 int random_byte(void)

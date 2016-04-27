@@ -75,7 +75,7 @@ private: // From MPuttyEngine -- all dummy implementations except FatalError
     THostKeyResponse UnknownHostKey(const TDesC &aFingerprint);
     THostKeyResponse DifferentHostKey(const TDesC &aFingerprint);
     TBool AcceptCipher(const TDesC &aCipherName,
-                       TCipherDirection aDirection);
+                       const TDesC &aCipherType);
     TBool AuthenticationPrompt(const TDesC &aPrompt, TDes &aTarget,
                                TBool aSecret);
 

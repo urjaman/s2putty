@@ -43,6 +43,14 @@ public:
      */
     ~CTerminalView();
 
+    /** 
+     * Handles the Enter key (center of joystick), depending on terminal state.
+     * Called from the terminal container.
+     * 
+     * @return ETrue if key handled, EFalse if the container should handle it
+     */
+    TBool HandleEnterL();
+
 public: // From CAknView
     TUid Id() const;
     void HandleCommandL(TInt aCommand);
@@ -67,7 +75,7 @@ private: // From MPuttyEngine
     THostKeyResponse UnknownHostKey(const TDesC &aFingerprint);
     THostKeyResponse DifferentHostKey(const TDesC &aFingerprint);
     TBool AcceptCipher(const TDesC &aCipherName,
-                       TCipherDirection aDirection);
+                       const TDesC &aCipherType);
     TBool AuthenticationPrompt(const TDesC &aPrompt, TDes &aTarget,
                                TBool aSecret);
 
@@ -96,7 +104,7 @@ private:
     void FatalErrorL(const TDesC &aMessage);
     MPuttyClient::THostKeyResponse HostKeyDialogL(const TDesC &aFingerprint,
                                                   TInt aDialogFormatRes);
-    TBool AcceptCipherL(const TDesC &aCipherName, TCipherDirection aDirection);
+    TBool AcceptCipherL(const TDesC &aCipherName, const TDesC &aCipherType);
     TBool AuthenticationPromptL(const TDesC &aPrompt, TDes &aTarget,
                                 TBool aSecret);
     TBool QuerySendTextL(TInt aPrompt, TBool aPermitPredictive,
@@ -125,6 +133,8 @@ private:
     TBool iFullScreen;
     TInt iLastCommand;
     CSendGrid *iSendGrid;
+    TBool iSelection;
+    TBool iMark;
 };
 
 

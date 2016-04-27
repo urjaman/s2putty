@@ -5,7 +5,7 @@
  * Platform-specific project definition files just define macros and
  * #include this.
  *
- * Copyright 2002-2004,2006 Petteri Kangaslampi
+ * Copyright 2002-2004,2006,2008 Petteri Kangaslampi
  *
  * See license.txt for full copyright and license information.
 */
@@ -26,6 +26,7 @@ USERINCLUDE	..\..\engine\putty ..\..\engine\putty\charset
 // Engine module source files
 SOURCE		puttyengineimp.cpp
 SOURCE		terminalkeys.cpp
+SOURCE		oneshottimer.cpp
 
 // PuTTY core source files
 SOURCE		putty\ssh.c
@@ -60,6 +61,11 @@ SOURCE		putty\wildcard.c
 SOURCE		putty\logging.c
 SOURCE		putty\cproxy.c
 SOURCE		putty\minibidi.c
+SOURCE		putty\pinger.c
+SOURCE		putty\timing.c
+SOURCE		putty\time.c
+SOURCE		putty\ssharcf.c
+SOURCE		putty\sshsh256.c
 
 // PuTTY charset library sources
 SOURCE		putty\charset\sbcsdat.c

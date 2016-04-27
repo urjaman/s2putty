@@ -105,7 +105,7 @@ void CSendGrid::ConstructL(const TRect &aRect, TInt aResourceId) {
     TPoint text1Start(0, 0);
     TPoint text1End(itemSize.iWidth, font->FontMaxHeight());
     AknListBoxLayouts::SetupFormTextCell(*iGrid, iGrid->ItemDrawer(),
-                                         0, // text pos
+                                         1, // text pos
                                          font, 
                                          215, // color
                                          0, // left margin
@@ -115,12 +115,12 @@ void CSendGrid::ConstructL(const TRect &aRect, TInt aResourceId) {
                                          CGraphicsContext::ECenter, // alignment
                                          text1Start, 
                                          text1End);
-
+    
     // Text cell for cell text from the resource file
     TPoint text2Start(0, font->FontMaxHeight());
     TPoint text2End(itemSize.iWidth, itemSize.iHeight);
     AknListBoxLayouts::SetupFormTextCell(*iGrid, iGrid->ItemDrawer(),
-                                         1, // text pos
+                                         2, // text pos
                                          font, 
                                          215, // color
                                          0, // left margin
@@ -130,7 +130,7 @@ void CSendGrid::ConstructL(const TRect &aRect, TInt aResourceId) {
                                          CGraphicsContext::ECenter, // alignment
                                          text2Start, 
                                          text2End);
-
+    
     // Set size before changing colors -- according to the Forum Nokia
     // Knowledge Base article TSS000596 CAknGrid::SizeChanged() may override
     // this
@@ -145,8 +145,8 @@ void CSendGrid::ConstructL(const TRect &aRect, TInt aResourceId) {
                               EAknsCIQsnTextColorsCG9);
     AknsUtils::GetCachedColor(skin, colors.iHighlightedText,
                               KAknsIIDQsnTextColors, EAknsCIQsnTextColorsCG11);
-    iGrid->ItemDrawer()->FormattedCellData()->SetSubCellColorsL(0, colors);
     iGrid->ItemDrawer()->FormattedCellData()->SetSubCellColorsL(1, colors);
+    iGrid->ItemDrawer()->FormattedCellData()->SetSubCellColorsL(2, colors);
 
     // Enable and make visible
     iGrid->MakeVisible(ETrue);
@@ -203,6 +203,7 @@ void CSendGrid::SetItemsL(TInt aResourceId) {
         iCommands[i] = reader.ReadInt32();
         iSubGrids[i] = reader.ReadInt32();
         TBuf<32> buf;
+        buf.Append('\t');
         buf.Append(KGridItemLabels[i]);
         buf.Append('\t');
         TPtrC ptr = reader.ReadTPtrC();
@@ -240,21 +241,25 @@ TKeyResponse CSendGrid::OfferKeyEventL(const TKeyEvent &aKeyEvent,
                 return EKeyWasConsumed;
 
             // Selection shortcuts
-#define MAPKEY(key, index) case key: HandleSelectionL(index); return EKeyWasConsumed;
-            MAPKEY('1', 0);
-            MAPKEY('2', 1);
-            MAPKEY('3', 2);
-            MAPKEY('4', 3);
-            MAPKEY('5', 4);
-            MAPKEY('6', 5);
-            MAPKEY('7', 6);
-            MAPKEY('8', 7);
-            MAPKEY('9', 8);
-            MAPKEY(EStdKeyNkpAsterisk, 9);
-            MAPKEY('*', 9);
-            MAPKEY('0', 10);
-            MAPKEY(EStdKeyHash, 11);
-            MAPKEY('#', 9);
+            // Note that E71 returns QWERTY keycodes while earlier S60 QWERTY
+            // devices return the numbers printed in the keys. We'll now accept
+            // both
+#define MAPKEY1(key1, index) case key1: HandleSelectionL(index); return EKeyWasConsumed;
+#define MAPKEY2(key1, key2, index) case key1: case key2: HandleSelectionL(index); return EKeyWasConsumed;
+            MAPKEY2('1', 'R', 0);
+            MAPKEY2('2', 'T', 1);
+            MAPKEY2('3', 'Y', 2);
+            MAPKEY2('4', 'F', 3);
+            MAPKEY2('5', 'G', 4);
+            MAPKEY2('6', 'H', 5);
+            MAPKEY2('7', 'V', 6);
+            MAPKEY2('8', 'B', 7);
+            MAPKEY2('9', 'N', 8);
+            MAPKEY2(EStdKeyNkpAsterisk, 'U', 9);
+            MAPKEY1('*', 9);
+            MAPKEY2('0', 'M', 10);
+            MAPKEY2(EStdKeyHash, 'J', 11);
+            MAPKEY1('#', 9);
         }
     }
     

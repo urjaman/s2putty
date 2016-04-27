@@ -1,4 +1,5 @@
 #include <appinfo.rh>
+#include <putty.rsg>
 #include "puttyuids.hrh"
 
 UID2 KUidAppRegistrationResourceFile
@@ -6,7 +7,8 @@ UID3 KUidPuttyAppDefine
 
 RESOURCE APP_REGISTRATION_INFO {
     app_file = "putty";
+    localisable_resource_file = "\\resource\\apps\\putty";
+    localisable_resource_id = R_PUTTY_LOCALISABLE_APP_INFO;
     embeddability = KAppNotEmbeddable;
     newfile = KAppDoesNotSupportNewFile;
 }
-      

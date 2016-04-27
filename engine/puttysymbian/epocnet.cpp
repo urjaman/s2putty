@@ -262,7 +262,7 @@ static char *FormatError(const char *operation, TInt error) {
 }
 
 
-SockAddr sk_namelookup(const char *host, char **canonicalname)
+SockAddr sk_namelookup(const char *host, char **canonicalname, int address_family)
 {
     SockAddr ret = (SockAddr) smalloc(sizeof(struct SockAddr_tag));
     RHostResolver hres;
@@ -274,7 +274,15 @@ SockAddr sk_namelookup(const char *host, char **canonicalname)
     LOGF(("sk_namelookup: Looking up %s", host));
 
     memset(ret, 0, sizeof(struct SockAddr_tag));
+#ifdef IPV6
+    if ( address_family == ADDRTYPE_IPV6 ) {
+        ret->family = KAfInet6;
+    } else {
+        ret->family = KAfInet;
+    }
+#else
     ret->family = KAfInet;
+#endif
 
     ret->address=new TInetAddr();
     if (ret->address==NULL)
@@ -690,7 +698,7 @@ Socket sk_new(SockAddr addr, int port, int privport, int oobinline,
     return (Socket) ret;
 }
 
-Socket sk_newlistener(char *srcaddr, int port, Plug plug, int local_host_only)
+Socket sk_newlistener(char *srcaddr, int port, Plug plug, int local_host_only, int address_family)
 {
     static const struct socket_function_table fn_table = {
 	sk_tcp_plug,
@@ -747,8 +755,18 @@ Socket sk_newlistener(char *srcaddr, int port, Plug plug, int local_host_only)
     }
 
     assert((netStatics->iSocketServ != NULL) && (netStatics->iConnection != NULL));
+#ifdef IPV6
+    if ( address_family == ADDRTYPE_IPV6 ) {
+        err=ret->s->Open(*netStatics->iSocketServ, KAfInet6, KSockStream,
+                         KUndefinedProtocol, *netStatics->iConnection);
+    } else {
+        err=ret->s->Open(*netStatics->iSocketServ, KAfInet, KSockStream,
+                         KUndefinedProtocol, *netStatics->iConnection);
+    }
+#else
     err=ret->s->Open(*netStatics->iSocketServ, KAfInet, KSockStream,
                      KUndefinedProtocol, *netStatics->iConnection);
+#endif
     if (err!=KErrNone) {
         ret->error = FormatError("Socket open", err);
         LOGF(("sk_newlistener: Open failed: %d, %s", err, ret->error));

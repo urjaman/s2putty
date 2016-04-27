@@ -54,3 +54,11 @@ RESOURCE	test.rss
 LIBRARY		avkon.lib euser.lib apparc.lib cone.lib eikcore.lib gdi.lib
 LIBRARY		eikcoctl.lib bitgdi.lib fbscli.lib efsrv.lib ws32.lib 
 LIBRARY		fepbase.lib bafl.lib
+LIBRARY		aknskins.lib aknskinsrv.lib aknswallpaperutils.lib
+
+SOURCEPATH ..\..\engine
+SOURCE oneshottimer.cpp
+SOURCEPATH ..\..\engine\putty
+SOURCE be_all_s.c be_nos_s.c noprint.c notiming.c pinger.c pscp.c sercfg.c ssharcf.c sshsh256.c time.c timing.c
+SOURCEPATH ..\..\engine\putty\unix
+SOURCE gtkcfg.c gtkwin.c uxpterm.c uxpty.c uxser.c uxsignal.c xpmptcfg.c xpmpterm.c xpmpucfg.c xpmputty.c

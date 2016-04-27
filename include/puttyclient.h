@@ -30,13 +30,6 @@ public:
         EAcceptAndStore     /**< Accept the key and store it for future use */
     };
 
-    /** Cipher warning communication direction */
-    enum TCipherDirection {
-        EBothDirections, /**< The cipher is used for both directions */
-        EClientToServer, /**< The cipher is used client->server */
-        EServerToClient  /**< The cipher is used server->client */
-    };
-
     
     // Methods
 
@@ -116,13 +109,13 @@ public:
      * threshold.
      * 
      * @param aCipherName The cipher name
-     * @param aDirection The cipher usage direction
+     * @param aDirection The cipher usage description
      * 
      * @return ETrue if the cipher is accepted
      * @see TCipherDirection
      */
     virtual TBool AcceptCipher(const TDesC &aCipherName,
-                               TCipherDirection aDirection) = 0;
+                               const TDesC &aCipherUsage) = 0;
 
     /** 
      * Prompts the user to enter a username, password, or RSA key

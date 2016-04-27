@@ -74,6 +74,7 @@ enum TCommands {
     EPuttyCmdProfileListDelete,
 
     EPuttyCmdProfileEditOpen,
+    EPuttyCmdProfileEditClear,
     EPuttyCmdProfileEditNextSettingList,
     EPuttyCmdProfileEditPrevSettingList,
     
@@ -111,6 +112,11 @@ enum TCommands {
     EPuttyCmdHostKeyReject,
     EPuttyCmdSettingsBrowseKeyFile,
     EPuttyCmdNotImplemented,
+
+    EPuttyCmdSelect,
+    EPuttyCmdMark,
+    EPuttyCmdCopy,
+    EPuttyCmdPaste,    
 
     EPuttyCmdRepeatLast,
     
@@ -166,6 +172,7 @@ enum TSettingItems {
     EPuttySettingSshVersion,
     EPuttySettingSshPrivateKey,
     EPuttySettingSshCompression,
+    EPuttySettingSshCipher,
     EPuttySettingSshKeepalive,
 
     EPuttySettingDisplayFont,
