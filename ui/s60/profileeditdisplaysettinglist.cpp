@@ -114,11 +114,11 @@ CAknSettingItem *CProfileEditDisplaySettingList::CreateSettingItemL(
             
             return new (ELeave) CDynamicEnumTextSettingItem(
                 aIdentifier, *iCharSets, iCharSetValue);
-            
+        }
         case EPuttySettingDisplayOrientation:
             return new (ELeave) CAknEnumeratedTextPopupSettingItem(
                 aIdentifier, iConfig->orientation);
-        }
+
     }
 
     return NULL;

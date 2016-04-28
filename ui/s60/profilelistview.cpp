@@ -472,7 +472,6 @@ void CProfileListView::InitViewL() {
         CleanupStack::PopAndDestroy();
 #endif
     }
-<<<<<<< 479e2d2759d7b013bfaa6c8c332c69b1d9cc9edf
 
     // Create the listbox -- this is the only control this view uses, so no
     // separate container needed
@@ -493,10 +492,7 @@ void CProfileListView::InitViewL() {
     
     // Activate the UI control
     AppUi()->AddToStackL(iListBox);    
-=======
     LFPRINT((_L("InitViewL done")));
-
->>>>>>> fix up for s60v2 operation
 }
 
 

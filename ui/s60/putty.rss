@@ -490,13 +490,17 @@ RESOURCE AVKON_SETTING_ITEM_LIST r_putty_profileedit_display_settinglist {
             setting_page_resource = r_putty_profileedit_charset_page;
             associated_resource = r_putty_profileedit_charset_texts;
             name = "Character set";
-        },
+        }
+
+#ifdef PUTTY_S60V3
+,
         AVKON_SETTING_ITEM {
             identifier = EPuttySettingDisplayOrientation;
             setting_page_resource = r_putty_profileedit_orientation_page;
             associated_resource = r_putty_profileedit_orientation_texts;
             name = "Orientation";
         }
+#endif
     };
 }
 

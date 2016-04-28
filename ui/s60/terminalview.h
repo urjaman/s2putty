@@ -13,7 +13,11 @@
 
 #include <aknview.h>
 #include <aknwaitdialog.h>
+#ifndef PUTTY_S60V2
 #include "hwrmvibra.h"
+#else
+#include <vibractrl.h>
+#endif
 #include "puttyclient.h"
 #include "terminalcontrol.h"
 #include "netconnect.h"
@@ -34,8 +38,11 @@ class TTouchSettings;
 class CTerminalView : public CAknView, public MPuttyClient,
                       public MTerminalObserver, public MNetConnectObserver,
                       public MProgressDialogCallback,    
-                      public MSendGridObserver,
-                      public MHWRMVibraObserver {
+                      public MSendGridObserver
+#ifndef PUTTY_S60V2
+                      ,public MHWRMVibraObserver
+#endif
+			{
 
 public:
     /** 
@@ -115,9 +122,11 @@ private: // From MSendGridObserver
     void MsgoCommandL(TInt aCommand);
     void MsgoTerminated();
 
+#ifndef PUTTY_S60V2
 private: // From MHWRMVibraObserver
     void VibraModeChanged(CHWRMVibra::TVibraModeState aState);
     void VibraStatusChanged(CHWRMVibra::TVibraStatus aStatus);
+#endif
 
 private:
     void FatalError(TInt aResourceId);
@@ -176,7 +185,11 @@ private:
     TFileName iSettingsFile;
 #endif    
     CAknKeySoundSystem* iSoundSystem;
+#ifndef PUTTY_S60V2
     CHWRMVibra *iVibra;
+#else
+    CVibraControl *iVibra;
+#endif
 };
 
 

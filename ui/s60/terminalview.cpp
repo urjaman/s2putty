@@ -49,7 +49,11 @@ const TInt KConnectionErrorExit = -2;
 static const TInt KFullScreenWidth = 0xf5;
 
 const TInt KVibraDuration = 250; // milliseconds
+#ifndef PUTTY_S60V2
 const TInt KVibraIntensity = KHWRMVibraMaxIntensity/2;
+#else
+const TInt KVibraIntensity = 50;
+#endif
 
 
 // Factory
@@ -75,7 +79,11 @@ void CTerminalView::ConstructL() {
     iReleaseCtrlAfterKey = EFalse;
 #endif
     iSoundSystem = AppUi()->KeySounds();
+#ifndef PUTTY_S60V2
     iVibra = CHWRMVibra::NewL(this);
+#else
+    iVibra = VibraFactory::NewL();
+#endif
 }
 
 
@@ -1610,7 +1618,7 @@ void CTerminalView::MsgoTerminated() {
     }
 }
 
-
+#ifndef PUTTY_S60V2
 // MHWRMVibraObserver::VibraModeChanged()
 void CTerminalView::VibraModeChanged(CHWRMVibra::TVibraModeState /*aState*/) {
 }
@@ -1619,7 +1627,7 @@ void CTerminalView::VibraModeChanged(CHWRMVibra::TVibraModeState /*aState*/) {
 // MHWRMVibraObserver::VibraStatusChanged()
 void CTerminalView::VibraStatusChanged(CHWRMVibra::TVibraStatus /*aStatus*/) {
 }
-
+#endif
 
 #ifdef PUTTY_S60TOUCH
 void CTerminalView::SendKeypress(TKeyCode aCode, TUint aModifiers) {
@@ -1756,7 +1764,11 @@ void CTerminalView::PlayBeep(const TInt iMode) {
             break;
 
         case 2: // Vibrate    
+#ifndef PUTTY_S60V2
             if (iVibra->VibraStatus() == CHWRMVibra::EVibraStatusStopped) {
+#else
+	    {
+#endif
                 TRAPD(error, iVibra->StartVibraL(KVibraDuration,
                                                  KVibraIntensity));
                 // We'll just ignore any vibra errors - they could result from
@@ -1767,7 +1779,11 @@ void CTerminalView::PlayBeep(const TInt iMode) {
 
         case 3: // Beep and vibrate
             iSoundSystem->PlaySound(EAvkonSIDInformationTone);
+#ifndef PUTTY_S60V2
             if (iVibra->VibraStatus() == CHWRMVibra::EVibraStatusStopped) {
+#else
+	    {
+#endif
                 TRAPD(error, iVibra->StartVibraL(KVibraDuration,
                                                  KVibraIntensity));
             }

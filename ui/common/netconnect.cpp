@@ -13,6 +13,11 @@
     #include <commdb.h>
 #endif
 
+#ifdef PUTTY_S60V2
+    #include <commdbconnpref.h>
+    #include <commdb.h>
+#endif
+
 #ifdef PUTTY_SYM3
     #include <extendedconnpref.h>
 #endif
@@ -113,6 +118,9 @@ void CNetConnect::Connect() {
         iConnection.Start(prefList, iStatus);            
     }    
 #else
+#ifdef PUTTY_S60V2
+    if (( iPromptAP == 0 ) || (iPromptAP == 1 )) {
+#else
     if ( iPromptAP == 0 ) {
         TCommDbConnPref pref;
         //pref.SetIapId(iIapId); // set access point to connect
@@ -120,6 +128,7 @@ void CNetConnect::Connect() {
         pref.SetDialogPreference( ECommDbDialogPrefPrompt  );
         iConnection.Start(pref, iStatus);
     } else if ( iPromptAP == 1 ) {
+#endif
         // Connect to the network Default Internet AP
         iConnection.Start(iStatus);
     } else {        
