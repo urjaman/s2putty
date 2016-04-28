@@ -19,6 +19,7 @@
 #include <aknlists.h>
 #include <baclipb.h>
 #include <aknsoundsystem.h>
+#include <eikmenup.h>
 #include "terminalview.h"
 #ifdef PUTTY_S60TOUCH
     #include "../s60v5/terminalcontainer.h"
@@ -604,12 +605,10 @@ void CTerminalView::DoDeactivate() {
 // CAknView::DynInitMenuPaneL
 void CTerminalView::DynInitMenuPaneL(TInt aResourceId,
                                      CEikMenuPane *aMenuPane) {
-#ifndef PUTTY_S60V2
     if ( aResourceId == R_PUTTY_EDIT_MENU ) {
         aMenuPane->SetItemDimmed(EPuttyCmdMark, !iSelection);
         aMenuPane->SetItemDimmed(EPuttyCmdCopy, !(iSelection && iMark));
     }
-#endif
 }
 
 
