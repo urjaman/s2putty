@@ -12,6 +12,9 @@
 #include <bautils.h>
 #include <aknnavi.h>
 #include <badesca.h>
+
+#include <eikdoc.h>
+
 #include "puttyappui.h"
 #include "profilelistview.h"
 #include "terminalview.h"
@@ -57,9 +60,14 @@ void CPuttyAppUi::ConstructL() {
     // installation location. The files are on the same drive as the
     // executable, except if the exe is in ROM (z:), in which case profiles and
     // data use c:.
-    TFileName name;
-    name = RProcess().FileName();
     TParse parsa;
+    TFileName name;
+#ifdef PUTTY_S60V2
+    // Determine application installation path
+	name = iDocument->Application()->AppFullName();
+#else
+    name = RProcess().FileName();
+#endif
     parsa.SetNoWild(name, NULL, NULL);
     TUint drive = parsa.Drive()[0];
 
