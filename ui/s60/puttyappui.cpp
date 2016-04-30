@@ -61,11 +61,19 @@ void CPuttyAppUi::ConstructL() {
 
     // Font directory -- "<drv>:\resource\puttyfonts\"
     iFontDirectory.Format(KFontDirFormat, drive);
-    LFPRINT((_L("Hello\n")));
+    LFPRINT((_L("Hello, procname:%S fontdir:%S"), &name, &iFontDirectory));
 
     // Fix drive for profiles and data
     if ( (drive == 'z') || (drive == 'Z') ) {
         drive = 'c';
+    }
+
+    RFs &fs = CEikonEnv::Static()->FsSession();
+    // Try C if it wasnt in Z...
+    if ( !BaflUtils::FolderExists(fs, iFontDirectory) ) {
+	iFontDirectory.Format(KFontDirFormat, drive);
+        BaflUtils::EnsurePathExistsL(fs, iFontDirectory);
+	LFPRINT((_L("changed fontdir to :%S"), &iFontDirectory));
     }
 
     // Data directory -- "<drv>:\private\<SID>\data\"
@@ -80,7 +88,6 @@ void CPuttyAppUi::ConstructL() {
     iProfileDirectory.Format(KProfileDirFormat, drive, RProcess().SecureId().iId);
     iSettingsDirectory.Format(KSettingsDirFormat, drive, RProcess().SecureId().iId);
 #endif
-    RFs &fs = CEikonEnv::Static()->FsSession();
     if ( !BaflUtils::FolderExists(fs, iDataDirectory) ) {
         BaflUtils::EnsurePathExistsL(fs, iDataDirectory);
         if ( BaflUtils::FileExists(fs, KOldHostKeysFile) ) {
@@ -89,19 +96,26 @@ void CPuttyAppUi::ConstructL() {
             BaflUtils::CopyFile(fs, KOldHostKeysFile, name);
         }
     }
+    LFPRINT((_L("iDataDir done")));
 
     // Profile directory -- "<drv>:\private\<SID>\profiles\"
     // If the profile directory doesn't exist, create it.
     BaflUtils::EnsurePathExistsL(fs, iProfileDirectory);
+
+    LFPRINT((_L("iProfileDir created")));
 
     // Settings directory -- "<drv>:\private\<SID>\settings\"
     // If the profile directory doesn't exist, create it and attempt to migrate
     // default settings from a previous installation
     BaflUtils::EnsurePathExistsL(fs, iSettingsDirectory);
 
+    LFPRINT((_L("iSettingsdir created")));
+
     // Create navi pane
     iNaviPane = (CAknNavigationControlContainer*)
         (StatusPane()->ControlL(TUid::Uid(EEikStatusPaneUidNavi)));
+
+    LFPRINT((_L("navi pane created")));
 
     // Build a list of available fonts
     iFonts = new CDesC16ArrayFlat(8);

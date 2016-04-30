@@ -12,4 +12,11 @@ winscw armi
 PRJ_MMPFILES
 puttyengine.mmp
 puttyui.mmp
-..\common\configrecog.mmp
+
+
+PRJ_EXPORTS
+..\..\ui\s2font\fixed4x6.s2f z:\system\apps\putty\fonts\fixed4x6.s2f
+..\..\ui\s2font\fixed5x7.s2f z:\system\apps\putty\fonts\fixed5x7.s2f
+..\..\ui\s2font\fixed6x10.s2f z:\system\apps\putty\fonts\fixed6x10.s2f
+..\..\ui\s2font\fixed6x12.s2f z:\system\apps\putty\fonts\fixed6x12.s2f
+
