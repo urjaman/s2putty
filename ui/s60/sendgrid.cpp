@@ -36,15 +36,18 @@ const char KGridItemLabels[KSendGridNumItems] = {
     '*', '0', '#'
 };
 
+#ifdef PUTTY_S60V2
+/* Map a few fancy new font functions (not in old S60) to their old counterparts. */
+#define FontMaxHeight HeightInPixels
+#define FontMaxAscent AscentInPixels
+#endif
+
+
 
 // Get recommended size in current UI layout
 void CSendGrid::GetRecommendedSize(TSize &aSize) {
     const CFont *font = AknLayoutUtils::FontFromId(EAknLogicalFontSecondaryFont);
-#ifdef PUTTY_S60V2
-    aSize.iHeight = 4 * ((7 * font->HeightInPixels())/3) + 2;
-#else
     aSize.iHeight = 4 * ((7 * font->FontMaxHeight())/3) + 2;
-#endif
     aSize.iWidth = 3 * (font->TextWidthInPixels(KWidthRefText)) + 2;
 }
 
@@ -116,33 +119,21 @@ void CSendGrid::ConstructL(const TRect &aRect, TInt aResourceId) {
     // Label text cell, contains the key symbol
     const CFont *font = AknLayoutUtils::FontFromId(EAknLogicalFontSecondaryFont);
     TPoint text1Start(0, 0);
-#ifdef PUTTY_S60V2
-    TPoint text1End(itemSize.iWidth, font->HeightInPixels());
-#else
     TPoint text1End(itemSize.iWidth, font->FontMaxHeight());
-#endif
     AknListBoxLayouts::SetupFormTextCell(*iGrid, iGrid->ItemDrawer(),
                                          1, // text pos
                                          font, 
                                          215, // color
                                          0, // left margin
                                          0, // right margin
-#ifdef PUTTY_S60V2
-                                         font->AscentInPixels(), // baseline
-#else
                                          font->FontMaxAscent(), // baseline
-#endif
                                          itemSize.iWidth, // width
                                          CGraphicsContext::ECenter, // alignment
                                          text1Start, 
                                          text1End);
     
     // Text cell for cell text from the resource file
-#ifdef PUTTY_S60V2
-    TPoint text2Start(0, font->HeightInPixels());
-#else
     TPoint text2Start(0, font->FontMaxHeight());
-#endif
     TPoint text2End(itemSize.iWidth, itemSize.iHeight);
     AknListBoxLayouts::SetupFormTextCell(*iGrid, iGrid->ItemDrawer(),
                                          2, // text pos
@@ -150,11 +141,7 @@ void CSendGrid::ConstructL(const TRect &aRect, TInt aResourceId) {
                                          215, // color
                                          0, // left margin
                                          0, // right margin
-#ifdef PUTTY_S60V2
-                                         text2Start.iY + font->AscentInPixels(), // baseline
-#else
                                          text2Start.iY + font->FontMaxAscent(), // baseline
-#endif
                                          itemSize.iWidth, // width
                                          CGraphicsContext::ECenter, // alignment
                                          text2Start, 
@@ -174,6 +161,7 @@ void CSendGrid::ConstructL(const TRect &aRect, TInt aResourceId) {
                               EAknsCIQsnTextColorsCG9);
     AknsUtils::GetCachedColor(skin, colors.iHighlightedText,
                               KAknsIIDQsnTextColors, EAknsCIQsnTextColorsCG11);
+
     iGrid->ItemDrawer()->FormattedCellData()->SetSubCellColorsL(1, colors);
     iGrid->ItemDrawer()->FormattedCellData()->SetSubCellColorsL(2, colors);
 

@@ -39,6 +39,9 @@ _LIT(KNewHostKeysFile, "hostkeys.dat");
 
 // Second-phase constructor
 void CPuttyAppUi::ConstructL() {
+#ifdef PUTTY_S60V2
+        BaseConstructL(CAknAppUi::EAknEnableSkin);
+#else
 #ifdef PUTTY_S60V3
     #ifdef PUTTY_SYM3
         BaseConstructL(CAknAppUi::EAknEnableSkin | EAknTouchCompatible | EAknSingleClickCompatible);
@@ -47,6 +50,7 @@ void CPuttyAppUi::ConstructL() {
     #endif
 #else
     BaseConstructL();
+#endif
 #endif
 
     // Determine profile, data and font directories based on the executable
