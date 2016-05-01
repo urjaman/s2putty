@@ -16,7 +16,7 @@ AIF		putty.aif ..\..\ui\s60 puttyuiaif.rss c12 s60_44x44.bmp s60_44x44_mask.bmp 
 MACRO		PUTTY_S60
 MACRO		PUTTY_S60V2
 
-MACRO		LOGFILE_ENABLED
+//MACRO		LOGFILE_ENABLED
 
 SOURCEPATH	..\..\ui
 SOURCE		s60\puttyapp.cpp
