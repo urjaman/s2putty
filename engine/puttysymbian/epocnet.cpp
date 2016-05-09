@@ -100,7 +100,9 @@ struct SockAddr_tag {
 struct TNetStatics {
     tree234 *iSocketTree;
     RSocketServ *iSocketServ;
+#ifndef PUTTY_S60V1
     RConnection *iConnection;
+#endif
     TInt iNextId;
     MSocketWatcher *iWatcher;
     void *iLogCtx;
@@ -140,7 +142,9 @@ void sk_init(void)
     statics->iNextId = 1;
     statics->iWatcher = NULL;
     statics->iLogCtx = NULL;
+#ifndef PUTTY_S60V1
     statics->iConnection = NULL;
+#endif
     statics->iSocketServ = NULL;
     ((SymbianStatics*)statics()->platform)->net_state = statics;
     
@@ -174,11 +178,17 @@ void sk_set_watcher(MSocketWatcher *aWatcher) {
     netStatics->iWatcher = aWatcher;
 }
 
+#ifndef PUTTY_S60V1
 // Set connection
 void sk_set_connection(RSocketServ &aSocketServ, RConnection &aConnection) {
     netStatics->iSocketServ = &aSocketServ;
     netStatics->iConnection = &aConnection;
 }
+#else
+void sk_set_connection(RSocketServ &aSocketServ) {
+    netStatics->iSocketServ = &aSocketServ;
+}
+#endif
 
 void sk_provide_logctx(void *aLogCtx) {
     netStatics->iLogCtx = aLogCtx;
@@ -291,9 +301,14 @@ SockAddr sk_namelookup(const char *host, char **canonicalname, int address_famil
 	    ret->error="Not enough memory to allocate TInetAddr.";
 	    return ret;
     }
+#ifndef PUTTY_S60V1
     assert((netStatics->iSocketServ != NULL) && (netStatics->iConnection != NULL));
     err=hres.Open(*netStatics->iSocketServ, KAfInet, KProtocolInetUdp,
                   *netStatics->iConnection);
+#else
+    assert((netStatics->iSocketServ != NULL));
+    err=hres.Open(*netStatics->iSocketServ, KAfInet, KProtocolInetUdp);
+#endif
     if (err!=KErrNone)
     {
             ret->error = FormatError("Resolver open", err);
@@ -588,10 +603,15 @@ Socket sk_new(SockAddr addr, int port, int privport, int oobinline,
     if ( netStatics->iWatcher ) {
         netStatics->iWatcher->SocketOpened();
     }
-
+#ifndef PUTTY_S60V1
     assert((netStatics->iSocketServ != NULL) && (netStatics->iConnection != NULL));
     err=ret->s->Open(*netStatics->iSocketServ, KAfInet, KSockStream,
                      KProtocolInetTcp, *netStatics->iConnection);
+#else
+    assert((netStatics->iSocketServ != NULL));
+    err=ret->s->Open(*netStatics->iSocketServ, KAfInet, KSockStream,
+                     KProtocolInetTcp);
+#endif
     if (err!=KErrNone) {
 	    ret->error = FormatError("Socket open", err);
             LOGF(("sk_new: Open failed: %d, %s", err, ret->error));
@@ -719,7 +739,7 @@ Socket sk_newlistener(char *srcaddr, int port, Plug plug, int local_host_only, i
     if ( netStatics->iWatcher ) {
         netStatics->iWatcher->SocketOpened();
     }
-
+#ifndef PUTTY_S60V1
     assert((netStatics->iSocketServ != NULL) && (netStatics->iConnection != NULL));
 #ifdef IPV6
     if ( address_family == ADDRTYPE_IPV6 ) {
@@ -733,6 +753,12 @@ Socket sk_newlistener(char *srcaddr, int port, Plug plug, int local_host_only, i
     err=ret->s->Open(*netStatics->iSocketServ, KAfInet, KSockStream,
                      KUndefinedProtocol, *netStatics->iConnection);
 #endif
+#else
+    assert((netStatics->iSocketServ != NULL));
+    err=ret->s->Open(*netStatics->iSocketServ, KAfInet, KSockStream,
+                     KUndefinedProtocol);
+#endif
+
     if (err!=KErrNone) {
         ret->error = FormatError("Socket open", err);
         LOGF(("sk_newlistener: Open failed: %d, %s", err, ret->error));

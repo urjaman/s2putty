@@ -58,7 +58,11 @@ void sk_set_watcher(MSocketWatcher *aWatcher);
  * @param aSocketServ The socket server session to use
  * @param aConnection The network connection to use.
  */
+#ifndef PUTTY_S60V1
 void sk_set_connection(RSocketServ &aSocketServ, RConnection &aConnection);
+#else
+void sk_set_connection(RSocketServ &aSocketServ);
+#endif
 
 
 /** 

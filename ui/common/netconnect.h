@@ -13,6 +13,10 @@
 #include <e32base.h>
 #include <es_sock.h>
 
+#ifdef PUTTY_S60V1
+#include <nifman.h>
+class CIntConnectionInitiator;
+#endif
 
 /** 
  * Network connection observer class. The observer gets notified when the
@@ -30,8 +34,11 @@ public:
      * @param aConnection The network connection
      */
     virtual void NetConnectComplete(TInt aError,
-                                    RSocketServ &aSocketServ,
-                                    RConnection &aConnection) = 0;
+                                    RSocketServ &aSocketServ
+#ifndef PUTTY_S60V1
+                                    ,RConnection &aConnection
+#endif
+) = 0;
 };
 
 
@@ -87,6 +94,7 @@ protected:
     MNetConnectObserver &iObserver;
     RSocketServ iSocketServ;
     TBool iSocketServOpen;
+#ifndef PUTTY_S60V1
     RConnection iConnection;    
     TBool iRConnectionOpen;
     enum {
@@ -94,6 +102,23 @@ protected:
         EStateConnecting,
         EStateConnected
     } iState;    
+#else
+    void DoConnect();
+    RNif iNif;
+    TBool iNifOpen;
+    TBool iNifTimersDisabled;
+    CIntConnectionInitiator *iIntConnInit;
+    TBool iIntConnInitBroken;
+    TInt iAccessDeniedRetryCount;
+    enum {
+        EStateNone = 0,
+        EStateConnecting,
+        EStateConnected,
+        EStateOldConnection,
+        EStateError
+    } iState;
+#endif
+
 };
 
 

@@ -8,7 +8,7 @@
 */
 
 #include <intconninit.h>
-#include "netconnectcici.h"
+#include "netconnect.h"
 
 _LIT(KPanic, "nccici");
 #define assert(x) __ASSERT_ALWAYS(x, User::Panic(KPanic, __LINE__))
@@ -18,8 +18,8 @@ const TInt KMaxAccessDeniedRetryCount = 3;
 
 // Factory
 CNetConnect *CNetConnect::NewL(MNetConnectObserver &aObserver) {
-    CNetConnectCICI *self =
-        new (ELeave) CNetConnectCICI(aObserver);
+    CNetConnect *self =
+        new (ELeave) CNetConnect(aObserver);
     CleanupStack::PushL(self);
     self->ConstructL();
     CleanupStack::Pop();
@@ -27,15 +27,18 @@ CNetConnect *CNetConnect::NewL(MNetConnectObserver &aObserver) {
 }
 
 
+
 // Constructor
-CNetConnectCICI::CNetConnectCICI(MNetConnectObserver &aObserver) :
-    iObserver(aObserver) {
+CNetConnect::CNetConnect(MNetConnectObserver &aObserver)
+    : CActive(EPriorityStandard),
+      iObserver(aObserver) {
     CActiveScheduler::Add(this);
 }
 
 
 // Second-phase constructor
-void CNetConnectCICI::ConstructL() {
+void CNetConnect::ConstructL() {
+    iPromptAP = 0;
     
     // On a 6600, CIntConnectionInitiator::NewL() will fail with
     // KErrNotFound once after an access point has been deleted and a
@@ -61,7 +64,7 @@ void CNetConnectCICI::ConstructL() {
 
 
 // Destructor
-CNetConnectCICI::~CNetConnectCICI() {
+CNetConnect::~CNetConnect() {
     Cancel();
     if ( iNifTimersDisabled ) {
         iNif.DisableTimers(EFalse);
@@ -70,17 +73,30 @@ CNetConnectCICI::~CNetConnectCICI() {
         iNif.Close();
     }    
     delete iIntConnInit;
+    if ( iSocketServOpen ) {
+        iSocketServ.Close();
+    }
+
 }
 
 
 // Connect
-void CNetConnectCICI::Connect(RSocketServ & /*aSocketServ*/) {
+void CNetConnect::Connect() {
 
     assert(iState == EStateNone);
     
+    if ( !iSocketServOpen ) {
+        TInt err = iSocketServ.Connect();
+        if ( err != KErrNone ) {
+            iObserver.NetConnectComplete(err, iSocketServ);
+            return;
+        }
+        iSocketServOpen = ETrue;
+    }
+    
     // Work around a broken CIntConnectionInitiator
     if ( iIntConnInitBroken ) {
-        iObserver.NetConnectComplete(KErrNone);
+        iObserver.NetConnectComplete(KErrNone, iSocketServ);
         iState = EStateOldConnection;
         return;
     }
@@ -101,15 +117,20 @@ void CNetConnectCICI::Connect(RSocketServ & /*aSocketServ*/) {
 
 
 // Really connect, used for retries too
-void CNetConnectCICI::DoConnect() {
+void CNetConnect::DoConnect() {
     
     // Build connection preferences
     CCommsDbConnectionPrefTableView::TCommDbIapConnectionPref pref;
     pref.iRanking = 1;
     pref.iDirection = ECommDbConnectionDirectionOutgoing;
-    pref.iDialogPref = ECommDbDialogPrefPrompt;
     pref.iBearer.iBearerSet = ECommDbBearerUnknown;
-    pref.iBearer.iIapId = 0; // undefined IAP
+    if ( iPromptAP >= 2 ) {
+        pref.iBearer.iIapId = ConvertPromptApToAPIdL(iPromptAP-2); // set access point to connect           
+	pref.iDialogPref = ECommDbDialogPrefDoNotPrompt;
+    } else {        
+	pref.iBearer.iIapId = 0; // undefined IAP
+        pref.iDialogPref = ECommDbDialogPrefPrompt;
+    }
 
     // Start connection
     // Note that at CIntConnectionInitiator in least Series 60 v1.2 won't set
@@ -122,7 +143,7 @@ void CNetConnectCICI::DoConnect() {
     TRAPD(err, iIntConnInit->ConnectL(pref, iStatus));
     if ( err != KErrNone ) {
         iStatus = err;
-        iObserver.NetConnectComplete(err);
+        iObserver.NetConnectComplete(err, iSocketServ);
         return;
     }
     SetActive();
@@ -130,7 +151,7 @@ void CNetConnectCICI::DoConnect() {
 
 
 // Cancel connection
-void CNetConnectCICI::CancelConnect() {
+void CNetConnect::CancelConnect() {
     if ( iState != EStateConnecting ) {
         return;
     }
@@ -143,7 +164,7 @@ void CNetConnectCICI::CancelConnect() {
 
 
 // Active object RunL
-void CNetConnectCICI::RunL() {
+void CNetConnect::RunL() {
 
     TInt err = iStatus.Int();
 
@@ -186,15 +207,46 @@ void CNetConnectCICI::RunL() {
         }
     }
 
-    iObserver.NetConnectComplete(err);
+    iObserver.NetConnectComplete(err, iSocketServ);
 }
 
 
 // Active object cancel
-void CNetConnectCICI::DoCancel() {
+void CNetConnect::DoCancel() {
     assert(iState == EStateConnecting);
     // Not sure if this is really correct, but this is what the IAPConnect
     // example does...
     iIntConnInit->Cancel();
     iState = EStateNone;
 }
+
+
+
+
+// Looks for the access point ID
+TUint32 CNetConnect::ConvertPromptApToAPIdL(TInt aValue) {
+    TUint32 iapID = 0;
+    CCommsDatabase* iCommsDB=CCommsDatabase::NewL(EDatabaseTypeIAP);
+    TInt i = 0;
+    TInt err = KErrNone;
+    CleanupStack::PushL(iCommsDB);
+
+    CCommsDbTableView* iIAPView = iCommsDB->OpenTableLC((TPtrC(IAP)));
+
+    if ( iIAPView->GotoFirstRecord() == KErrNone ){
+        do
+        {
+            if ( i == aValue ) {
+                iIAPView->ReadUintL(TPtrC(COMMDB_ID), iapID);            
+                break; // break from loop
+            }
+            i++;
+        } while ( err = iIAPView->GotoNextRecord(), err == KErrNone);
+    }
+
+    CleanupStack::PopAndDestroy(); // view
+    CleanupStack::PopAndDestroy(); // commDB
+    return iapID;
+}
+
+

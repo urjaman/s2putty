@@ -45,7 +45,11 @@ void CProfileEditGeneralSettingList::ConstructL() {
     iIAPList = new CDesC16ArrayFlat(8);
     iIAPidList = new CArrayFixFlat<TUint32>(8);
 
+#ifdef PUTTY_S60V1
+    CCommsDatabase* iCommsDB=CCommsDatabase::NewL(EDatabaseTypeIAP);
+#else
     CCommsDatabase* iCommsDB=CCommsDatabase::NewL();
+#endif
     TBuf<52> iapfromtable;
     TInt err = KErrNone;
     CleanupStack::PushL(iCommsDB);

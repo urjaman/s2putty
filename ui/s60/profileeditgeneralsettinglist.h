@@ -14,7 +14,9 @@
 #include <aknsettingitemlist.h>
 #include "profileeditsettinglistbase.h"
 #include <commdb.h>
+#ifndef PUTTY_S60V1
 #include <commdbconnpref.h>
+#endif
 #include "dynamicenumtextsettingitem.h"
 extern "C" {
 #include "putty.h" // struct Config

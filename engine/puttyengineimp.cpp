@@ -160,8 +160,11 @@ Config *CPuttyEngineImp::GetConfig() {
 
 
 // MPuttyEngine::Connect()
-TInt CPuttyEngineImp::Connect(RSocketServ &aSocketServ,
-                              RConnection &aConnection) {
+TInt CPuttyEngineImp::Connect(RSocketServ &aSocketServ
+#ifndef PUTTY_S60V1
+                              ,RConnection &aConnection
+#endif
+) {
     assert(iState == EStateInitialized);
 
     // Initialize logging
@@ -188,7 +191,12 @@ TInt CPuttyEngineImp::Connect(RSocketServ &aSocketServ,
     // Initialize networking
     sk_init();
     iNumSockets = 0;
-    sk_set_connection(aSocketServ, aConnection);
+    sk_set_connection(aSocketServ
+#ifndef PUTTY_S60V1
+, aConnection);
+#else
+    );
+#endif
     sk_set_watcher(this);
     sk_provide_logctx(iLogContext);
 

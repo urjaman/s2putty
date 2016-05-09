@@ -13,7 +13,9 @@
 #include <aknlists.h>
 #include <eikbtgpc.h>
 #include <avkon.rsg>
+#ifndef PUTTY_S60V1
 #include <aknsutils.h>
+#endif
 #ifndef PUTTY_S60TOUCH
 // hal.h is not available on Symbian^3 SDKs, but the whole test it's used for
 // is only relevant on S60 3rd edition phones anyway...
@@ -36,12 +38,22 @@ const char KGridItemLabels[KSendGridNumItems] = {
     '*', '0', '#'
 };
 
-#ifdef PUTTY_S60V2
+#if (defined PUTTY_S60V2)||(defined PUTTY_S60V1)
 /* Map a few fancy new font functions (not in old S60) to their old counterparts. */
 #define FontMaxHeight HeightInPixels
 #define FontMaxAscent AscentInPixels
 #endif
 
+#ifdef PUTTY_S60V1
+/* Here's a small sample of font ids on v1... *
+    ELatinPlain12,
+    ELatinBold12,
+    ELatinBold13,
+    ELatinBold17,
+    ELatinBold19,
+*/
+#define EAknLogicalFontSecondaryFont ELatinPlain12
+#endif
 
 
 // Get recommended size in current UI layout
@@ -152,6 +164,8 @@ void CSendGrid::ConstructL(const TRect &aRect, TInt aResourceId) {
     // this
     iGrid->SetRect(TRect(TPoint(1,1), Rect().Size() - TSize(2,2)));
 
+
+#if (defined PUTTY_S60V2)||(defined PUTTY_S60V3)
     // Get grid item colors from the current skin. See Forum Nokia TSS000596.
     // Now if somebody could just tell me why CAknGrid doesn't do this by
     // default -- all other controls do...
@@ -164,6 +178,7 @@ void CSendGrid::ConstructL(const TRect &aRect, TInt aResourceId) {
 
     iGrid->ItemDrawer()->FormattedCellData()->SetSubCellColorsL(1, colors);
     iGrid->ItemDrawer()->FormattedCellData()->SetSubCellColorsL(2, colors);
+#endif
 
     // Enable and make visible
     iGrid->MakeVisible(ETrue);

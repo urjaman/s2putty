@@ -17,8 +17,9 @@
 
 class MPuttyClient;
 class RSocketServ;
+#ifndef PUTTY_S60V1
 class RConnection;
-
+#endif
 
 /**
  * The PuTTY engine interface class. The engine interface is
@@ -63,9 +64,12 @@ public:
      * KErrGeneral if not. Use GetErrorMessage() to get the error
      * message when the connection fails.
      */
+#ifndef PUTTY_S60V1
     virtual TInt Connect(RSocketServ &aSocketServ,
                          RConnection &aConnection) = 0;
-
+#else
+    virtual TInt Connect(RSocketServ &aSocketServ) = 0;
+#endif
     /** 
      * Gets the most recent error message.
      * 

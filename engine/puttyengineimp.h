@@ -59,7 +59,11 @@ public:
     
     // CPuttyEngine methods
     virtual Config *GetConfig();
+#ifdef PUTTY_S60V1
+    virtual TInt Connect(RSocketServ &aSocketServ);
+#else
     virtual TInt Connect(RSocketServ &aSocketServ, RConnection &aConnection);
+#endif
     virtual void GetErrorMessage(TDes &aTarget);
     virtual void Disconnect();
     virtual void SetTerminalSize(TInt aWidth, TInt aHeight);

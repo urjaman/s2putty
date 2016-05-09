@@ -21,7 +21,7 @@
 #include "puttyuids.hrh"
 #include "../common/logfile.h"
 
-#ifdef PUTTY_S60V2
+#if (defined PUTTY_S60V2)||(defined PUTTY_S60V1)
 _LIT(KFontDirFormat, "%c:\\system\\apps\\putty\\fonts\\");
 _LIT(KProfileDirFormat, "%c:\\system\\apps\\putty\\profiles\\");
 _LIT(KDataDirFormat,  "%c:\\system\\apps\\putty\\data\\");
@@ -62,7 +62,8 @@ void CPuttyAppUi::ConstructL() {
     // data use c:.
     TParse parsa;
     TFileName name;
-#ifdef PUTTY_S60V2
+
+#if (defined PUTTY_S60V2)||(defined PUTTY_S60V1)
     // Determine application installation path
 	name = iDocument->Application()->AppFullName();
 #else
@@ -91,7 +92,7 @@ void CPuttyAppUi::ConstructL() {
     // Data directory -- "<drv>:\private\<SID>\data\"
     // If the data directory doesn't exist, create it and attempt to migrate
     // host keys from a previous installation
-#ifdef PUTTY_S60V2
+#if (defined PUTTY_S60V2)||(defined PUTTY_S60V1)
     iDataDirectory.Format(KDataDirFormat, drive);
     iProfileDirectory.Format(KProfileDirFormat, drive);
     iSettingsDirectory.Format(KSettingsDirFormat, drive);

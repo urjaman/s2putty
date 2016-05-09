@@ -50,7 +50,7 @@ const TInt KConnectionErrorExit = -2;
 static const TInt KFullScreenWidth = 0xf5;
 
 const TInt KVibraDuration = 250; // milliseconds
-#ifndef PUTTY_S60V2
+#ifdef PUTTY_S60V3
 const TInt KVibraIntensity = KHWRMVibraMaxIntensity/2;
 #else
 const TInt KVibraIntensity = 50;
@@ -80,9 +80,10 @@ void CTerminalView::ConstructL() {
     iReleaseCtrlAfterKey = EFalse;
 #endif
     iSoundSystem = AppUi()->KeySounds();
-#ifndef PUTTY_S60V2
+#ifdef PUTTY_S60V3
     iVibra = CHWRMVibra::NewL(this);
-#else
+#endif
+#ifdef PUTTY_S60V2
     iVibra = VibraFactory::NewL();
 #endif
 }
@@ -101,7 +102,9 @@ CTerminalView::~CTerminalView() {
     delete iConnectIdle;
     delete iNetConnect;
     delete iConnectionError;
+#if (defined PUTTY_S60V2)||(defined PUTTY_S60V3)
     delete iVibra;
+#endif
 }
 
 
@@ -539,6 +542,7 @@ void CTerminalView::DoActivateL(const TVwsViewId &/*aPrevViewId*/,
         (StatusPane()->ControlL(TUid::Uid(EEikStatusPaneUidTitle)));
     titlePane->SetText(title); //takes ownership
 
+#ifndef PUTTY_S60V1
     // Set orientation if not default
     if ( cfg->orientation != 0 ) {
         if ( cfg->orientation == 1 ) {
@@ -549,6 +553,7 @@ void CTerminalView::DoActivateL(const TVwsViewId &/*aPrevViewId*/,
             AppUi()->SetOrientationL(CAknAppUi::EAppUiOrientationUnspecified);
         }
     }
+#endif
 
     // Prompt for the host to connect to if not already set
     if ( cfg->host[0] != 0 ) {
@@ -630,7 +635,9 @@ void CTerminalView::DoDisconnectL() {
     iNetConnect = NULL;
 
     // Reset orientation and return to profile list view
+#ifndef PUTTY_S60V1
     AppUi()->SetOrientationL(CAknAppUi::EAppUiOrientationUnspecified);
+#endif
     AppUi()->ActivateLocalViewL(TUid::Uid(KUidPuttyProfileListViewDefine));
 }
 
@@ -684,8 +691,11 @@ void CTerminalView::DialogDismissedL(TInt /*aButtonId*/) {
 
 
 // MNetConnectObserver::NetConnectComplete()
-void CTerminalView::NetConnectComplete(TInt aError, RSocketServ &aSocketServ,
-                                       RConnection &aConnection) {
+void CTerminalView::NetConnectComplete(TInt aError, RSocketServ &aSocketServ
+#ifndef PUTTY_S60V1
+                                       ,RConnection &aConnection
+#endif
+) {
 
     CEikonEnv *eikenv = CEikonEnv::Static();
     
@@ -731,8 +741,12 @@ void CTerminalView::NetConnectComplete(TInt aError, RSocketServ &aSocketServ,
                                            eikenv)));
     //We Need to destroy that note msg loaded with LoadLC
     CleanupStack::PopAndDestroy();
-    
+
+#ifdef PUTTY_S60V1
+    TInt err = iPutty->Connect(aSocketServ);
+#else
     TInt err = iPutty->Connect(aSocketServ, aConnection);
+#endif
     if ( err != KErrNone ) {
         // Error -- show error message and return to the profile list view
         TBuf<128> msg;
@@ -1617,7 +1631,7 @@ void CTerminalView::MsgoTerminated() {
     }
 }
 
-#ifndef PUTTY_S60V2
+#ifdef PUTTY_S60V3
 // MHWRMVibraObserver::VibraModeChanged()
 void CTerminalView::VibraModeChanged(CHWRMVibra::TVibraModeState /*aState*/) {
 }
@@ -1763,7 +1777,8 @@ void CTerminalView::PlayBeep(const TInt iMode) {
             break;
 
         case 2: // Vibrate    
-#ifndef PUTTY_S60V2
+#if (defined PUTTY_S60V2)||(defined PUTTY_S60V3)
+#ifdef PUTTY_S60V3
             if (iVibra->VibraStatus() == CHWRMVibra::EVibraStatusStopped) {
 #else
 	    {
@@ -1774,11 +1789,13 @@ void CTerminalView::PlayBeep(const TInt iMode) {
                 // another app using the vibra, it being disabled in the
                 // profile etc. No reason to bother the user.
             }
+#endif
             break;
 
         case 3: // Beep and vibrate
             iSoundSystem->PlaySound(EAvkonSIDInformationTone);
-#ifndef PUTTY_S60V2
+#if (defined PUTTY_S60V2)||(defined PUTTY_S60V3)
+#ifdef PUTTY_S60V3
             if (iVibra->VibraStatus() == CHWRMVibra::EVibraStatusStopped) {
 #else
 	    {
@@ -1786,6 +1803,7 @@ void CTerminalView::PlayBeep(const TInt iMode) {
                 TRAPD(error, iVibra->StartVibraL(KVibraDuration,
                                                  KVibraIntensity));
             }
+#endif
             break;
 
         default: ;

@@ -13,10 +13,11 @@
 
 #include <aknview.h>
 #include <aknwaitdialog.h>
-#ifndef PUTTY_S60V2
-#include "hwrmvibra.h"
-#else
+#ifdef PUTTY_S60V2
 #include <vibractrl.h>
+#endif
+#ifdef PUTTY_S60V3
+#include "hwrmvibra.h"
 #endif
 #include "puttyclient.h"
 #include "terminalcontrol.h"
@@ -39,7 +40,7 @@ class CTerminalView : public CAknView, public MPuttyClient,
                       public MTerminalObserver, public MNetConnectObserver,
                       public MProgressDialogCallback,    
                       public MSendGridObserver
-#ifndef PUTTY_S60V2
+#ifdef PUTTY_S60V3
                       ,public MHWRMVibraObserver
 #endif
 			{
@@ -112,8 +113,11 @@ private: // From MTerminalObserver
     void KeyPressed(TKeyCode aCode, TUint aModifiers);
 
 private: // From MNetConnectObserver
-    void NetConnectComplete(TInt aError, RSocketServ &aSocketServ,
-                            RConnection &aConnection);
+    void NetConnectComplete(TInt aError, RSocketServ &aSocketServ
+#ifndef PUTTY_S60V1
+                            ,RConnection &aConnection
+#endif
+);
 
 private: // From MProgressDialogCallback
     void DialogDismissedL(TInt aButtonId);
@@ -122,7 +126,7 @@ private: // From MSendGridObserver
     void MsgoCommandL(TInt aCommand);
     void MsgoTerminated();
 
-#ifndef PUTTY_S60V2
+#ifdef PUTTY_S60V3
 private: // From MHWRMVibraObserver
     void VibraModeChanged(CHWRMVibra::TVibraModeState aState);
     void VibraStatusChanged(CHWRMVibra::TVibraStatus aStatus);
@@ -185,10 +189,11 @@ private:
     TFileName iSettingsFile;
 #endif    
     CAknKeySoundSystem* iSoundSystem;
-#ifndef PUTTY_S60V2
-    CHWRMVibra *iVibra;
-#else
+#ifdef PUTTY_S60V2
     CVibraControl *iVibra;
+#endif
+#ifdef PUTTY_S60V3
+    CHWRMVibra *iVibra;
 #endif
 };
 
