@@ -6,7 +6,7 @@
 ;*
 ;* See license.txt for full copyright and license information.
 
-#{"PuTTY"},(0x101f9076),1,6,1
+#{"PuTTY"},(0x101f9076),1,6,20160511
 
 ; Supports Series 60 v0.9 or later.
 (0x101F6F88), 0, 0, 0, {"Series60ProductID"}
