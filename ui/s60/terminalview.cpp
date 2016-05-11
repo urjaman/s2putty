@@ -225,17 +225,43 @@ void CTerminalView::HandleCommandL(TInt aCommand) {
             }
             break;
         }
-        
+
         case EPuttyCmdSendAltKeys: {
             if ( iState == EStateConnected ) {
                 QuerySendTextL(R_PUTTY_STR_ALT_KEYS, ETrue, EModifierAlt);
             }
             break;
         }
-        
+
         case EPuttyCmdSendCtrlKeys: {
             if ( iState == EStateConnected ) {
                 QuerySendTextL(R_PUTTY_STR_CTRL_KEYS, ETrue, EModifierCtrl);
+            }
+            break;
+        }
+
+        case EPuttyCmdSendCtrlA0:
+        case EPuttyCmdSendCtrlA1:
+        case EPuttyCmdSendCtrlA2:
+        case EPuttyCmdSendCtrlA3:
+        case EPuttyCmdSendCtrlA4:
+        case EPuttyCmdSendCtrlA5:
+        case EPuttyCmdSendCtrlA6:
+        case EPuttyCmdSendCtrlA7:
+        case EPuttyCmdSendCtrlA8:
+        case EPuttyCmdSendCtrlA9: {
+            if ( iState == EStateConnected ) {
+                iPutty->SendKeypress((TKeyCode)0x01, 0); // Ctrl-A
+                iPutty->SendKeypress((TKeyCode)((aCommand - EPuttyCmdSendCtrlA0) + '0'), 0);
+            }
+            break;
+        }
+
+        case EPuttyCmdSendCtrlAKeys: {
+            if ( iState == EStateConnected ) {
+            	/* Special "modifier" code to send Ctrl-A before the string, but
+            	 * only if the string was entered. */
+                QuerySendTextL(R_PUTTY_STR_CTRLA_KEYS, ETrue, 0x800000);
             }
             break;
         }
@@ -804,11 +830,14 @@ TBool CTerminalView::QuerySendTextL(TInt aPrompt, TBool aPermitPredictive,
     CAknTextQueryDialog* dlg = new (ELeave) CAknTextQueryDialog(ptr);
     dlg->SetPredictiveTextInputPermitted(aPermitPredictive);
     dlg->SetPromptL(*(StringLoader::LoadLC(aPrompt)));
-
+    TUint send_ca = aModifiers & 0x800000;
+    aModifiers &= 0x001fffff; /* EAllModifiers from S60 v1.2 */
     TInt ret = EFalse;
+
     if ( dlg->ExecuteLD(R_PUTTY_SEND_TEXT_DIALOG) ) {
         int i = 0;
         int len = ptr.Length();
+        if (send_ca) iPutty->SendKeypress((TKeyCode)0x01, 0); // Ctrl-A
         while ( i < len ) {
             iPutty->SendKeypress((TKeyCode)ptr[i++], aModifiers);
         }

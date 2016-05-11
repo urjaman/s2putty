@@ -1588,7 +1588,7 @@ RESOURCE SENDGRID r_putty_send_grid {
         SENDGRID_ITEM /*3*/ { command = EPuttyCmdSendCR; txt = "Enter"; },
         SENDGRID_ITEM /*4*/ { command = EPuttyCmdSendTab; txt = "Tab"; },
         SENDGRID_ITEM /*5*/ { subgrid = r_putty_send_special_key_grid; txt = "Sp.Key..."; },
-        SENDGRID_ITEM /*6*/ { txt = ""; },
+        SENDGRID_ITEM /*6*/ { subgrid = r_putty_send_ctrla_grid; txt = "Ctrl-A,..."; },
         SENDGRID_ITEM /*7*/ { subgrid = r_putty_send_ctrl_grid; txt = "Control+..."; },
         SENDGRID_ITEM /*8*/ { subgrid = r_putty_send_alt_grid; txt = "Alt+..."; },
         SENDGRID_ITEM /*9*/ { command = EPuttyCmdSendPipe; txt = "Pipe |"; },
@@ -1630,6 +1630,24 @@ RESOURCE MENU_PANE r_putty_send_alt_grid {
         SENDGRID_ITEM /*9*/ { command = EPuttyCmdSendAlt9; txt = "Alt-9"; },
         SENDGRID_ITEM /***/ { command = EPuttyCmdSendAltKeys; txt = "Alt+Keys..."; },
         SENDGRID_ITEM /*1*/ { command = EPuttyCmdSendAlt0; txt = "Alt-0"; },
+        SENDGRID_ITEM /*#*/ { txt = ""; }
+    };
+}
+
+// Send Alt + key
+RESOURCE MENU_PANE r_putty_send_ctrla_grid {
+    items = {
+        SENDGRID_ITEM /*1*/ { command = EPuttyCmdSendCtrlA1; txt = "Ctrl-A,1"; },
+        SENDGRID_ITEM /*2*/ { command = EPuttyCmdSendCtrlA2; txt = "Ctrl-A,2"; },
+        SENDGRID_ITEM /*3*/ { command = EPuttyCmdSendCtrlA3; txt = "Ctrl-A,3"; },
+        SENDGRID_ITEM /*4*/ { command = EPuttyCmdSendCtrlA4; txt = "Ctrl-A,4"; },
+        SENDGRID_ITEM /*5*/ { command = EPuttyCmdSendCtrlA5; txt = "Ctrl-A,5"; },
+        SENDGRID_ITEM /*6*/ { command = EPuttyCmdSendCtrlA6; txt = "Ctrl-A,6"; },
+        SENDGRID_ITEM /*7*/ { command = EPuttyCmdSendCtrlA7; txt = "Ctrl-A,7"; },
+        SENDGRID_ITEM /*8*/ { command = EPuttyCmdSendCtrlA8; txt = "Ctrl-A,8"; },
+        SENDGRID_ITEM /*9*/ { command = EPuttyCmdSendCtrlA9; txt = "Ctrl-A,9"; },
+        SENDGRID_ITEM /***/ { command = EPuttyCmdSendCtrlAKeys; txt = "Ctrl-A,..."; },
+        SENDGRID_ITEM /*1*/ { command = EPuttyCmdSendCtrlA0; txt = "Ctrl-A,0"; },
         SENDGRID_ITEM /*#*/ { txt = ""; }
     };
 }
@@ -1988,6 +2006,9 @@ RESOURCE TBUF r_putty_str_ctrl_keys { buf = "Ctrl+..."; }
 
 // Send text dialog prompt for Alt+keys
 RESOURCE TBUF r_putty_str_alt_keys { buf = "Alt+..."; }
+
+// Send text dialog prompt for Ctrl-A,keys
+RESOURCE TBUF r_putty_str_ctrla_keys { buf = "Ctrl+A,..."; }
 
 // Export file selection dialog title
 RESOURCE TBUF r_putty_str_export_dialog_title { buf = "Export to file"; }

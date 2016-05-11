@@ -63,8 +63,17 @@ enum TCommands {
     EPuttyCmdSendCtrlAP,
     EPuttyCmdSendAltALeft,
     EPuttyCmdSendAltARight,
-
-    
+    EPuttyCmdSendCtrlA0,
+    EPuttyCmdSendCtrlA1,
+    EPuttyCmdSendCtrlA2,
+    EPuttyCmdSendCtrlA3,
+    EPuttyCmdSendCtrlA4,
+    EPuttyCmdSendCtrlA5,
+    EPuttyCmdSendCtrlA6,
+    EPuttyCmdSendCtrlA7,
+    EPuttyCmdSendCtrlA8,
+    EPuttyCmdSendCtrlA9,
+    EPuttyCmdSendCtrlAKeys,
     //
     // Put all commands that should not be repeated by pressing green dial
     // button below this line
