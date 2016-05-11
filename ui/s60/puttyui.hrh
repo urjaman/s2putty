@@ -59,6 +59,10 @@ enum TCommands {
     EPuttyCmdSendF8,
     EPuttyCmdSendF9,
     EPuttyCmdSendF10,
+    EPuttyCmdSendCtrlAN,
+    EPuttyCmdSendCtrlAP,
+    EPuttyCmdSendAltALeft,
+    EPuttyCmdSendAltARight,
 
     
     //
@@ -69,10 +73,6 @@ enum TCommands {
     EPuttyCmdStartVKB,
     EPuttyCmdOpenPopUpMenu,
     EPuttyCmdToggleToolbar,
-    EPuttyCmdSendCtrlAN,
-    EPuttyCmdSendCtrlAP,
-    EPuttyCmdSendAltALeft,
-    EPuttyCmdSendAltARight,
     EPuttyCmdToolbarSettings,
     EPuttyCmdTouchSettings,
     EPuttyCmdGeneralToolbar,

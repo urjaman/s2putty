@@ -247,7 +247,6 @@ void CTerminalView::HandleCommandL(TInt aCommand) {
             }
             break;
         }
-#ifdef PUTTY_S60TOUCH
         case EPuttyCmdSendCtrlAN: {
             if ( iState == EStateConnected ) {
                 iPutty->SendKeypress((TKeyCode)0x01, 0); // Ctrl-A
@@ -274,6 +273,7 @@ void CTerminalView::HandleCommandL(TInt aCommand) {
             }
             break;
         }
+#ifdef PUTTY_S60TOUCH
         case EPuttyCmdUiSettings: {       
             OpenSettingsPopupL();
             break;

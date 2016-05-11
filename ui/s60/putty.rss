@@ -1604,9 +1604,9 @@ RESOURCE SENDGRID r_putty_send_special_key_grid {
         SENDGRID_ITEM /*1*/ { command = EPuttyCmdSendHome; txt = "Home"; },
         SENDGRID_ITEM /*2*/ { subgrid = r_putty_send_fkey_grid; txt = "F1-F10..."; },
         SENDGRID_ITEM /*3*/ { command = EPuttyCmdSendPageUp; txt = "Page Up"; },
-        SENDGRID_ITEM /*4*/ { txt = ""; },
+        SENDGRID_ITEM /*4*/ { command = EPuttyCmdSendAltALeft; txt = "Alt-Left"; },
         SENDGRID_ITEM /*5*/ { txt = ""; },
-        SENDGRID_ITEM /*6*/ { txt = ""; },
+        SENDGRID_ITEM /*6*/ { command = EPuttyCmdSendAltARight; txt = "Alt-Right"; },
         SENDGRID_ITEM /*7*/ { command = EPuttyCmdSendEnd; txt = "End"; },
         SENDGRID_ITEM /*8*/ { txt = ""; },
         SENDGRID_ITEM /*9*/ { command = EPuttyCmdSendPageDown; txt = "Page Down"; },
@@ -1634,6 +1634,8 @@ RESOURCE MENU_PANE r_putty_send_alt_grid {
     };
 }
 
+
+
 // Send Control + key
 RESOURCE MENU_PANE r_putty_send_ctrl_grid {
     items = {
@@ -1643,9 +1645,9 @@ RESOURCE MENU_PANE r_putty_send_ctrl_grid {
         SENDGRID_ITEM /*4*/ { command = EPuttyCmdSendCtrlC; txt = "Ctrl-C"; },
         SENDGRID_ITEM /*5*/ { command = EPuttyCmdSendCtrlZ; txt = "Ctrl-Z"; },
         SENDGRID_ITEM /*6*/ { txt = ""; },
-        SENDGRID_ITEM /*7*/ { txt = ""; },
+        SENDGRID_ITEM /*7*/ { command = EPuttyCmdSendCtrlAP; txt = "Ctrl-A,P"; },
         SENDGRID_ITEM /*8*/ { txt = ""; },
-        SENDGRID_ITEM /*9*/ { txt = ""; },
+        SENDGRID_ITEM /*9*/ { command = EPuttyCmdSendCtrlAN; txt = "Ctrl-A,N"; },
         SENDGRID_ITEM /***/ { txt = ""; },
         SENDGRID_ITEM /*0*/ { txt = ""; },
         SENDGRID_ITEM /*#*/ { command = EPuttyCmdSendCtrlAD; txt = "Ctrl-A,D"; }
