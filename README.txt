@@ -3,6 +3,7 @@
 
 Version 1.6 Development Snapshot
 
+Copyright 2016 Urja Rannikko
 Copyright 2002-2011 Petteri Kangaslampi
 Copyright 2009-2010 Risto Avila
 Portions copyright Sergei Khloupnov, James Nash, Damion Yates, and
