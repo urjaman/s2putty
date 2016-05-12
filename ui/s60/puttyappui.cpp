@@ -55,6 +55,7 @@ void CPuttyAppUi::ConstructL() {
     BaseConstructL();
 #endif
 #endif
+    iForeground = true;
 
     // Determine profile, data and font directories based on the executable
     // installation location. The files are on the same drive as the
@@ -177,14 +178,20 @@ void CPuttyAppUi::HandleCommandL(TInt aCommand) {
 
         case EEikCmdExit:
         case EAknSoftkeyExit:
+            if (!iForeground) break;
             // Exit
             Exit();
             break;
-            
+
         default:
             break;
             User::Invariant();
-    }    
+    }
+}
+
+
+void CPuttyAppUi::HandleForegroundEventL(TBool aForeground) {
+    iForeground  = aForeground; // Keep track ...
 }
 
 

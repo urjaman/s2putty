@@ -159,6 +159,7 @@ public:
     
 public: // from CAknAppUi
     void HandleCommandL(TInt aCommand);
+    void HandleForegroundEventL(TBool aForeground);
 #ifdef PUTTY_SYM3 //partial screen vkb
     // from CEikAppUi
     void HandleResourceChangeL( TInt aType );
@@ -180,6 +181,8 @@ private:
     TBuf<64> iSettingsDirectory; // "x:\private\12345678\settings\"
     TBuf<64> iDataDirectory; // "x:\private\12345678\data\"
     TBuf<64> iFontDirectory; // "x:\resource\puttyfonts\"
+
+    TBool iForeground;
 
     CDesCArray *iFonts;
     CAknNavigationControlContainer *iNaviPane;
