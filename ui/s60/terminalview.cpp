@@ -23,8 +23,8 @@
 #include "terminalview.h"
 #ifdef PUTTY_S60TOUCH
     #include "../s60v5/terminalcontainer.h"
-    #include <APGCLI.H>
-    #include <APGTASK.H>
+    #include <apgcli.h>
+    #include <apgtask.h>
 #else
     #include "terminalcontainer.h"
 #endif
