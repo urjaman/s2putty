@@ -34,6 +34,10 @@ RESOURCE TBUF {
 RESOURCE EIK_APP_INFO {
 }
 
+#ifndef PUTTY_S60
+#error invalid defines
+#endif
+
 #ifdef PUTTY_S60V3
 // Localisable app info -- icon and caption
 RESOURCE LOCALISABLE_APP_INFO r_putty_localisable_app_info {
