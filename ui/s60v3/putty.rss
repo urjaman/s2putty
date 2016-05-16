@@ -1,4 +1,6 @@
+#ifndef PUTTY_S60
 #define PUTTY_S60
 #define PUTTY_S60V3
+#endif
 #include "../s60/putty.rss"
 

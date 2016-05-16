@@ -289,9 +289,11 @@ RESOURCE AVKON_POPUP_SETTING_TEXTS r_putty_profileedit_bell_texts {
 RESOURCE ARRAY r_putty_profileedit_bell_text_array {
     items = {
         AVKON_ENUMERATED_TEXT { value = 0; text = "None (Bell disabled)"; },
-        AVKON_ENUMERATED_TEXT { value = 1; text = "Default system sound"; },
-        AVKON_ENUMERATED_TEXT { value = 2; text = "Vibrate"; },
+        AVKON_ENUMERATED_TEXT { value = 1; text = "Default system sound"; }
+#ifndef PUTTY_S60V1
+        , AVKON_ENUMERATED_TEXT { value = 2; text = "Vibrate"; },
         AVKON_ENUMERATED_TEXT { value = 3; text = "Beep and vibrate"; }
+#endif
         // It would be nice to turn on the backlight too, but that requires
         // PowerManagement capability
     };
@@ -299,9 +301,11 @@ RESOURCE ARRAY r_putty_profileedit_bell_text_array {
 RESOURCE ARRAY r_putty_profileedit_bell_popped_up_text_array {
     items = {
         LBUF { txt = "None (Bell disabled)"; },
-        LBUF { txt = "Default system sound"; },
-        LBUF { txt = "Vibrate"; },
+        LBUF { txt = "Default system sound"; }
+#ifndef PUTTY_S60V1
+        , LBUF { txt = "Vibrate"; },
         LBUF { txt = "Beep and vibrate"; }
+#endif
     };
 }
 

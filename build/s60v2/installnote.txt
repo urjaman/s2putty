@@ -1,14 +1,13 @@
 PuTTY for Series 60 v2 FP2 - Version 1.6 Development Snapshot, 2016/05/11
 
-Copyright 2003-2004 Sergei Khloupnov
-The PuTTY Symbian OS port is copyright 2002-2006 Petteri Kangaslampi.
 This reboot of S60v1/v2 support is (c) 2016 Urja Rannikko.
+The PuTTY Symbian OS port is copyright 2002-2011 Petteri Kangaslampi.
 
-Portions of the Symbian OS version copyright Gabor Keresztfavli.
+Portions copyright Sergei Khloupnov, James Nash, Damion Yates, Risto Avila, and Gabor Keresztfavli.
 
-PuTTY is copyright 1997-2004 Simon Tatham.
+PuTTY is copyright 1997-2007 Simon Tatham.
 
-Portions copyright Robert de Bath, Joris van Rantwijk, Delian Delchev, Andreas Schultz, Jeroen Massar, Wez Furlong, Nicolas Barry, Justin Bradford, Ben Harris, Malcolm Smith, and CORE SDI S.A.
+Portions copyright Robert de Bath, Joris van Rantwijk, Delian Delchev, Andreas Schultz, Jeroen Massar, Wez Furlong, Nicolas Barry, Justin Bradford, Ben Harris, Malcolm Smith, Ahmad Khalifa, Markus Kuhn, and CORE SDI S.A.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
 

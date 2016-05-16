@@ -1,6 +1,7 @@
 PuTTY for S60 3rd ed. - Version 1.6 Development Snapshot
 
 The PuTTY Symbian OS port is copyright 2002-2011 Petteri Kangaslampi.
+This reboot is (c) 2016 Urja Rannikko.
 
 Portions copyright Sergei Khloupnov, James Nash, Damion Yates, Risto Avila, and Gabor Keresztfavli.
 
