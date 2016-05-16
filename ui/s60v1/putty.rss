@@ -1,0 +1,4 @@
+#define PUTTY_S60
+#define PUTTY_S60V1
+#include "../s60/putty.rss"
+

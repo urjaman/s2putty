@@ -49,7 +49,7 @@ USERINCLUDE	..\..\ui\s60v1 ..\..\ui\s60 ..\..\ui\common ..\..\ui\s2font
 USERINCLUDE	..\..\include ..\..\engine\putty ..\..\engine\puttysymbian
 SYSTEMINCLUDE	\epoc32\include \epoc32\include\libc
 
-RESOURCE	s60\putty.rss
+RESOURCE	s60v1\putty.rss
 LIBRARY		avkon.lib eikdlg.lib bafl.lib
 LIBRARY		euser.lib apparc.lib cone.lib eikcore.lib gdi.lib eikcoctl.lib
 LIBRARY		eikctl.lib efsrv.lib nifman.lib intconninit.lib commdb.lib
